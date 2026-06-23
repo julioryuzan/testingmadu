@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>FFM Petugas — UP3 Jayapura</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#0f1117;--bg2:#1a1d2e;--bg3:#252836;--border:#2d3748;--text:#e2e8f0;--muted:#64748b;--blue:#3b82f6;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--purple:#8b5cf6}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column}
+
+/* HEADER */
+.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.logo{width:34px;height:34px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.header-text h1{font-size:14px;font-weight:600}
+.header-text p{font-size:11px;color:var(--muted);margin-top:1px}
+.signal-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);margin-left:auto;flex-shrink:0}
+.signal-dot.on{background:var(--green);box-shadow:0 0 6px var(--green)}
+
+/* SCREENS */
+.screen{flex:1;display:none;flex-direction:column;padding:16px;gap:14px;overflow-y:auto}
+.screen.active{display:flex}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px}
+.card h2{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+
+/* INPUTS */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.field input,.field select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);outline:none;-webkit-appearance:none}
+.field input:focus,.field select:focus{border-color:var(--blue)}
+.field select option{background:var(--bg2)}
+
+/* BUTTONS */
+.btn{width:100%;padding:13px;border-radius:10px;font-size:15px;font-weight:600;border:none;cursor:pointer;transition:opacity .15s}
+.btn:active{opacity:.8}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-success{background:var(--green);color:#fff}
+.btn-danger{background:var(--red);color:#fff}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+
+/* STATUS SELECTOR */
+.status-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.status-btn{padding:12px 8px;border-radius:10px;border:2px solid var(--border);background:var(--bg3);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:4px}
+.status-btn .dot{width:10px;height:10px;border-radius:50%;background:var(--muted)}
+.status-btn.aktif{border-color:var(--green);background:#052e16;color:var(--green)}
+.status-btn.aktif .dot{background:var(--green)}
+.status-btn.perjalanan{border-color:var(--amber);background:#2d1b00;color:var(--amber)}
+.status-btn.perjalanan .dot{background:var(--amber)}
+.status-btn.standby{border-color:var(--blue);background:#0c1a2e;color:var(--blue)}
+.status-btn.standby .dot{background:var(--blue)}
+.status-btn.offline{border-color:var(--red);background:#2d0a0a;color:var(--red)}
+.status-btn.offline .dot{background:var(--red)}
+.status-btn.selected{box-shadow:0 0 0 2px currentColor}
+
+/* GPS BOX */
+.gps-box{background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:12px}
+.gps-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.gps-label{font-size:11px;color:var(--muted)}
+.gps-val{font-size:13px;font-weight:600;font-family:monospace}
+.gps-accuracy{font-size:11px;color:var(--muted);text-align:center;margin-top:6px}
+
+/* ACTIVITY LOG */
+.log-list{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto}
+.log-item{display:flex;gap:8px;align-items:flex-start;font-size:12px}
+.log-time{color:var(--muted);flex-shrink:0;font-family:monospace}
+.log-msg{color:var(--text)}
+.log-msg.ok{color:var(--green)}
+.log-msg.err{color:var(--red)}
+.log-msg.info{color:var(--blue)}
+
+/* PROFILE CHIP */
+.profile-chip{background:var(--bg3);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px}
+.profile-avatar{width:36px;height:36px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.profile-info .name{font-size:14px;font-weight:600}
+.profile-info .sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* PULSE ANIMATION */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.pulsing{animation:pulse 1.5s ease-in-out infinite}
+
+/* COUNTER */
+.counter-row{display:flex;justify-content:space-between;align-items:center}
+.counter-label{font-size:12px;color:var(--muted)}
+.counter-val{font-size:20px;font-weight:700;color:var(--green);font-family:monospace}
+
+/* CAMERA / SELFIE */
+.camera-box{background:#000;border-radius:10px;overflow:hidden;position:relative;aspect-ratio:3/4;margin-bottom:12px;display:flex;align-items:center;justify-content:center}
+.camera-box video,.camera-box img{width:100%;height:100%;object-fit:cover;display:block}
+.camera-box .placeholder{color:var(--muted);font-size:12px;text-align:center;padding:20px}
+.camera-overlay-badge{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.65);border-radius:6px;padding:4px 8px;font-size:10px;font-family:monospace;color:#fff}
+.camera-actions{display:flex;gap:8px;margin-top:8px}
+.camera-actions .btn{flex:1}
+
+/* ABSENSI LOCATION CHIPS */
+.loc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.loc-chip{background:var(--bg3);border:2px solid var(--border);border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;font-size:11px;color:var(--muted);transition:all .15s}
+.loc-chip .ic{font-size:18px;display:block;margin-bottom:3px}
+.loc-chip.selected{border-color:var(--blue);background:#0c1a2e;color:var(--blue)}
+
+/* TASK / LAPORAN CARDS */
+.task-item{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px}
+.task-item .t-title{font-size:13px;font-weight:600;margin-bottom:3px}
+.task-item .t-meta{font-size:11px;color:var(--muted)}
+.task-item .t-status{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;margin-top:6px}
+.t-status.pending{background:#2d1b00;color:var(--amber)}
+.t-status.done{background:#052e16;color:var(--green)}
+
+.photo-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.photo-slot{background:var(--bg3);border:1.5px dashed var(--border);border-radius:10px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;position:relative;overflow:hidden}
+.photo-slot img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.photo-slot .lbl{font-size:11px;color:var(--muted);position:relative;z-index:1;background:rgba(0,0,0,.5);padding:2px 8px;border-radius:5px}
+.photo-slot.filled .lbl{position:absolute;bottom:4px}
+.photo-slot .ic{font-size:22px;color:var(--muted);position:relative;z-index:1}
+
+/* BOTTOM NAV */
+.bottom-nav{display:flex;border-top:1px solid var(--border);background:var(--bg2);flex-shrink:0}
+.nav-btn{flex:1;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:var(--muted);font-size:10px;cursor:pointer}
+.nav-btn.active{color:var(--blue)}
+.nav-btn .ic{font-size:18px}
+
+/* MODAL */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:1000}
+.modal-backdrop.active{display:flex}
+.modal-sheet{background:var(--bg2);border-radius:16px 16px 0 0;padding:16px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal-sheet h2{font-size:14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">⚡</div>
+  <div class="header-text">
+    <h1>FFM Petugas</h1>
+    <p>UP3 Jayapura · Field Force</p>
+  </div>
+  <div class="signal-dot" id="signal-dot"></div>
+</div>
+
+<!-- SCREEN: LOGIN -->
+<div class="screen active" id="screen-login">
+  <div style="text-align:center;padding:8px 0 4px">
+    <div style="font-size:32px;margin-bottom:8px">👷</div>
+    <div style="font-size:16px;font-weight:600">Masuk sebagai Petugas</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:4px">Isi data diri untuk mulai tracking GPS</div>
+  </div>
+
+  <div class="card">
+    <h2>Data Petugas</h2>
+    <div class="field">
+      <label>Nama Lengkap</label>
+      <input type="text" id="in-nama" placeholder="Nama petugas..." autocomplete="name">
+    </div>
+    <div class="field">
+      <label>NIP / ID Petugas</label>
+      <input type="text" id="in-nip" placeholder="NIP atau ID..." inputmode="numeric">
+    </div>
+    <div class="field">
+      <label>Regu / Tim</label>
+      <select id="in-regu">
+        <option value="">Pilih regu...</option>
+        <option>Yantek 1</option>
+        <option>Yantek 2</option>
+        <option>Yantek 3</option>
+        <option>PDKB 1</option>
+        <option>PDKB 2</option>
+        <option>HAR 1</option>
+        <option>HAR 2</option>
+        <option>Tim ROW</option>
+        <option>Tim Gangguan</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>ULP / Posko</label>
+      <select id="in-ulp">
+        <option value="">Pilih ULP...</option>
+        <option>ULP JAYAPURA</option>
+        <option>ULP ABEPURA</option>
+        <option>ULP SENTANI</option>
+        <option>ULP ARSO</option>
+        <option>ULP SARMI</option>
+        <option>ULP GENYEM</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="login-err" style="background:#2d0a0a;border:1px solid var(--red);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--red);display:none"></div>
+
+  <button class="btn btn-primary" onclick="doLogin()">Mulai Bertugas</button>
+  
+  <div style="text-align:center;font-size:11px;color:var(--muted)">
+    Dengan masuk, GPS HP Anda akan dibagikan ke supervisor secara realtime
+  </div>
+</div>
+
+<!-- SCREEN: ABSENSI (Login Terstruktur lanjutan: GPS + Selfie + Timestamp) -->
+<div class="screen" id="screen-absensi">
+  <div style="text-align:center;padding:8px 0 4px">
+    <div style="font-size:32px;margin-bottom:8px">📍</div>
+    <div style="font-size:16px;font-weight:600">Absensi Berbasis Lokasi</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:4px">Validasi fisik di lapangan sebelum mulai bertugas</div>
+  </div>
+
+  <div class="card">
+    <h2>Lokasi Absen</h2>
+    <div class="loc-grid">
+      <div class="loc-chip selected" id="loc-kantor" onclick="pilihLokasiAbsen('Kantor')">
+        <span class="ic">🏢</span>Kantor
+      </div>
+      <div class="loc-chip" id="loc-posko" onclick="pilihLokasiAbsen('Posko')">
+        <span class="ic">⛺</span>Posko
+      </div>
+      <div class="loc-chip" id="loc-kerja" onclick="pilihLokasiAbsen('Lokasi Kerja')">
+        <span class="ic">📍</span>Lokasi Kerja
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Ambil Selfie</h2>
+    <div class="camera-box" id="absen-camera-box">
+      <div class="placeholder" id="absen-cam-placeholder">📷<br>Kamera belum aktif</div>
+      <video id="absen-video" playsinline autoplay muted style="display:none"></video>
+      <img id="absen-photo-preview" style="display:none">
+      <div class="camera-overlay-badge" id="absen-gps-badge" style="display:none">GPS: —</div>
+    </div>
+    <div class="camera-actions">
+      <button class="btn btn-outline" id="absen-btn-cam" onclick="bukaKameraAbsen()">Buka Kamera</button>
+      <button class="btn btn-primary" id="absen-btn-shoot" onclick="ambilFotoAbsen()" style="display:none">📸 Ambil Foto</button>
+      <button class="btn btn-outline" id="absen-btn-retake" onclick="ulangFotoAbsen()" style="display:none">Ulangi</button>
+    </div>
+    <canvas id="absen-canvas" style="display:none"></canvas>
+  </div>
+
+  <div class="card">
+    <h2>Validasi</h2>
+    <div class="gps-box">
+      <div class="gps-row"><span class="gps-label">Latitude</span><span class="gps-val" id="absen-lat">—</span></div>
+      <div class="gps-row"><span class="gps-label">Longitude</span><span class="gps-val" id="absen-lng">—</span></div>
+      <div class="gps-row"><span class="gps-label">Waktu</span><span class="gps-val" id="absen-time">—</span></div>
+      <div class="gps-accuracy" id="absen-gps-status">Menunggu lokasi GPS...</div>
+    </div>
+  </div>
+
+  <div id="absen-err" style="background:#2d0a0a;border:1px solid var(--red);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--red);display:none"></div>
+
+  <button class="btn btn-success" onclick="submitAbsensi()">✓ Konfirmasi Absen & Mulai Tracking</button>
+</div>
+
+<!-- SCREEN: TRACKING -->
+<div class="screen" id="screen-tracking">
+  <div class="profile-chip" id="profile-chip">
+    <div class="profile-avatar">👷</div>
+    <div class="profile-info">
+      <div class="name" id="prof-nama">—</div>
+      <div class="sub" id="prof-sub">—</div>
+    </div>
+  </div>
+
+  <!-- Status selector -->
+  <div class="card">
+    <h2>Status Saya</h2>
+    <div class="status-grid">
+      <button class="status-btn aktif selected" id="sb-aktif" onclick="setStatus('Aktif Bekerja')">
+        <div class="dot"></div>Aktif Bekerja
+      </button>
+      <button class="status-btn perjalanan" id="sb-perjalanan" onclick="setStatus('Perjalanan')">
+        <div class="dot"></div>Perjalanan
+      </button>
+      <button class="status-btn standby" id="sb-standby" onclick="setStatus('Standby')">
+        <div class="dot"></div>Standby
+      </button>
+      <button class="status-btn offline" id="sb-offline" onclick="setStatus('Offline')">
+        <div class="dot"></div>Offline
+      </button>
+    </div>
+    <div style="font-size:11px;color:var(--muted);text-align:center">Status aktif: <b id="status-label" style="color:var(--green)">Aktif Bekerja</b></div>
+  </div>
+
+  <!-- GPS Info -->
+  <div class="card">
+    <h2>Lokasi GPS</h2>
+    <div class="gps-box">
+      <div class="gps-row">
+        <span class="gps-label">Latitude</span>
+        <span class="gps-val" id="gps-lat">Menunggu...</span>
+      </div>
+      <div class="gps-row">
+        <span class="gps-label">Longitude</span>
+        <span class="gps-val" id="gps-lng">—</span>
+      </div>
+      <div class="gps-row">
+        <span class="gps-label">Akurasi</span>
+        <span class="gps-val" id="gps-acc">—</span>
+      </div>
+      <div class="gps-accuracy" id="gps-status">Meminta izin GPS...</div>
+    </div>
+    <div class="counter-row" style="margin-bottom:6px">
+      <span class="counter-label">Data terkirim</span>
+      <span class="counter-val" id="send-count">0</span>
+    </div>
+    <div style="font-size:11px;color:var(--muted);text-align:center">Update otomatis setiap 15 detik</div>
+  </div>
+
+  <!-- Lapor Pekerjaan (Closed-Loop Before/After) -->
+  <div class="card">
+    <h2>Lapor Pekerjaan</h2>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Dokumentasikan pekerjaan dengan foto sebelum & sesudah untuk validasi digital tanpa manipulasi.</div>
+    <button class="btn btn-primary" onclick="bukaModalLapor()">📋 Buat Laporan Baru</button>
+  </div>
+
+  <!-- Riwayat Laporan -->
+  <div class="card">
+    <h2>Riwayat Laporan Hari Ini</h2>
+    <div id="task-list">
+      <div style="font-size:12px;color:var(--muted);text-align:center;padding:10px 0">Belum ada laporan.</div>
+    </div>
+  </div>
+
+  <!-- Activity log -->
+  <div class="card">
+    <h2>Log Aktivitas</h2>
+    <div class="log-list" id="log-list">
+      <div class="log-item"><span class="log-time">--:--</span><span class="log-msg info">Menginisialisasi sistem...</span></div>
+    </div>
+  </div>
+
+  <button class="btn btn-outline" onclick="doLogout()" style="margin-top:4px">Selesai Bertugas</button>
+</div>
+
+<!-- MODAL: LAPOR PEKERJAAN (Closed-Loop Before/After) -->
+<div class="modal-backdrop" id="modal-lapor">
+  <div class="modal-sheet">
+    <h2>Laporan Pekerjaan <button class="modal-close" onclick="tutupModalLapor()">✕</button></h2>
+
+    <div class="field">
+      <label>Rincian Pekerjaan</label>
+      <input type="text" id="lapor-rincian" placeholder="cth: Pemasangan Cover Anti Hewan">
+    </div>
+    <div class="field">
+      <label>Audit Material</label>
+      <input type="text" id="lapor-material" placeholder="cth: Cover Anti Hewan, Cable Tie">
+    </div>
+    <div class="field" style="display:flex;gap:8px">
+      <div style="flex:1">
+        <label>Target Volume</label>
+        <input type="number" id="lapor-target" placeholder="0" inputmode="numeric">
+      </div>
+      <div style="flex:1">
+        <label>Realisasi Volume</label>
+        <input type="number" id="lapor-realisasi" placeholder="0" inputmode="numeric">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Foto Kondisi (Before / After)</label>
+      <div class="photo-pair">
+        <div class="photo-slot" id="slot-before" onclick="bukaKameraLapor('before')">
+          <span class="ic">📷</span><span class="lbl">Sebelum (Before)</span>
+        </div>
+        <div class="photo-slot" id="slot-after" onclick="bukaKameraLapor('after')">
+          <span class="ic">📷</span><span class="lbl">Sesudah (After)</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="lapor-err" style="background:#2d0a0a;border:1px solid var(--red);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--red);display:none;margin-bottom:12px"></div>
+
+    <button class="btn btn-success" onclick="submitLaporan()">✓ Kirim Laporan</button>
+  </div>
+</div>
+
+<!-- MODAL: KAMERA UNTUK FOTO BEFORE/AFTER -->
+<div class="modal-backdrop" id="modal-kamera-lapor">
+  <div class="modal-sheet">
+    <h2 id="kamera-lapor-title">Ambil Foto <button class="modal-close" onclick="tutupKameraLapor()">✕</button></h2>
+    <div class="camera-box" id="lapor-camera-box">
+      <video id="lapor-video" playsinline autoplay muted style="display:none"></video>
+      <img id="lapor-photo-preview" style="display:none">
+      <div class="camera-overlay-badge" id="lapor-gps-badge">📍 GPS terkunci · <span id="lapor-time-badge">--:--</span></div>
+    </div>
+    <div class="camera-actions">
+      <button class="btn btn-primary" id="lapor-btn-shoot" onclick="ambilFotoLapor()">📸 Ambil Foto</button>
+      <button class="btn btn-outline" id="lapor-btn-retake" onclick="ulangFotoLapor()" style="display:none">Ulangi</button>
+      <button class="btn btn-success" id="lapor-btn-pakai" onclick="pakaiFotoLapor()" style="display:none">Gunakan</button>
+    </div>
+    <canvas id="lapor-canvas" style="display:none"></canvas>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, set, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+// ══════════════════════════════════════════════════════
+// GANTI DENGAN firebaseConfig ANDA DARI FIREBASE CONSOLE
+// ══════════════════════════════════════════════════════
+// Struktur data di Firebase Realtime Database:
+//   /petugas/{id}            -> posisi GPS live (ditulis tiap 15 detik)
+//   /absensi/{id}_{timestamp} -> riwayat absensi (lokasi, GPS, waktu)
+//       NB: foto selfie absensi (base64) belum diupload ke sini secara default
+//       karena ukurannya besar untuk RTDB. Untuk produksi, gunakan Firebase
+//       Storage lalu simpan URL-nya saja di sini.
+//   /laporan/{id}_{timestamp} -> closed-loop report pekerjaan (before/after)
+//       NB: sama seperti di atas, foto before/after sebaiknya diupload ke
+//       Firebase Storage agar RTDB tidak membengkak & lambat di-load Dashboard.
+const firebaseConfig = {
+  apiKey: "AIzaSyDZRDMn-gvbVQhcyTCxx83i5czwiU8hAJU",
+  authDomain: "ffm-pln.firebaseapp.com",
+  databaseURL: "https://ffm-pln-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "ffm-pln",
+  storageBucket: "ffm-pln.firebasestorage.app",
+  messagingSenderId: "461016001656",
+  appId: "1:461016001656:web:76181eaa68e996b649918d",
+  measurementId: "G-ZTNQ49GK9W"
+};
+
+let app, db;
+let watchId = null;
+let sendCount = 0;
+let currentUser = null;
+let currentStatus = 'Aktif Bekerja';
+let sendTimer = null;
+let lastPos = null;
+
+try {
+  app = initializeApp(firebaseConfig);
+  db = getDatabase(app);
+  addLog('Firebase terhubung', 'ok');
+  document.getElementById('signal-dot').classList.add('on');
+} catch(e) {
+  addLog('Firebase: ' + e.message, 'err');
+  addLog('Mode demo — GPS tetap berjalan', 'info');
+}
+
+// ── LOGIN ──────────────────────────────────────────────
+window.doLogin = function() {
+  const nama = document.getElementById('in-nama').value.trim();
+  const nip  = document.getElementById('in-nip').value.trim();
+  const regu = document.getElementById('in-regu').value;
+  const ulp  = document.getElementById('in-ulp').value;
+  const errEl = document.getElementById('login-err');
+
+  if (!nama || !nip || !regu || !ulp) {
+    errEl.textContent = 'Semua field wajib diisi.';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  currentUser = { nama, nip, regu, ulp,
+    id: nip.replace(/\W/g,'') + '_' + Date.now().toString(36) };
+
+  document.getElementById('prof-nama').textContent = nama;
+  document.getElementById('prof-sub').textContent = regu + ' · ' + ulp;
+
+  // Lanjut ke screen absensi (GPS + Selfie + Timestamp) sebelum mulai tracking
+  document.getElementById('screen-login').classList.remove('active');
+  document.getElementById('screen-absensi').classList.add('active');
+
+  addLog('Login: ' + nama + ' (' + regu + ')', 'ok');
+  startAbsensiGPS();
+};
+
+// ── LOGOUT ────────────────────────────────────────────
+window.doLogout = function() {
+  if (confirm('Selesai bertugas dan hentikan tracking GPS?')) {
+    stopGPS();
+    if (db && currentUser) {
+      set(ref(db, 'petugas/' + currentUser.id + '/status'), 'Offline');
+    }
+    currentUser = null;
+    document.getElementById('screen-tracking').classList.remove('active');
+    document.getElementById('screen-login').classList.add('active');
+    document.getElementById('send-count').textContent = '0';
+    sendCount = 0;
+    addLog('Logout — tracking dihentikan', 'info');
+  }
+};
+
+// ── STATUS ────────────────────────────────────────────
+window.setStatus = function(s) {
+  currentStatus = s;
+  document.getElementById('status-label').textContent = s;
+  const map = {'Aktif Bekerja':'aktif','Perjalanan':'perjalanan','Standby':'standby','Offline':'offline'};
+  const colors = {'Aktif Bekerja':'var(--green)','Perjalanan':'var(--amber)','Standby':'var(--blue)','Offline':'var(--red)'};
+  document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('selected'));
+  const key = map[s];
+  if (key) document.getElementById('sb-' + key).classList.add('selected');
+  document.getElementById('status-label').style.color = colors[s] || 'var(--text)';
+  if (db && currentUser) {
+    set(ref(db, 'petugas/' + currentUser.id + '/status'), s);
+  }
+  addLog('Status: ' + s, 'info');
+  if (lastPos) pushLocation(lastPos);
+};
+
+// ── GPS ───────────────────────────────────────────────
+function startGPS() {
+  if (!navigator.geolocation) {
+    addLog('GPS tidak didukung di browser ini', 'err');
+    document.getElementById('gps-status').textContent = 'GPS tidak tersedia';
+    return;
+  }
+  document.getElementById('gps-status').textContent = 'Meminta izin GPS...';
+  watchId = navigator.geolocation.watchPosition(onPos, onPosErr, {
+    enableHighAccuracy: true, maximumAge: 10000, timeout: 15000
+  });
+  sendTimer = setInterval(() => { if (lastPos) pushLocation(lastPos); }, 15000);
+  addLog('GPS tracking dimulai', 'ok');
+}
+
+function stopGPS() {
+  if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+  if (sendTimer) { clearInterval(sendTimer); sendTimer = null; }
+}
+
+function onPos(pos) {
+  lastPos = pos;
+  const { latitude: lat, longitude: lng, accuracy: acc } = pos.coords;
+  document.getElementById('gps-lat').textContent = lat.toFixed(6);
+  document.getElementById('gps-lng').textContent = lng.toFixed(6);
+  document.getElementById('gps-acc').textContent = Math.round(acc) + ' m';
+  document.getElementById('gps-status').textContent = acc < 20 ? 'Akurasi sangat baik' : acc < 50 ? 'Akurasi baik' : 'Akurasi rendah';
+  pushLocation(pos);
+}
+
+function onPosErr(err) {
+  const msgs = {1:'Izin GPS ditolak',2:'GPS tidak tersedia',3:'Timeout GPS'};
+  addLog(msgs[err.code] || 'GPS error', 'err');
+  document.getElementById('gps-status').textContent = msgs[err.code] || 'GPS error';
+}
+
+function pushLocation(pos) {
+  if (!currentUser) return;
+  const { latitude: lat, longitude: lng, accuracy: acc, heading, speed } = pos.coords;
+  const payload = {
+    lat, lng, acc: Math.round(acc),
+    heading: heading || 0,
+    speed: speed ? Math.round(speed * 3.6) : 0,
+    status: currentStatus,
+    nama: currentUser.nama,
+    nip: currentUser.nip,
+    regu: currentUser.regu,
+    ulp: currentUser.ulp,
+    ts: Date.now()
+  };
+
+  if (db) {
+    const petugasRef = ref(db, 'petugas/' + currentUser.id);
+    set(petugasRef, payload).then(() => {
+      sendCount++;
+      document.getElementById('send-count').textContent = sendCount;
+      const t = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      addLog(t + ' — Lokasi terkirim (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + ')', 'ok');
+      onDisconnect(petugasRef).update({ status: 'Offline', ts: Date.now() });
+    }).catch(e => addLog('Gagal kirim: ' + e.message, 'err'));
+  } else {
+    sendCount++;
+    document.getElementById('send-count').textContent = sendCount;
+    addLog('[DEMO] Posisi: ' + lat.toFixed(5) + ', ' + lng.toFixed(5), 'info');
+  }
+}
+
+// ── LOG ───────────────────────────────────────────────
+function addLog(msg, type) {
+  const list = document.getElementById('log-list');
+  const t = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const item = document.createElement('div');
+  item.className = 'log-item';
+  item.innerHTML = '<span class="log-time">' + t + '</span><span class="log-msg ' + (type||'') + '">' + msg + '</span>';
+  list.insertBefore(item, list.firstChild);
+  while (list.children.length > 30) list.removeChild(list.lastChild);
+}
+window.addLog = addLog;
+
+// ════════════════════════════════════════════════════════
+// ABSENSI BERBASIS LOKASI (GPS + Selfie + Timestamp)
+// ════════════════════════════════════════════════════════
+let absenLokasi = 'Kantor';
+let absenStream = null;
+let absenPos = null;
+let absenFotoDataUrl = null;
+
+window.pilihLokasiAbsen = function(lok) {
+  absenLokasi = lok;
+  document.querySelectorAll('.loc-chip').forEach(c => c.classList.remove('selected'));
+  const map = {'Kantor':'loc-kantor','Posko':'loc-posko','Lokasi Kerja':'loc-kerja'};
+  document.getElementById(map[lok]).classList.add('selected');
+};
+
+function startAbsensiGPS() {
+  if (!navigator.geolocation) {
+    document.getElementById('absen-gps-status').textContent = 'GPS tidak tersedia di browser ini';
+    return;
+  }
+  document.getElementById('absen-gps-status').textContent = 'Mencari lokasi GPS...';
+  navigator.geolocation.getCurrentPosition((pos) => {
+    absenPos = pos;
+    const { latitude: lat, longitude: lng, accuracy: acc } = pos.coords;
+    document.getElementById('absen-lat').textContent = lat.toFixed(6);
+    document.getElementById('absen-lng').textContent = lng.toFixed(6);
+    document.getElementById('absen-gps-status').textContent =
+      'Akurasi ' + Math.round(acc) + ' m · ' + (acc < 30 ? 'Baik' : 'Rendah, coba di area terbuka');
+    document.getElementById('absen-gps-badge').style.display = 'block';
+    document.getElementById('absen-gps-badge').textContent = 'GPS: ' + lat.toFixed(4) + ', ' + lng.toFixed(4);
+    updateAbsenTime();
+  }, (err) => {
+    document.getElementById('absen-gps-status').textContent = 'Gagal ambil GPS: ' + err.message;
+  }, { enableHighAccuracy: true, timeout: 15000 });
+}
+
+function updateAbsenTime() {
+  document.getElementById('absen-time').textContent = new Date().toLocaleString('id-ID');
+}
+
+window.bukaKameraAbsen = async function() {
+  try {
+    absenStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    const video = document.getElementById('absen-video');
+    video.srcObject = absenStream;
+    video.style.display = 'block';
+    document.getElementById('absen-cam-placeholder').style.display = 'none';
+    document.getElementById('absen-photo-preview').style.display = 'none';
+    document.getElementById('absen-btn-cam').style.display = 'none';
+    document.getElementById('absen-btn-shoot').style.display = 'block';
+    document.getElementById('absen-btn-retake').style.display = 'none';
+  } catch (e) {
+    addLog('Gagal akses kamera: ' + e.message, 'err');
+    document.getElementById('absen-cam-placeholder').innerHTML = '⚠️ Kamera tidak bisa diakses<br><span style="font-size:10px">' + e.message + '</span>';
+  }
+};
+
+window.ambilFotoAbsen = function() {
+  const video = document.getElementById('absen-video');
+  const canvas = document.getElementById('absen-canvas');
+  canvas.width = video.videoWidth || 480;
+  canvas.height = video.videoHeight || 640;
+  const ctx = canvas.getContext('2d');
+  ctx.translate(canvas.width, 0); ctx.scale(-1, 1); // mirror selfie
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  absenFotoDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+  const img = document.getElementById('absen-photo-preview');
+  img.src = absenFotoDataUrl;
+  img.style.display = 'block';
+  video.style.display = 'none';
+
+  if (absenStream) { absenStream.getTracks().forEach(t => t.stop()); absenStream = null; }
+
+  document.getElementById('absen-btn-shoot').style.display = 'none';
+  document.getElementById('absen-btn-retake').style.display = 'block';
+  updateAbsenTime();
+  addLog('Selfie absensi diambil', 'ok');
+};
+
+window.ulangFotoAbsen = function() {
+  absenFotoDataUrl = null;
+  document.getElementById('absen-photo-preview').style.display = 'none';
+  document.getElementById('absen-btn-retake').style.display = 'none';
+  bukaKameraAbsen();
+};
+
+window.submitAbsensi = function() {
+  const errEl = document.getElementById('absen-err');
+  if (!absenPos) {
+    errEl.textContent = 'GPS belum terkunci. Mohon tunggu atau coba di area terbuka.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!absenFotoDataUrl) {
+    errEl.textContent = 'Selfie absensi wajib diambil sebelum melanjutkan.';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  currentUser.absensi = {
+    lokasi: absenLokasi,
+    lat: absenPos.coords.latitude,
+    lng: absenPos.coords.longitude,
+    acc: Math.round(absenPos.coords.accuracy),
+    waktu: Date.now(),
+    foto: absenFotoDataUrl // base64 jpeg (disimpan ringkas; untuk produksi sebaiknya upload ke Storage)
+  };
+
+  if (db && currentUser) {
+    set(ref(db, 'absensi/' + currentUser.id + '_' + Date.now()), {
+      nama: currentUser.nama, nip: currentUser.nip, regu: currentUser.regu, ulp: currentUser.ulp,
+      lokasi: absenLokasi,
+      lat: currentUser.absensi.lat, lng: currentUser.absensi.lng, acc: currentUser.absensi.acc,
+      waktu: currentUser.absensi.waktu
+    }).catch(e => addLog('Gagal simpan absensi: ' + e.message, 'err'));
+  }
+
+  addLog('Absensi berhasil di ' + absenLokasi, 'ok');
+  document.getElementById('screen-absensi').classList.remove('active');
+  document.getElementById('screen-tracking').classList.add('active');
+  startGPS();
+};
+
+// ════════════════════════════════════════════════════════
+// CLOSED-LOOP REPORTING (Lapor Pekerjaan Before/After)
+// ════════════════════════════════════════════════════════
+let laporTugasList = [];
+let laporFotoBefore = null, laporFotoAfter = null;
+let laporKameraTarget = null; // 'before' | 'after'
+let laporStream = null;
+let laporFotoSementara = null;
+
+window.bukaModalLapor = function() {
+  document.getElementById('lapor-rincian').value = '';
+  document.getElementById('lapor-material').value = '';
+  document.getElementById('lapor-target').value = '';
+  document.getElementById('lapor-realisasi').value = '';
+  laporFotoBefore = null; laporFotoAfter = null;
+  resetSlotFoto('before'); resetSlotFoto('after');
+  document.getElementById('lapor-err').style.display = 'none';
+  document.getElementById('modal-lapor').classList.add('active');
+};
+
+window.tutupModalLapor = function() {
+  document.getElementById('modal-lapor').classList.remove('active');
+};
+
+function resetSlotFoto(target) {
+  const slot = document.getElementById('slot-' + target);
+  slot.classList.remove('filled');
+  slot.innerHTML = '<span class="ic">📷</span><span class="lbl">' + (target === 'before' ? 'Sebelum (Before)' : 'Sesudah (After)') + '</span>';
+}
+
+window.bukaKameraLapor = async function(target) {
+  laporKameraTarget = target;
+  document.getElementById('kamera-lapor-title').textContent = target === 'before' ? 'Foto Kondisi Sebelum' : 'Foto Kondisi Sesudah';
+  document.getElementById('lapor-time-badge').textContent = new Date().toLocaleTimeString('id-ID');
+  laporFotoSementara = null;
+
+  const video = document.getElementById('lapor-video');
+  const img = document.getElementById('lapor-photo-preview');
+  video.style.display = 'block'; img.style.display = 'none';
+  document.getElementById('lapor-btn-shoot').style.display = 'block';
+  document.getElementById('lapor-btn-retake').style.display = 'none';
+  document.getElementById('lapor-btn-pakai').style.display = 'none';
+
+  document.getElementById('modal-kamera-lapor').classList.add('active');
+  try {
+    laporStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+    video.srcObject = laporStream;
+  } catch (e) {
+    addLog('Gagal akses kamera lapor: ' + e.message, 'err');
+  }
+};
+
+window.tutupKameraLapor = function() {
+  if (laporStream) { laporStream.getTracks().forEach(t => t.stop()); laporStream = null; }
+  document.getElementById('modal-kamera-lapor').classList.remove('active');
+};
+
+window.ambilFotoLapor = function() {
+  const video = document.getElementById('lapor-video');
+  const canvas = document.getElementById('lapor-canvas');
+  canvas.width = video.videoWidth || 480;
+  canvas.height = video.videoHeight || 640;
+  canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+  laporFotoSementara = canvas.toDataURL('image/jpeg', 0.6);
+
+  document.getElementById('lapor-photo-preview').src = laporFotoSementara;
+  document.getElementById('lapor-photo-preview').style.display = 'block';
+  video.style.display = 'none';
+  if (laporStream) { laporStream.getTracks().forEach(t => t.stop()); laporStream = null; }
+
+  document.getElementById('lapor-btn-shoot').style.display = 'none';
+  document.getElementById('lapor-btn-retake').style.display = 'block';
+  document.getElementById('lapor-btn-pakai').style.display = 'block';
+};
+
+window.ulangFotoLapor = function() {
+  laporFotoSementara = null;
+  bukaKameraLapor(laporKameraTarget);
+};
+
+window.pakaiFotoLapor = function() {
+  if (laporKameraTarget === 'before') laporFotoBefore = laporFotoSementara;
+  else laporFotoAfter = laporFotoSementara;
+
+  const slot = document.getElementById('slot-' + laporKameraTarget);
+  slot.classList.add('filled');
+  slot.innerHTML = '<img src="' + laporFotoSementara + '"><span class="lbl">' +
+    (laporKameraTarget === 'before' ? 'Sebelum ✓' : 'Sesudah ✓') + '</span>';
+
+  document.getElementById('modal-kamera-lapor').classList.remove('active');
+};
+
+window.submitLaporan = function() {
+  const errEl = document.getElementById('lapor-err');
+  const rincian = document.getElementById('lapor-rincian').value.trim();
+  const material = document.getElementById('lapor-material').value.trim();
+  const target = document.getElementById('lapor-target').value;
+  const realisasi = document.getElementById('lapor-realisasi').value;
+
+  if (!rincian) { errEl.textContent = 'Rincian pekerjaan wajib diisi.'; errEl.style.display = 'block'; return; }
+  if (!laporFotoBefore || !laporFotoAfter) { errEl.textContent = 'Foto Before dan After wajib diambil keduanya.'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+
+  const laporan = {
+    nama: currentUser ? currentUser.nama : '—',
+    nip: currentUser ? currentUser.nip : '—',
+    regu: currentUser ? currentUser.regu : '—',
+    ulp: currentUser ? currentUser.ulp : '—',
+    rincian, material,
+    target: target || null, realisasi: realisasi || null,
+    lat: lastPos ? lastPos.coords.latitude : null,
+    lng: lastPos ? lastPos.coords.longitude : null,
+    waktu: Date.now(),
+    status: 'Selesai diverifikasi oleh Supervisor'
+    // Catatan: fotoBefore/fotoAfter (base64) idealnya diupload ke Firebase Storage,
+    // bukan disimpan langsung di Realtime Database, agar tidak membengkak.
+  };
+
+  if (db) {
+    const laporRef = ref(db, 'laporan/' + (currentUser ? currentUser.id : 'anon') + '_' + Date.now());
+    set(laporRef, laporan).then(() => {
+      addLog('Laporan pekerjaan terkirim: ' + rincian, 'ok');
+    }).catch(e => addLog('Gagal kirim laporan: ' + e.message, 'err'));
+  } else {
+    addLog('[DEMO] Laporan tersimpan lokal: ' + rincian, 'info');
+  }
+
+  laporTugasList.unshift(laporan);
+  renderTaskList();
+  document.getElementById('modal-lapor').classList.remove('active');
+};
+
+function renderTaskList() {
+  const list = document.getElementById('task-list');
+  if (laporTugasList.length === 0) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px 0">Belum ada laporan.</div>';
+    return;
+  }
+  list.innerHTML = laporTugasList.map(t => {
+    const jam = new Date(t.waktu).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+    return '<div class="task-item">' +
+      '<div class="t-title">' + t.rincian + '</div>' +
+      '<div class="t-meta">' + jam + ' · Target ' + (t.target||'-') + ' | Realisasi ' + (t.realisasi||'-') + '</div>' +
+      '<span class="t-status done">✓ Terkirim</span>' +
+    '</div>';
+  }).join('');
+}
+</script>
+</body>
+</html>

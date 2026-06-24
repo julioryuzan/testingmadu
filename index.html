@@ -476,11 +476,14 @@ function createMarkerIcon(color) {
 function updateMap() {
   if (!mapInstance) {
     mapInstance = L.map('map', { zoomControl: true }).setView([-2.55, 140.4], 9);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 18,
-      crossOrigin: true
-    }).addTo(mapInstance);
+    const tileStreet = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles © Esri', maxZoom: 18
+    });
+    const tileSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles © Esri', maxZoom: 18
+    });
+    tileStreet.addTo(mapInstance);
+    L.control.layers({ '🗺 Peta Jalan': tileStreet, '🛰 Satelit': tileSatellite }).addTo(mapInstance);
   }
 
   if (markersLayer) {

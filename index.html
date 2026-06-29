@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard FFM — UP3 Jayapura</title>
+<title>FFM — Pusat Kendali UP3 Jayapura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
@@ -11,193 +13,535 @@
 <script src="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  :root {
-    --pln-blue: #003D82;
-    --pln-blue-mid: #1a5ba8;
-    --pln-blue-light: #e8f0fb;
-    --pln-yellow: #FFB800;
-    --pln-yellow-light: #fff8e6;
-    --bg: #f4f6fa;
-    --surface: #ffffff;
-    --border: #e2e8f0;
-    --text: #1a2332;
-    --text-muted: #64748b;
-    --text-light: #94a3b8;
-    --radius: 10px;
-    --radius-lg: 14px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-    --urgent-high: #dc2626;
-    --urgent-med: #d97706;
-    --urgent-low: #16a34a;
-    --urgent-done: #6b7280;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+:root {
+  --pln-blue:       #003D82;
+  --pln-blue-mid:   #0057B8;
+  --pln-blue-light: #0078D4;
+  --pln-yellow:     #FFB800;
+  --pln-yellow-dim: rgba(255,184,0,0.15);
+  --pln-yellow-soft:#FFF8E1;
 
-  /* HEADER */
-  .header {
-    background: var(--pln-blue);
-    padding: 0 24px;
-    display: flex; align-items: center; justify-content: space-between;
-    height: 56px;
-    position: sticky; top: 0; z-index: 1000;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  }
-  .header-brand { display: flex; align-items: center; gap: 10px; }
-  .header-logo {
-    width: 32px; height: 32px; background: var(--pln-yellow);
-    border-radius: 6px; display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 12px; color: var(--pln-blue); letter-spacing: -0.5px;
-  }
-  .header-title { color: #fff; font-weight: 600; font-size: 15px; }
-  .header-sub { color: rgba(255,255,255,0.6); font-size: 12px; }
-  .header-right { display: flex; align-items: center; gap: 12px; }
-  .last-update { color: rgba(255,255,255,0.55); font-size: 12px; }
-  .btn-refresh {
-    background: var(--pln-yellow); color: var(--pln-blue);
-    border: none; border-radius: 6px; padding: 6px 14px;
-    font-weight: 600; font-size: 13px; cursor: pointer;
-    display: flex; align-items: center; gap: 6px;
-    transition: opacity 0.15s;
-  }
-  .btn-refresh:hover { opacity: 0.88; }
-  .btn-refresh.loading { opacity: 0.6; pointer-events: none; }
+  --bg:       #F4F6FA;
+  --surface:  #FFFFFF;
+  --surface2: #F0F4FA;
+  --surface3: #E4ECF7;
 
-  /* MAIN LAYOUT */
-  .main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+  --border:        rgba(0,61,130,0.10);
+  --border-strong: rgba(0,61,130,0.18);
 
-  /* STAT CARDS */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px; margin-bottom: 20px;
-  }
-  .stat-card {
-    background: var(--surface); border-radius: var(--radius);
-    border: 1px solid var(--border); padding: 14px 16px;
-    box-shadow: var(--shadow);
-  }
-  .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-  .stat-value { font-size: 26px; font-weight: 700; line-height: 1; color: var(--pln-blue); }
-  .stat-sub { font-size: 11px; color: var(--text-light); margin-top: 4px; }
-  .stat-card.red .stat-value { color: var(--urgent-high); }
-  .stat-card.amber .stat-value { color: var(--urgent-med); }
-  .stat-card.green .stat-value { color: var(--urgent-low); }
+  --text:          #0D1B2A;
+  --text-secondary:#4A607A;
+  --text-muted:    #93A8BF;
 
-  /* FILTER BAR */
-  .filter-bar {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 12px 16px;
-    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
-    margin-bottom: 20px; box-shadow: var(--shadow);
-  }
-  .filter-label { font-size: 12px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
-  .filter-bar select, .filter-bar input {
-    border: 1px solid var(--border); border-radius: 6px;
-    padding: 5px 10px; font-size: 13px; color: var(--text);
-    background: var(--bg); outline: none; height: 32px;
-  }
-  .filter-bar select:focus, .filter-bar input:focus { border-color: var(--pln-blue); }
-  .filter-bar input[type=text] { width: 180px; }
-  .btn-reset {
-    background: none; border: 1px solid var(--border);
-    border-radius: 6px; padding: 5px 12px; font-size: 12px;
-    color: var(--text-muted); cursor: pointer; height: 32px;
-  }
-  .btn-reset:hover { border-color: var(--pln-blue); color: var(--pln-blue); }
-  .tab-bar { display: flex; gap: 6px; margin-left: auto; }
-  .tab-btn {
-    border: 1px solid var(--border); border-radius: 6px;
-    padding: 5px 14px; font-size: 12px; font-weight: 600;
-    cursor: pointer; height: 32px; transition: all 0.15s;
-    background: var(--bg); color: var(--text-muted);
-  }
-  .tab-btn.active { background: var(--pln-blue); color: #fff; border-color: var(--pln-blue); }
+  --blue-dim:   rgba(0,61,130,0.08);
+  --blue-soft:  rgba(0,120,212,0.12);
+  --green:      #1A8C3C;
+  --green-dim:  rgba(26,140,60,0.10);
+  --amber:      #C07A00;
+  --amber-dim:  rgba(192,122,0,0.10);
+  --red:        #C0392B;
+  --red-dim:    rgba(192,57,43,0.10);
+  --purple:     #5C3DB5;
+  --purple-dim: rgba(92,61,181,0.10);
 
-  /* CONTENT GRID */
-  .content-grid {
-    display: grid;
-    grid-template-columns: 1fr 340px;
-    gap: 16px; margin-bottom: 20px;
-  }
-  @media (max-width: 900px) { .content-grid { grid-template-columns: 1fr; } }
+  --urgent-high: #dc2626;
+  --urgent-med:  #d97706;
+  --urgent-low:  #16a34a;
+  --urgent-done: #6b7280;
 
-  /* MAP */
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
-  .card-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .card-title { font-size: 13px; font-weight: 600; color: var(--text); }
-  .card-count { font-size: 12px; color: var(--text-muted); background: var(--bg); border-radius: 4px; padding: 2px 8px; }
-  #map { height: 440px; }
+  --radius:    12px;
+  --radius-sm: 8px;
+  --sidebar-w: 252px;
+  --font: 'Inter', -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  --ease: cubic-bezier(0.4,0,0.2,1);
+  --shadow-sm: 0 1px 3px rgba(0,61,130,0.08), 0 1px 2px rgba(0,61,130,0.06);
+  --shadow:    0 4px 12px rgba(0,61,130,0.10), 0 1px 3px rgba(0,61,130,0.06);
+  --shadow-lg: 0 8px 24px rgba(0,61,130,0.12);
+}
 
-  /* LEGEND */
-  .legend { padding: 14px 16px; }
-  .legend-title { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-  .legend-text { font-size: 12px; color: var(--text); }
-  .legend-badge { margin-left: auto; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 10px; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* SIDE PANEL */
-  .side-panel { display: flex; flex-direction: column; gap: 16px; }
-  .chart-wrap { padding: 16px; }
-  .chart-wrap canvas { max-height: 180px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  height: 100vh;
+  overflow: hidden;
+}
 
-  /* TABLE */
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  thead th {
-    background: var(--bg); padding: 8px 12px;
-    text-align: left; font-weight: 600; color: var(--text-muted);
-    border-bottom: 1px solid var(--border); white-space: nowrap;
-    font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px;
-    position: sticky; top: 0; z-index: 1;
-  }
-  tbody td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-  tbody tr:hover { background: var(--bg); }
-  tbody tr:last-child td { border-bottom: none; }
-  .badge {
-    display: inline-flex; align-items: center;
-    padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap;
-  }
-  .badge-red { background: #fef2f2; color: var(--urgent-high); }
-  .badge-amber { background: #fffbeb; color: #92400e; }
-  .badge-green { background: #f0fdf4; color: #15803d; }
-  .badge-gray { background: #f1f5f9; color: #475569; }
-  .badge-blue { background: var(--pln-blue-light); color: var(--pln-blue); }
+/* ── LAYOUT ── */
+.app { display: flex; height: 100vh; overflow: hidden; }
 
-  /* TABLE CONTAINER */
-  .table-container { max-height: 380px; overflow-y: auto; }
+/* ══════════════════════════════════════
+   SIDEBAR
+══════════════════════════════════════ */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--pln-blue);
+  display: flex; flex-direction: column;
+  flex-shrink: 0;
+  height: 100vh; overflow-y: auto;
+}
 
-  /* LOADING */
-  .loading-overlay {
-    position: fixed; inset: 0; background: rgba(0,61,130,0.92);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 9999; gap: 16px;
-  }
-  .loading-spinner {
-    width: 44px; height: 44px; border: 3px solid rgba(255,255,255,0.2);
-    border-top-color: var(--pln-yellow);
-    border-radius: 50%; animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { color: #fff; font-size: 14px; font-weight: 500; }
-  .loading-sub { color: rgba(255,255,255,0.55); font-size: 12px; }
+.sidebar-brand {
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+  display: flex; align-items: center; gap: 12px;
+}
+.brand-mark {
+  width: 40px; height: 40px;
+  background: var(--pln-yellow);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(255,184,0,0.4);
+}
+.brand-name  { font-size: 15px; font-weight: 800; color: #fff; letter-spacing: -0.4px; }
+.brand-sub   { font-size: 10.5px; color: rgba(255,255,255,0.55); margin-top: 2px; }
 
-  /* EMPTY */
-  .empty { padding: 40px; text-align: center; color: var(--text-muted); font-size: 13px; }
+.sidebar-nav { flex: 1; padding: 10px 10px; }
+.nav-group   { margin-bottom: 4px; }
+.nav-group-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: rgba(255,255,255,0.35);
+  padding: 14px 10px 6px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 9px;
+  font-size: 13px; font-weight: 500;
+  color: rgba(255,255,255,0.65);
+  cursor: pointer; transition: all 0.15s var(--ease);
+  background: none; border: none; width: 100%; text-align: left;
+  text-decoration: none; margin-bottom: 2px;
+}
+.nav-item:hover  { background: rgba(255,255,255,0.08); color: #fff; }
+.nav-item.active { background: var(--pln-yellow); color: var(--pln-blue); font-weight: 700; }
+.nav-item.active .nav-icon { color: var(--pln-blue); }
+.nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+.nav-badge {
+  margin-left: auto;
+  background: var(--red); color: #fff;
+  font-size: 10px; font-weight: 700;
+  padding: 1px 7px; border-radius: 99px;
+}
 
-  /* TOOLTIP */
-  .leaflet-popup-content { font-size: 13px; line-height: 1.6; min-width: 200px; }
-  .popup-title { font-weight: 600; font-size: 14px; color: var(--pln-blue); margin-bottom: 6px; }
-  .popup-row { display: flex; justify-content: space-between; gap: 12px; }
-  .popup-key { color: var(--text-muted); }
-  .popup-val { font-weight: 500; }
+.sidebar-footer {
+  padding: 12px 10px;
+  border-top: 1px solid rgba(255,255,255,0.10);
+}
+.user-chip {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 9px;
+  cursor: pointer; transition: background 0.15s;
+}
+.user-chip:hover { background: rgba(255,255,255,0.08); }
+.user-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--pln-yellow);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; color: var(--pln-blue);
+  flex-shrink: 0;
+}
+.user-name  { font-size: 13px; font-weight: 600; color: #fff; }
+.user-role  { font-size: 10.5px; color: rgba(255,255,255,0.5); margin-top: 1px; }
+.user-live  {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #2ECC71; margin-left: auto; flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(46,204,113,0.3);
+  animation: pulse-live 2s ease-in-out infinite;
+}
+@keyframes pulse-live {
+  0%,100% { box-shadow: 0 0 0 0 rgba(46,204,113,0.5); }
+  50%      { box-shadow: 0 0 0 5px rgba(46,204,113,0); }
+}
 
-  .penyulang-tag { font-size: 11px; color: var(--text-muted); display: block; }
-  td.truncate { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* ══════════════════════════════════════
+   MAIN
+══════════════════════════════════════ */
+/* ── MAIN ── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; height: 100vh; }
 
-  .section-title { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  display: flex; align-items: center; gap: 16px;
+  height: 60px; flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar-title { font-size: 17px; font-weight: 800; color: var(--pln-blue); letter-spacing: -0.4px; }
+.topbar-sub   { font-size: 12px; color: var(--text-secondary); margin-left: 10px; }
+.topbar-spacer { flex: 1; }
+.topbar-pill {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 6px 14px;
+  font-size: 12.5px; font-weight: 600; color: var(--text-secondary);
+}
+.live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #1A8C3C;
+  box-shadow: 0 0 0 0 rgba(26,140,60,0.5);
+  animation: pulse-live 2s ease-in-out infinite;
+}
+.topbar-btn {
+  background: var(--pln-blue);
+  color: #fff; border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background 0.15s;
+  display: flex; align-items: center; gap: 7px;
+  text-decoration: none; box-shadow: var(--shadow-sm);
+}
+.topbar-btn:hover { background: var(--pln-blue-mid); }
+.topbar-btn-yellow {
+  background: var(--pln-yellow); color: var(--pln-blue);
+  border: none; border-radius: var(--radius-sm);
+  padding: 8px 16px; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: opacity 0.15s;
+  display: flex; align-items: center; gap: 7px;
+  text-decoration: none; box-shadow: var(--shadow-sm);
+}
+.topbar-btn-yellow:hover { opacity: 0.88; }
+.topbar-btn-yellow.loading { opacity: 0.6; pointer-events: none; }
+
+/* ── CONTENT ── */
+.content { flex: 1; overflow-y: auto; padding: 20px 28px 28px; display: flex; flex-direction: column; min-height: 0; }
+
+/* ══════════════════════════════════════
+   KPI ROW
+══════════════════════════════════════ */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px; margin-bottom: 28px;
+}
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 18px 16px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s, transform 0.2s;
+  cursor: default;
+}
+.kpi-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+.kpi-card.accent {
+  background: var(--pln-blue);
+  border-color: var(--pln-blue);
+}
+.kpi-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.4px;
+  color: var(--text-secondary); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 7px;
+}
+.kpi-card.accent .kpi-label { color: rgba(255,255,255,0.65); }
+.kpi-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.kpi-value { font-size: 30px; font-weight: 800; letter-spacing: -1.2px; color: var(--pln-blue); line-height: 1; }
+.kpi-card.accent .kpi-value { color: var(--pln-yellow); }
+.kpi-unit  { font-size: 14px; font-weight: 500; color: var(--text-secondary); }
+.kpi-card.accent .kpi-unit { color: rgba(255,255,255,0.5); }
+.kpi-meta  { font-size: 11.5px; color: var(--text-secondary); margin-top: 8px; }
+.kpi-card.accent .kpi-meta { color: rgba(255,255,255,0.55); }
+.kpi-card.red .kpi-value   { color: var(--urgent-high); }
+.kpi-card.amber .kpi-value { color: var(--urgent-med); }
+.kpi-card.green .kpi-value { color: var(--urgent-low); }
+
+/* ══════════════════════════════════════
+   FILTER BAR
+══════════════════════════════════════ */
+.filter-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow-sm);
+}
+.filter-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); white-space: nowrap; letter-spacing: 0.3px; }
+.filter-bar select, .filter-bar input[type=text] {
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 6px 11px;
+  font-size: 13px; color: var(--text);
+  background: var(--surface2); outline: none; height: 34px;
+  font-family: var(--font);
+  transition: border-color 0.2s;
+}
+.filter-bar select:focus, .filter-bar input:focus { border-color: var(--pln-blue); }
+.filter-bar input[type=text] { width: 190px; }
+.btn-reset {
+  background: none; border: 1px solid var(--border);
+  border-radius: 7px; padding: 6px 13px; font-size: 12px;
+  color: var(--text-secondary); cursor: pointer; height: 34px;
+  font-family: var(--font); transition: all 0.15s;
+}
+.btn-reset:hover { border-color: var(--pln-blue); color: var(--pln-blue); }
+.tab-bar { display: flex; gap: 6px; margin-left: auto; }
+.tab-btn {
+  border: 1px solid var(--border); border-radius: 7px;
+  padding: 6px 16px; font-size: 12px; font-weight: 700;
+  cursor: pointer; height: 34px; transition: all 0.15s;
+  background: var(--surface2); color: var(--text-secondary);
+  font-family: var(--font);
+}
+.tab-btn.active { background: var(--pln-blue); color: #fff; border-color: var(--pln-blue); }
+
+/* ══════════════════════════════════════
+   GRID
+══════════════════════════════════════ */
+.grid-2-3 { display: grid; grid-template-columns: 3fr 1.1fr; gap: 18px; margin-bottom: 22px; align-items: start; }
+.grid-2   { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 22px; }
+
+/* override for map view so grid stretches full height */
+#viewMap .grid-2-3 { align-items: stretch; height: 100%; }
+
+/* ══════════════════════════════════════
+   CARD
+══════════════════════════════════════ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: visible;
+}
+.card-map {
+  overflow: hidden;
+}
+.card-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-title { font-size: 14px; font-weight: 700; color: var(--pln-blue); letter-spacing: -0.2px; }
+.card-sub   { font-size: 11.5px; color: var(--text-secondary); margin-top: 3px; }
+.card-count {
+  font-size: 12px; color: var(--text-secondary);
+  background: var(--surface2); border-radius: 5px; padding: 3px 9px;
+  font-family: var(--mono);
+}
+
+.beranda-hint {
+  color: var(--text-secondary); font-size: 14px;
+  padding: 20px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); margin-top: 8px;
+}
+
+/* ── SECTION EYEBROW ── */
+.section-eyebrow {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.8px;
+  text-transform: uppercase; color: var(--text-muted);
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-eyebrow::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ══════════════════════════════════════
+   MAP VIEW — full remaining height
+══════════════════════════════════════ */
+#viewMap { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+#viewMap .grid-2-3 { flex: 1; min-height: 0; margin-bottom: 0; align-items: stretch; }
+#viewMap .card-map { display: flex; flex-direction: column; min-height: 0; }
+#viewPetugas .card-map { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+#viewPetugas .card-map .card-header { flex-shrink: 0; }
+#viewMap .card-map .card-header { flex-shrink: 0; }
+#map { flex: 1; min-height: 0; height: auto !important; width: 100%; border-radius: 0 0 var(--radius) var(--radius); }
+#viewMap .side-panel { overflow-y: auto; min-height: 0; }
+
+/* ══════════════════════════════════════
+   TABLE
+══════════════════════════════════════ */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+thead th {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+  text-transform: uppercase; color: var(--pln-blue);
+  padding: 9px 14px; text-align: left;
+  background: var(--surface2);
+  border-bottom: 2px solid var(--border-strong);
+  position: sticky; top: 0; z-index: 1;
+  white-space: nowrap;
+}
+tbody td {
+  padding: 10px 14px; font-size: 12.5px;
+  color: var(--text); border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--surface2); }
+
+#viewTable { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+#viewTable .card { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+#viewTable .table-container { flex: 1; min-height: 0; max-height: none; }
+
+.table-container { overflow-y: auto; }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 99px;
+  font-size: 11px; font-weight: 700; white-space: nowrap;
+}
+.badge-red    { background: var(--red-dim);   color: var(--red); }
+.badge-amber  { background: var(--amber-dim); color: var(--amber); }
+.badge-green  { background: var(--green-dim); color: var(--green); }
+.badge-gray   { background: #F1F5F9;          color: #475569; }
+.badge-blue   { background: var(--blue-dim);  color: var(--pln-blue); }
+.badge-dot    { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+.tag {
+  display: inline-block; padding: 2px 9px;
+  border-radius: 5px; font-size: 10px; font-weight: 800;
+  letter-spacing: 0.4px; text-transform: uppercase;
+}
+.tag-red   { background: var(--red-dim);   color: var(--red); }
+.tag-green { background: var(--green-dim); color: var(--green); }
+
+/* ── LEGEND ── */
+.legend { padding: 14px 18px; }
+.legend-title { font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12.5px; }
+.legend-item:last-child { margin-bottom: 0; }
+.legend-dot  { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.legend-badge { margin-left: auto; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+
+/* ── CHART ── */
+.chart-wrap { padding: 16px 18px; }
+.chart-wrap canvas { max-height: 200px; }
+
+/* ── SIDE PANEL ── */
+.side-panel { display: flex; flex-direction: column; gap: 16px; }
+.side-panel .card:first-child { flex: 1; }
+
+/* ══════════════════════════════════════
+   LOADING
+══════════════════════════════════════ */
+.loading-overlay {
+  position: fixed; inset: 0; background: rgba(0,61,130,0.92);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 9999; gap: 16px;
+}
+.loading-spinner {
+  width: 44px; height: 44px; border: 3px solid rgba(255,255,255,0.2);
+  border-top-color: var(--pln-yellow);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { color: #fff; font-size: 14px; font-weight: 600; }
+.loading-sub  { color: rgba(255,255,255,0.55); font-size: 12px; }
+
+.empty { padding: 40px; text-align: center; color: var(--text-muted); font-size: 13px; }
+
+/* ── POPUP ── */
+.leaflet-popup-content { font-size: 13px; line-height: 1.6; min-width: 200px; font-family: var(--font); }
+.popup-title { font-weight: 700; font-size: 14px; color: var(--pln-blue); margin-bottom: 6px; }
+.popup-row   { display: flex; justify-content: space-between; gap: 12px; }
+.popup-key   { color: var(--text-secondary); }
+.popup-val   { font-weight: 600; }
+
+td.truncate  { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ══════════════════════════════════════
+   SCROLLBAR
+══════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 99px; }
+
+/* ══════════════════════════════════════
+   FIREBASE VIEWS
+══════════════════════════════════════ */
+.firebase-view { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
+.fb-header { display:flex; align-items:center; justify-content:space-between; padding:4px 0 2px; }
+#map-petugas { height: 480px; width: 100%; border-radius: 0 0 var(--radius) var(--radius); }
+
+/* petugas card in list */
+.petugas-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex; align-items: center; gap: 10px;
+}
+.petugas-avatar {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: var(--pln-blue);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.petugas-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.petugas-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.petugas-status {
+  margin-left: auto; font-size: 10px; font-weight: 700;
+  padding: 3px 9px; border-radius: 99px; white-space: nowrap;
+}
+.ps-aktif      { background: var(--green-dim); color: var(--green); }
+.ps-perjalanan { background: var(--amber-dim); color: var(--amber); }
+.ps-standby    { background: var(--blue-dim);  color: var(--pln-blue); }
+.ps-offline    { background: var(--red-dim);   color: var(--red); }
+
+/* laporan card */
+.laporan-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.laporan-card-header { padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.laporan-card-name { font-size: 13px; font-weight: 700; color: var(--pln-blue); }
+.laporan-card-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.laporan-photos { display: grid; grid-template-columns: 1fr 1fr; }
+.laporan-photos img { width:100%; aspect-ratio:1; object-fit:cover; display:block; }
+.laporan-photos .photo-label {
+  font-size:9px; font-weight:700; text-align:center; padding:3px;
+  background: rgba(0,0,0,0.5); color:#fff; letter-spacing:0.5px;
+}
+.laporan-card-body { padding: 12px 14px; font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+.laporan-card-body b { color: var(--text); }
+
+/* absensi foto thumb */
+.absen-thumb {
+  width: 36px; height: 36px; border-radius: 6px; object-fit: cover;
+  border: 1px solid var(--border); cursor: pointer;
+}
+
+/* ── ADMIN MODE ── */
+.btn-del {
+  background: var(--red-dim); color: var(--red); border: none;
+  border-radius: 6px; width: 28px; height: 28px; cursor: pointer;
+  font-size: 13px; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.15s var(--ease);
+}
+.btn-del:hover { background: var(--red); color: #fff; }
+.user-chip.is-admin .user-avatar { background: var(--red); color: #fff; }
+.user-chip.is-admin .user-role   { color: var(--pln-yellow); font-weight: 700; }
+
+/* ══════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════ */
+@media (max-width: 960px) {
+  .sidebar { display: none; }
+  .grid-2-3 { grid-template-columns: 1fr; }
+  .grid-2   { grid-template-columns: 1fr; }
+  .kpi-row  { grid-template-columns: repeat(2,1fr); }
+  .content  { padding: 12px; }
+  body, .app, .main { height: auto; overflow: auto; }
+  #viewMap .grid-2-3 { height: auto; }
+  #map { height: 400px !important; }
+}
 </style>
 </head>
 <body>
@@ -208,134 +552,332 @@
   <div class="loading-sub">Menghubungkan ke Google Sheets UP3 Jayapura</div>
 </div>
 
-<header class="header">
-  <div class="header-brand">
-    <div class="header-logo">PLN</div>
+<div class="app">
+
+<!-- ══════════════════════════════════════
+     SIDEBAR
+══════════════════════════════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-mark">⚡</div>
     <div>
-      <div class="header-title">Field Force Management — UP3 Jayapura</div>
-      <div class="header-sub">Dashboard Supervisor · Inspeksi JTM & Gardu</div>
+      <div class="brand-name">PLN UP3 Jayapura</div>
+      <div class="brand-sub">Field Force Management</div>
     </div>
   </div>
-  <div class="header-right">
-    <span class="last-update" id="lastUpdate">Memuat...</span>
-    <button class="btn-refresh" id="btnRefresh" onclick="loadAll()">
-      ↻ Refresh
-    </button>
-  </div>
-</header>
 
+  <nav class="sidebar-nav">
+    <div class="nav-group">
+      <div class="nav-group-label">Utama</div>
+      <a class="nav-item" id="nav-beranda" href="#" onclick="switchView('beranda');return false;">
+        <span class="nav-icon">🏠</span> Beranda
+      </a>
+      <a class="nav-item" id="nav-map" href="#" onclick="switchView('map');return false;">
+        <span class="nav-icon">🗺️</span> Peta Inspeksi
+      </a>
+      <a class="nav-item" id="nav-table" href="#" onclick="switchView('table');return false;">
+        <span class="nav-icon">📋</span> Tabel Data
+      </a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Petugas</div>
+      <a class="nav-item" id="nav-petugas" href="#" onclick="switchView('petugas');return false;">
+        <span class="nav-icon">👷</span> Petugas Aktif
+        <span class="nav-badge" id="nav-badge-petugas" style="background:var(--green)">0</span>
+      </a>
+      <a class="nav-item" id="nav-absensi" href="#" onclick="switchView('absensi');return false;">
+        <span class="nav-icon">📍</span> Absensi Hari Ini
+      </a>
+      <a class="nav-item" id="nav-laporan" href="#" onclick="switchView('laporan');return false;">
+        <span class="nav-icon">📝</span> Laporan Pekerjaan
+      </a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Akses</div>
+      <a class="nav-item" href="petugas.html">
+        <span class="nav-icon">📱</span> App Petugas
+      </a>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-chip" id="user-chip" onclick="toggleAdminMode()" title="Klik untuk masuk/keluar Mode Admin">
+      <div class="user-avatar" id="user-avatar">SP</div>
+      <div>
+        <div class="user-name">Supervisor FFM</div>
+        <div class="user-role" id="user-role">UP3 Jayapura</div>
+      </div>
+      <div class="user-live"></div>
+    </div>
+  </div>
+</aside>
+
+<!-- ══════════════════════════════════════
+     MAIN
+══════════════════════════════════════ -->
 <div class="main">
 
-  <!-- STATS -->
-  <div class="stats-grid" id="statsGrid">
-    <div class="stat-card"><div class="stat-label">Total Temuan</div><div class="stat-value" id="s-total">—</div><div class="stat-sub" id="s-sheet">JTM + Gardu</div></div>
-    <div class="stat-card red"><div class="stat-label">Urgensi Tinggi</div><div class="stat-value" id="s-high">—</div><div class="stat-sub">Harus segera eksekusi</div></div>
-    <div class="stat-card amber"><div class="stat-label">Urgensi Sedang</div><div class="stat-value" id="s-med">—</div><div class="stat-sub">1–2 hari kedepan</div></div>
-    <div class="stat-card green"><div class="stat-label">Sudah Dieksekusi</div><div class="stat-value" id="s-done">—</div><div class="stat-sub">Selesai tertangani</div></div>
-    <div class="stat-card"><div class="stat-label">Temuan Aktif</div><div class="stat-value" id="s-active">—</div><div class="stat-sub">Belum selesai</div></div>
-    <div class="stat-card"><div class="stat-label">Penyulang</div><div class="stat-value" id="s-penyulang">—</div><div class="stat-sub">Terdampak</div></div>
-  </div>
-
-  <!-- FILTER -->
-  <div class="filter-bar">
-    <span class="filter-label">Filter:</span>
-    <select id="fSheet" onchange="applyFilters()">
-      <option value="all">Semua Data</option>
-      <option value="JTM">Inspeksi JTM</option>
-      <option value="Gardu">Inspeksi Gardu</option>
-    </select>
-    <select id="fULP" onchange="applyFilters()"><option value="">Semua ULP</option></select>
-    <select id="fPenyulang" onchange="applyFilters()"><option value="">Semua Penyulang</option></select>
-    <select id="fUrgensi" onchange="applyFilters()">
-      <option value="">Semua Urgensi</option>
-      <option value="Tinggi">Tinggi</option>
-      <option value="Sedang">Sedang</option>
-      <option value="Produktif">Produktif</option>
-      <option value="Sudah Dieksekusi">Sudah Dieksekusi</option>
-      <option value="Non Produktif">Non Produktif</option>
-    </select>
-    <input type="text" id="fSearch" placeholder="Cari penyulang, petugas..." oninput="applyFilters()"/>
-    <button class="btn-reset" onclick="resetFilters()">Reset</button>
-    <div class="tab-bar">
-      <button class="tab-btn active" id="tabMap" onclick="switchTab('map')">🗺 Peta</button>
-      <button class="tab-btn" id="tabTable" onclick="switchTab('table')">📋 Tabel</button>
+  <header class="topbar">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div>
+        <div class="topbar-title">Dashboard Inspeksi FFM</div>
+      </div>
+      <span class="topbar-sub" id="lastUpdate">Memuat...</span>
     </div>
-  </div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-pill">
+      <div class="live-dot"></div>
+      <span id="live-time" style="font-family:var(--mono);font-size:13px">--:--:--</span>
+      <span style="color:var(--text-muted)">WIT</span>
+    </div>
+    <button class="topbar-btn-yellow" id="btnRefresh" onclick="loadAll()">
+      ↻ Refresh Data
+    </button>
+  </header>
 
-  <!-- MAP VIEW -->
-  <div id="viewMap">
-    <div class="content-grid">
+  <div class="content">
+
+    <!-- BERANDA VIEW -->
+    <div id="viewBeranda" style="display:none;">
+      <!-- KPI STRIP -->
+      <div class="kpi-row">
+        <div class="kpi-card accent">
+          <div class="kpi-label"><div class="kpi-dot" style="background:var(--pln-yellow)"></div>Total Temuan</div>
+          <div class="kpi-value" id="s-total">—</div>
+          <div class="kpi-meta" id="s-sheet">JTM + Gardu</div>
+        </div>
+        <div class="kpi-card red">
+          <div class="kpi-label"><div class="kpi-dot" style="background:var(--urgent-high)"></div>Urgensi Tinggi</div>
+          <div class="kpi-value" id="s-high">—</div>
+          <div class="kpi-meta">Harus segera eksekusi</div>
+        </div>
+        <div class="kpi-card amber">
+          <div class="kpi-label"><div class="kpi-dot" style="background:var(--urgent-med)"></div>Urgensi Sedang</div>
+          <div class="kpi-value" id="s-med">—</div>
+          <div class="kpi-meta">1–2 hari kedepan</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label"><div class="kpi-dot" style="background:var(--urgent-low)"></div>Sudah Dieksekusi</div>
+          <div class="kpi-value" id="s-done">—</div>
+          <div class="kpi-meta">Selesai tertangani</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><div class="kpi-dot" style="background:var(--pln-blue-light)"></div>Temuan Aktif</div>
+          <div class="kpi-value" id="s-active">—</div>
+          <div class="kpi-meta">Belum selesai</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><div class="kpi-dot" style="background:var(--purple)"></div>Penyulang</div>
+          <div class="kpi-value" id="s-penyulang">—</div>
+          <div class="kpi-meta">Terdampak</div>
+        </div>
+      </div>
+      <div class="beranda-shortcuts">
+        <div class="beranda-hint">Pilih tampilan dari sidebar untuk melihat Peta atau Tabel data.</div>
+        <div style="display:flex;gap:12px;margin-top:16px;">
+          <button class="topbar-btn" onclick="switchView('map')" style="font-size:14px;padding:12px 24px;">🗺 Buka Peta Inspeksi</button>
+          <button class="topbar-btn" onclick="switchView('table')" style="font-size:14px;padding:12px 24px;background:var(--surface2);color:var(--pln-blue);border:1px solid var(--border);">📋 Buka Tabel Data</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILTER BAR (selalu tampil di Peta & Tabel) -->
+    <div class="filter-bar" id="filterBar" style="display:none;">
+      <span class="filter-label">Filter:</span>
+      <select id="fSheet" onchange="applyFilters()">
+        <option value="all">Semua Data</option>
+        <option value="JTM">Inspeksi JTM</option>
+        <option value="Gardu">Inspeksi Gardu</option>
+      </select>
+      <select id="fULP" onchange="applyFilters()"><option value="">Semua ULP</option></select>
+      <select id="fPenyulang" onchange="applyFilters()"><option value="">Semua Penyulang</option></select>
+      <select id="fUrgensi" onchange="applyFilters()">
+        <option value="">Semua Urgensi</option>
+        <option value="Tinggi">Tinggi</option>
+        <option value="Sedang">Sedang</option>
+        <option value="Produktif">Produktif</option>
+        <option value="Sudah Dieksekusi">Sudah Dieksekusi</option>
+        <option value="Non Produktif">Non Produktif</option>
+      </select>
+      <input type="text" id="fSearch" placeholder="Cari penyulang, petugas..." oninput="applyFilters()"/>
+      <button class="btn-reset" onclick="resetFilters()">Reset</button>
+    </div>
+
+    <!-- MAP VIEW -->
+    <div id="viewMap">
+      <div class="grid-2-3">
+        <div class="card card-map">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Peta Titik Inspeksi</div>
+              <div class="card-sub">Realtime · Dari Google Sheets UP3 Jayapura</div>
+            </div>
+            <span class="card-count" id="mapCount">0 titik</span>
+          </div>
+          <div id="map"></div>
+        </div>
+        <div class="side-panel">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Sebaran Urgensi</div>
+              <span class="tag tag-green">● LIVE</span>
+            </div>
+            <div class="chart-wrap"><canvas id="chartUrgensi"></canvas></div>
+            <div class="legend" id="legendUrgensi"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Top 5 Penyulang</div></div>
+            <div class="chart-wrap"><canvas id="chartPenyulang"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLE VIEW -->
+    <div id="viewTable" style="display:none;">
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Peta Titik Inspeksi</span>
-          <span class="card-count" id="mapCount">0 titik</span>
+          <div>
+            <div class="card-title">Data Inspeksi Lengkap</div>
+            <div class="card-sub">Semua temuan · JTM & Gardu</div>
+          </div>
+          <span class="card-count" id="tableCount">0 baris</span>
         </div>
-        <div id="map"></div>
-      </div>
-      <div class="side-panel">
-        <div class="card">
-          <div class="card-header"><span class="card-title">Sebaran Urgensi</span></div>
-          <div class="chart-wrap"><canvas id="chartUrgensi"></canvas></div>
-          <div class="legend" id="legendUrgensi"></div>
-        </div>
-        <div class="card">
-          <div class="card-header"><span class="card-title">Top 5 Penyulang</span></div>
-          <div class="chart-wrap"><canvas id="chartPenyulang"></canvas></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- TABLE VIEW -->
-  <div id="viewTable" style="display:none;">
-    <div class="card">
-      <div class="card-header">
-        <span class="card-title">Data Inspeksi Lengkap</span>
-        <span class="card-count" id="tableCount">0 baris</span>
-      </div>
-      <div class="table-container">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Tanggal</th>
-                <th>Jenis</th>
-                <th>ULP</th>
-                <th>Penyulang</th>
-                <th>Temuan</th>
-                <th>Urgensi</th>
-                <th>Status ROW</th>
-                <th>Status HAR</th>
-                <th>Petugas</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-          </table>
+        <div class="table-container">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Jenis</th>
+                  <th>ULP</th>
+                  <th>Penyulang</th>
+                  <th>Temuan</th>
+                  <th>Urgensi</th>
+                  <th>Status ROW</th>
+                  <th>Status HAR</th>
+                  <th>Petugas</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-</div>
+    <!-- ══ PETUGAS AKTIF VIEW ══ -->
+    <div id="viewPetugas" style="display:none;" class="firebase-view">
+      <div class="fb-header">
+        <div>
+          <div class="card-title" style="font-size:16px">👷 Petugas Aktif — GPS Realtime</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:3px">Update otomatis dari Firebase · Setiap petugas yang sedang bertugas</div>
+        </div>
+        <span class="tag tag-green" style="font-size:11px;padding:5px 12px">● LIVE</span>
+      </div>
+      <div class="grid-2-3" style="margin-top:14px;">
+        <div class="card card-map">
+          <div class="card-header">
+            <div class="card-title">Peta Posisi Petugas</div>
+            <span class="card-count" id="petugasMapCount">0 petugas</span>
+          </div>
+          <div id="map-petugas"></div>
+        </div>
+        <div class="side-panel">
+          <div class="card" style="flex:1;overflow-y:auto;">
+            <div class="card-header"><div class="card-title">Daftar Petugas Online</div></div>
+            <div id="petugasList" style="padding:12px;display:flex;flex-direction:column;gap:8px;">
+              <div style="text-align:center;color:var(--text-muted);padding:20px;font-size:13px">Menunggu data Firebase...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ABSENSI VIEW ══ -->
+    <div id="viewAbsensi" style="display:none;" class="firebase-view">
+      <div class="fb-header">
+        <div>
+          <div class="card-title" style="font-size:16px">📍 Absensi Hari Ini</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:3px">Data masuk dari app petugas · Selfie + GPS</div>
+        </div>
+        <span id="absensiCount" class="card-count">0 absen</span>
+      </div>
+      <div class="card" style="margin-top:14px;">
+        <div class="table-container" style="max-height:none;flex:1;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Waktu Absen</th>
+                  <th>Nama</th>
+                  <th>NIP</th>
+                  <th>Regu</th>
+                  <th>ULP</th>
+                  <th>Lokasi</th>
+                  <th>GPS</th>
+                  <th>Foto</th>
+                  <th id="th-aksi-absensi" style="display:none">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="absensiBody">
+                <tr><td colspan="9" class="empty">Menunggu data Firebase...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ LAPORAN VIEW ══ -->
+    <div id="viewLaporan" style="display:none;" class="firebase-view">
+      <div class="fb-header">
+        <div>
+          <div class="card-title" style="font-size:16px">📝 Laporan Pekerjaan</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:3px">Before &amp; After dari petugas lapangan</div>
+        </div>
+        <span id="laporanCount" class="card-count">0 laporan</span>
+      </div>
+      <div id="laporanGrid" style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;">
+        <div style="text-align:center;color:var(--text-muted);padding:40px;font-size:13px;grid-column:1/-1">Menunggu data Firebase...</div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
 
 <script>
+// ── LIVE CLOCK ──────────────────────────────────
+(function() {
+  const timeEl = document.getElementById('live-time');
+  function tick() {
+    const now = new Date();
+    const wit = new Date(now.getTime() + 9*3600000);
+    timeEl.textContent = wit.toISOString().slice(11,19);
+  }
+  tick(); setInterval(tick, 1000);
+})();
+
 const API = 'https://script.google.com/macros/s/AKfycbzbYamXFr51gOvCEkCa9nuc17-YhAZZRGOXadg8Jvqp9qnNWK_gRK39IaFTUwtEYoS2kg/exec';
 
 let allData = [];
 let filteredData = [];
 let mapInstance = null;
+let mapBoundsCache = null;
 let markersLayer = null;
 let chartUrgensi = null;
 let chartPenyulang = null;
 
 const URGENSI_CONFIG = {
-  'Tinggi, harus segera eksekusi': { color: '#dc2626', label: 'Tinggi', short: 'Tinggi' },
-  'Tinggi': { color: '#dc2626', label: 'Tinggi', short: 'Tinggi' },
-  'Sedang, eksekusi dalam 1-2 hari kedepan': { color: '#d97706', label: 'Sedang', short: 'Sedang' },
-  'Sedang': { color: '#d97706', label: 'Sedang', short: 'Sedang' },
-  'Sudah Dieksekusi': { color: '#16a34a', label: 'Selesai', short: 'Selesai' },
-  'Produktif': { color: '#2563eb', label: 'Produktif', short: 'Produktif' },
-  'Non Produktif': { color: '#6b7280', label: 'Non Produktif', short: 'Non Prod' },
+  'Tinggi, harus segera eksekusi': { color: '#dc2626', label: 'Tinggi' },
+  'Tinggi': { color: '#dc2626', label: 'Tinggi' },
+  'Sedang, eksekusi dalam 1-2 hari kedepan': { color: '#d97706', label: 'Sedang' },
+  'Sedang': { color: '#d97706', label: 'Sedang' },
+  'Sudah Dieksekusi': { color: '#16a34a', label: 'Selesai' },
+  'Produktif': { color: '#2563eb', label: 'Produktif' },
+  'Non Produktif': { color: '#6b7280', label: 'Non Prod' },
 };
 
 function getUrgensiColor(u) {
@@ -372,7 +914,6 @@ async function loadAll() {
   btn.classList.add('loading');
   btn.textContent = '↻ Memuat...';
   document.getElementById('loadingOverlay').style.display = 'flex';
-
   try {
     const [jtm, gardu] = await Promise.all([
       fetchSheet('Inspeksi JTM'),
@@ -380,6 +921,11 @@ async function loadAll() {
     ]);
     allData = [...jtm, ...gardu];
     populateFilters();
+    // PENTING: tampilkan dulu tab Peta SEBELUM applyFilters()/updateMap() jalan.
+    // Kalau urutannya kebalik (peta dibuat saat tab masih disembunyikan),
+    // Leaflet menghitung zoom dari container berukuran 0 -> hasilnya selalu
+    // zoom ke peta dunia, bukan ke Papua. Ini akar masalahnya.
+    switchView('map');
     applyFilters();
     document.getElementById('lastUpdate').textContent = 'Update: ' + new Date().toLocaleTimeString('id-ID');
   } catch(e) {
@@ -387,7 +933,7 @@ async function loadAll() {
   } finally {
     document.getElementById('loadingOverlay').style.display = 'none';
     btn.classList.remove('loading');
-    btn.textContent = '↻ Refresh';
+    btn.textContent = '↻ Refresh Data';
   }
 }
 
@@ -404,14 +950,14 @@ function populateFilters() {
 }
 
 function applyFilters() {
-  const sheet = document.getElementById('fSheet').value;
-  const ulp = document.getElementById('fULP').value;
-  const penyulang = document.getElementById('fPenyulang').value;
-  const urgensi = document.getElementById('fUrgensi').value;
-  const search = document.getElementById('fSearch').value.toLowerCase();
+  const sheet    = document.getElementById('fSheet').value;
+  const ulp      = document.getElementById('fULP').value;
+  const penyulang= document.getElementById('fPenyulang').value;
+  const urgensi  = document.getElementById('fUrgensi').value;
+  const search   = document.getElementById('fSearch').value.toLowerCase();
 
   filteredData = allData.filter(r => {
-    if (sheet === 'JTM' && r._jenis !== 'Inspeksi JTM') return false;
+    if (sheet === 'JTM'   && r._jenis !== 'Inspeksi JTM')   return false;
     if (sheet === 'Gardu' && r._jenis !== 'Inspeksi Gardu') return false;
     if (ulp && r['ULP'] !== ulp) return false;
     if (penyulang && r['Penyulang'] !== penyulang) return false;
@@ -441,27 +987,44 @@ function resetFilters() {
   applyFilters();
 }
 
-function updateStats() {
-  const total = filteredData.length;
-  const high = filteredData.filter(r => (r['Urgensi']||'').toLowerCase().includes('tinggi')).length;
-  const med = filteredData.filter(r => (r['Urgensi']||'').toLowerCase().includes('sedang')).length;
-  const done = filteredData.filter(r => (r['Urgensi']||'').toLowerCase().includes('dieksekusi')).length;
-  const active = filteredData.filter(r => !(r['Urgensi']||'').toLowerCase().includes('dieksekusi')).length;
-  const penyulangs = new Set(filteredData.map(r => r['Penyulang']).filter(Boolean)).size;
+function quickFilter(sheet) {
+  document.getElementById('fSheet').value = sheet;
+  applyFilters();
+}
+function quickFilterUrgensi(urgensi) {
+  document.getElementById('fUrgensi').value = urgensi;
+  applyFilters();
+}
 
-  document.getElementById('s-total').textContent = total.toLocaleString('id-ID');
-  document.getElementById('s-high').textContent = high.toLocaleString('id-ID');
-  document.getElementById('s-med').textContent = med.toLocaleString('id-ID');
-  document.getElementById('s-done').textContent = done.toLocaleString('id-ID');
-  document.getElementById('s-active').textContent = active.toLocaleString('id-ID');
-  document.getElementById('s-penyulang').textContent = penyulangs;
+function updateStats() {
+  const total     = filteredData.length;
+  const high      = filteredData.filter(r => (r['Urgensi']||'').toLowerCase().includes('tinggi')).length;
+  const med       = filteredData.filter(r => (r['Urgensi']||'').toLowerCase().includes('sedang')).length;
+  const done      = filteredData.filter(r => (r['Urgensi']||'').toLowerCase().includes('dieksekusi')).length;
+  const active    = filteredData.filter(r => !(r['Urgensi']||'').toLowerCase().includes('dieksekusi')).length;
+  const penyulangs= new Set(filteredData.map(r => r['Penyulang']).filter(Boolean)).size;
+
+  document.getElementById('s-total').textContent    = total.toLocaleString('id-ID');
+  document.getElementById('s-high').textContent     = high.toLocaleString('id-ID');
+  document.getElementById('s-med').textContent      = med.toLocaleString('id-ID');
+  document.getElementById('s-done').textContent     = done.toLocaleString('id-ID');
+  document.getElementById('s-active').textContent   = active.toLocaleString('id-ID');
+  document.getElementById('s-penyulang').textContent= penyulangs;
+  const highBadge = document.getElementById('nav-badge-high'); if (highBadge) highBadge.textContent = high;
 }
 
 function parseCoord(str) {
   if (!str || str === '0.000000, 0.000000') return null;
   const parts = String(str).split(',').map(s => parseFloat(s.trim()));
   if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return null;
-  if (parts[0] === 0 && parts[1] === 0) return null;
+  const [lat, lng] = parts;
+  if (lat === 0 && lng === 0) return null;
+  // PENJAGA UTAMA: tolak koordinat yang jauh di luar wilayah Papua/Indonesia
+  // Timur. Data dari Google Sheets sering ada baris salah ketik (misal nyaris
+  // 0,0 tapi bukan persis, atau lat-lng terbalik). Satu baris nyasar saja
+  // cukup membuat bounding box fitBounds() melebar ke seluruh dunia, sehingga
+  // peta selalu ter-zoom-out — itulah sebab utama "peta dunia" yang berulang.
+  if (lat < -12 || lat > 5 || lng < 125 || lng > 145) return null;
   return parts;
 }
 
@@ -473,30 +1036,46 @@ function createMarkerIcon(color) {
   });
 }
 
+const PAPUA_DEFAULT_CENTER = [-2.55, 140.4];
+const PAPUA_DEFAULT_ZOOM = 9;
+const TRANSPARENT_TILE_URL = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+
+const TILE_LAYER_CONFIGS = [
+  { key:'osm',       label:'🗺 Peta Jalan (OSM)',    url:'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',  options:{ attribution:'© OpenStreetMap contributors', maxZoom:19, maxNativeZoom:19, subdomains:'abc' }, isDefault:true },
+  { key:'topo',      label:'⛰ Topografi',            url:'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',    options:{ attribution:'© OpenTopoMap', maxZoom:17, maxNativeZoom:17, subdomains:'abc' } },
+  { key:'satellite', label:'🛰 Satelit (Esri)',       url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', options:{ attribution:'Tiles © Esri', maxZoom:15, maxNativeZoom:15 } },
+  { key:'esriStreet',label:'🛣 Jalan (Esri)',         url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', options:{ attribution:'Tiles © Esri', maxZoom:15, maxNativeZoom:15 } },
+];
+
+function buildBaseLayers() {
+  const layers = {}; let defaultLayer = null;
+  TILE_LAYER_CONFIGS.forEach(cfg => {
+    const layer = L.tileLayer(cfg.url, cfg.options);
+    layer.on('tileerror', e => { if (e&&e.tile) e.tile.src = TRANSPARENT_TILE_URL; });
+    layers[cfg.label] = layer;
+    if (cfg.isDefault) defaultLayer = layer;
+  });
+  return { layers, defaultLayer: defaultLayer || layers[Object.keys(layers)[0]] };
+}
+
 function updateMap() {
   if (!mapInstance) {
-    mapInstance = L.map('map', { zoomControl: true }).setView([-2.55, 140.4], 9);
-    const tileStreet = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Tiles © Esri', maxZoom: 18
-    });
-    const tileSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Tiles © Esri', maxZoom: 18
-    });
-    tileStreet.addTo(mapInstance);
-    L.control.layers({ '🗺 Peta Jalan': tileStreet, '🛰 Satelit': tileSatellite }).addTo(mapInstance);
+    mapInstance = L.map('map', { zoomControl: true }).setView(PAPUA_DEFAULT_CENTER, PAPUA_DEFAULT_ZOOM);
+    const { layers: baseLayers, defaultLayer } = buildBaseLayers();
+    defaultLayer.addTo(mapInstance);
+    L.control.layers(baseLayers).addTo(mapInstance);
+    setTimeout(() => mapInstance.invalidateSize(), 200);
   }
+  if (markersLayer) mapInstance.removeLayer(markersLayer);
 
-  if (markersLayer) {
-    mapInstance.removeLayer(markersLayer);
-  }
   markersLayer = L.markerClusterGroup({
     maxClusterRadius: 50,
     iconCreateFunction: function(cluster) {
       const count = cluster.getChildCount();
       const size = count > 100 ? 44 : count > 20 ? 36 : 28;
       return L.divIcon({
-        html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:#003D82;color:#fff;display:flex;align-items:center;justify-content:center;font-size:${size>36?13:11}px;font-weight:700;border:2px solid #FFB800;box-shadow:0 2px 6px rgba(0,0,0,0.3)">${count}</div>`,
-        className: '', iconSize: [size, size], iconAnchor: [size/2, size/2]
+        html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:var(--pln-blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:${size>36?13:11}px;font-weight:700;border:2px solid var(--pln-yellow);box-shadow:0 2px 6px rgba(0,0,0,0.3)">${count}</div>`,
+        className: '', iconSize: [size,size], iconAnchor: [size/2,size/2]
       });
     }
   });
@@ -509,26 +1088,22 @@ function updateMap() {
     if (!coord) return;
     const [lat, lng] = coord;
     validCount++;
-    if (lat < minLat) minLat = lat;
-    if (lat > maxLat) maxLat = lat;
-    if (lng < minLng) minLng = lng;
-    if (lng > maxLng) maxLng = lng;
+    if (lat < minLat) minLat = lat; if (lat > maxLat) maxLat = lat;
+    if (lng < minLng) minLng = lng; if (lng > maxLng) maxLng = lng;
 
-    const color = getUrgensiColor(r['Urgensi']);
+    const color  = getUrgensiColor(r['Urgensi']);
     const marker = L.marker([lat, lng], { icon: createMarkerIcon(color) });
-
-    const jenis = r._jenis === 'Inspeksi JTM' ? 'JTM' : 'Gardu';
+    const jenis  = r._jenis === 'Inspeksi JTM' ? 'JTM' : 'Gardu';
     const temuan = String(r['Temuan'] || r['Jenis Temuan Konstruksi'] || '—').slice(0, 80);
-    const petugas = r['Petugas Inspeksi'] || '—';
-    const tgl = r['Tanggal'];
-    const tanggal = tgl ? String(tgl).slice(0,10) : '—';
+    const petugas= r['Petugas Inspeksi'] || '—';
+    const tanggal= r['Tanggal'] ? String(r['Tanggal']).slice(0,10) : '—';
 
     marker.bindPopup(`
-      <div class="popup-title">${r['Penyulang'] || '—'} <span style="font-weight:400;font-size:11px;color:#64748b">[${jenis}]</span></div>
+      <div class="popup-title">${r['Penyulang']||'—'} <span style="font-weight:400;font-size:11px;color:#64748b">[${jenis}]</span></div>
       <div class="popup-row"><span class="popup-key">ULP</span><span class="popup-val">${r['ULP']||'—'}</span></div>
       <div class="popup-row"><span class="popup-key">Tanggal</span><span class="popup-val">${tanggal}</span></div>
       <div class="popup-row"><span class="popup-key">Temuan</span><span class="popup-val" style="max-width:150px;word-break:break-word">${temuan}</span></div>
-      <div class="popup-row"><span class="popup-key">Urgensi</span><span class="popup-val" style="color:${color};font-weight:600">${getUrgensiShort(r['Urgensi'])}</span></div>
+      <div class="popup-row"><span class="popup-key">Urgensi</span><span class="popup-val" style="color:${color};font-weight:700">${getUrgensiShort(r['Urgensi'])}</span></div>
       <div class="popup-row"><span class="popup-key">Petugas</span><span class="popup-val">${petugas}</span></div>
     `, { maxWidth: 260 });
     markersLayer.addLayer(marker);
@@ -537,17 +1112,37 @@ function updateMap() {
   mapInstance.addLayer(markersLayer);
   document.getElementById('mapCount').textContent = validCount + ' titik';
 
+  // Simpan bounds hasil hitung supaya bisa di-"fit" ulang nanti (lihat fitMapToData),
+  // karena saat fungsi ini pertama kali jalan (waktu load awal), container #map
+  // masih disembunyikan (display:none) sehingga Leaflet tidak bisa menghitung
+  // zoom yang tepat — itu sebabnya peta sempat tampil zoom dunia penuh.
+  mapBoundsCache = { validCount, minLat, maxLat, minLng, maxLng };
+  fitMapToData();
+}
+
+// Menyesuaikan peta ke area data (Jayapura/Papua), dipanggil ulang setiap kali
+// view Peta benar-benar ditampilkan agar ukuran & zoom selalu benar.
+function fitMapToData() {
+  if (!mapInstance || !mapBoundsCache) return;
+
+  // PENJAGA UTAMA: jika container peta masih berukuran 0 (lagi disembunyikan /
+  // baru saja ditampilkan dan belum sempat reflow), JANGAN panggil fitBounds()
+  // dulu — itulah yang membuat zoom jatuh ke level 0 (peta seluruh dunia).
+  // Tunggu satu frame lalu coba lagi sampai ukurannya valid.
+  const size = mapInstance.getSize();
+  if (!size.x || !size.y) {
+    requestAnimationFrame(() => { if (mapInstance) { mapInstance.invalidateSize(); fitMapToData(); } });
+    return;
+  }
+
+  const { validCount, minLat, maxLat, minLng, maxLng } = mapBoundsCache;
   if (validCount > 0) {
-    const padLat = (maxLat - minLat) * 0.1 || 0.1;
-    const padLng = (maxLng - minLng) * 0.1 || 0.1;
-    try {
-      mapInstance.fitBounds(
-        [[minLat - padLat, minLng - padLng], [maxLat + padLat, maxLng + padLng]],
-        { maxZoom: 12 }
-      );
-    } catch(e) {
-      mapInstance.setView([-2.55, 140.4], 9);
-    }
+    const padLat = (maxLat-minLat)*0.1 || 0.1;
+    const padLng = (maxLng-minLng)*0.1 || 0.1;
+    try { mapInstance.fitBounds([[minLat-padLat,minLng-padLng],[maxLat+padLat,maxLng+padLng]],{maxZoom:12}); }
+    catch(e) { mapInstance.setView(PAPUA_DEFAULT_CENTER, PAPUA_DEFAULT_ZOOM); }
+  } else {
+    mapInstance.setView(PAPUA_DEFAULT_CENTER, PAPUA_DEFAULT_ZOOM);
   }
 }
 
@@ -559,9 +1154,9 @@ function updateCharts() {
     urgensiCount[label] = (urgensiCount[label] || 0) + 1;
   });
 
-  const urgensiColors = { 'Tinggi': '#dc2626', 'Sedang': '#d97706', 'Selesai': '#16a34a', 'Produktif': '#2563eb', 'Non Prod': '#6b7280', 'Lainnya': '#94a3b8' };
+  const urgensiColors = { 'Tinggi':'#dc2626','Sedang':'#d97706','Selesai':'#16a34a','Produktif':'#2563eb','Non Prod':'#6b7280','Lainnya':'#94a3b8' };
   const uLabels = Object.keys(urgensiCount);
-  const uData = uLabels.map(k => urgensiCount[k]);
+  const uData   = uLabels.map(k => urgensiCount[k]);
   const uColors = uLabels.map(k => urgensiColors[k] || '#94a3b8');
 
   if (chartUrgensi) chartUrgensi.destroy();
@@ -575,29 +1170,29 @@ function updateCharts() {
   legend.innerHTML = '<div class="legend-title">Keterangan</div>' + uLabels.map((l,i) => `
     <div class="legend-item">
       <div class="legend-dot" style="background:${uColors[i]}"></div>
-      <span class="legend-text">${l}</span>
+      <span>${l}</span>
       <span class="legend-badge" style="background:${uColors[i]}22;color:${uColors[i]}">${uData[i]}</span>
     </div>
   `).join('');
 
   const penyulangCount = {};
-  filteredData.forEach(r => {
-    const p = r['Penyulang'] || 'Lainnya';
-    penyulangCount[p] = (penyulangCount[p] || 0) + 1;
-  });
-  const sorted = Object.entries(penyulangCount).sort((a,b) => b[1]-a[1]).slice(0,5);
+  filteredData.forEach(r => { const p = r['Penyulang']||'Lainnya'; penyulangCount[p]=(penyulangCount[p]||0)+1; });
+  const sorted = Object.entries(penyulangCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
 
   if (chartPenyulang) chartPenyulang.destroy();
   chartPenyulang = new Chart(document.getElementById('chartPenyulang'), {
     type: 'bar',
     data: {
       labels: sorted.map(([k]) => k.length > 14 ? k.slice(0,14)+'…' : k),
-      datasets: [{ data: sorted.map(([,v]) => v), backgroundColor: '#003D82cc', borderRadius: 4 }]
+      datasets: [{ data: sorted.map(([,v])=>v), backgroundColor: 'rgba(0,61,130,0.75)', borderRadius: 5 }]
     },
     options: {
       indexAxis: 'y', responsive: true,
       plugins: { legend: { display: false } },
-      scales: { x: { grid: { display: false }, ticks: { font: { size: 11 } } }, y: { grid: { display: false }, ticks: { font: { size: 11 } } } }
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+        y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+      }
     }
   });
 }
@@ -611,43 +1206,419 @@ function updateTable() {
     return;
   }
 
-  const shown = filteredData.slice(0, 500);
+  const sorted = filteredData.slice().sort((a, b) => {
+    const da = a['Tanggal'] ? new Date(String(a['Tanggal']).slice(0,10)) : new Date(0);
+    const db = b['Tanggal'] ? new Date(String(b['Tanggal']).slice(0,10)) : new Date(0);
+    return db - da;
+  });
+  const shown = sorted.slice(0, 500);
   tbody.innerHTML = shown.map(r => {
-    const tanggal = r['Tanggal'] ? String(r['Tanggal']).slice(0,10) : '—';
-    const jenis = r._jenis === 'Inspeksi JTM' ? '<span class="badge badge-blue">JTM</span>' : '<span class="badge badge-gray">Gardu</span>';
-    const temuan = String(r['Temuan'] || r['Jenis Temuan Konstruksi'] || '—').slice(0, 40);
-    const urg = getUrgensiShort(r['Urgensi'] || '');
-    const urgBadge = `<span class="badge ${badgeClass(r['Urgensi'])}">${urg}</span>`;
-    const row = r['Petugas Inspeksi'] || r['Petugas Care For Aset'] || '—';
-    const statusRow = r['Status ROW'] || '—';
-    const statusHar = r['Status HAR'] || '—';
+    const tanggal  = r['Tanggal'] ? String(r['Tanggal']).slice(0,10) : '—';
+    const jenis    = r._jenis === 'Inspeksi JTM' ? '<span class="badge badge-blue"><span class="badge-dot"></span>JTM</span>' : '<span class="badge badge-gray"><span class="badge-dot"></span>Gardu</span>';
+    const temuan   = String(r['Temuan'] || r['Jenis Temuan Konstruksi'] || '—').slice(0, 40);
+    const urg      = getUrgensiShort(r['Urgensi'] || '');
+    const urgBadge = `<span class="badge ${badgeClass(r['Urgensi'])}"><span class="badge-dot"></span>${urg}</span>`;
+    const row      = r['Petugas Inspeksi'] || r['Petugas Care For Aset'] || '—';
+    const statusRow= r['Status ROW'] || '—';
+    const statusHar= r['Status HAR'] || '—';
     return `<tr>
-      <td style="white-space:nowrap;font-size:11px">${tanggal}</td>
+      <td style="white-space:nowrap;font-family:var(--mono);font-size:11px">${tanggal}</td>
       <td>${jenis}</td>
-      <td style="font-size:11px">${r['ULP']||'—'}</td>
-      <td style="font-size:11px;font-weight:500">${r['Penyulang']||'—'}</td>
+      <td style="font-size:12px">${r['ULP']||'—'}</td>
+      <td style="font-size:12px;font-weight:600">${r['Penyulang']||'—'}</td>
       <td class="truncate" title="${temuan}">${temuan}</td>
       <td>${urgBadge}</td>
-      <td style="font-size:11px;color:${statusRow.includes('Selesai')?'#16a34a':'#64748b'}">${statusRow}</td>
-      <td style="font-size:11px;color:${statusHar.includes('Selesai')?'#16a34a':'#64748b'}">${statusHar}</td>
+      <td style="font-size:11px;color:${statusRow.includes('Selesai')?'var(--green)':'var(--text-secondary)'}">${statusRow}</td>
+      <td style="font-size:11px;color:${statusHar.includes('Selesai')?'var(--green)':'var(--text-secondary)'}">${statusHar}</td>
       <td style="font-size:11px">${row}</td>
     </tr>`;
   }).join('');
 
   if (filteredData.length > 500) {
-    tbody.innerHTML += `<tr><td colspan="9" style="text-align:center;padding:12px;color:#64748b;font-size:12px">Menampilkan 500 dari ${filteredData.length} baris. Gunakan filter untuk mempersempit.</td></tr>`;
+    tbody.innerHTML += `<tr><td colspan="9" style="text-align:center;padding:12px;color:var(--text-muted);font-size:12px">Menampilkan 500 dari ${filteredData.length} baris. Gunakan filter untuk mempersempit.</td></tr>`;
   }
 }
 
-function switchTab(tab) {
-  document.getElementById('viewMap').style.display = tab === 'map' ? '' : 'none';
-  document.getElementById('viewTable').style.display = tab === 'table' ? '' : 'none';
-  document.getElementById('tabMap').className = 'tab-btn' + (tab==='map'?' active':'');
-  document.getElementById('tabTable').className = 'tab-btn' + (tab==='table'?' active':'');
-  if (tab === 'map' && mapInstance) { setTimeout(() => mapInstance.invalidateSize(), 100); }
+function switchView(view) {
+  const allViews = ['viewBeranda','viewMap','viewTable','viewPetugas','viewAbsensi','viewLaporan'];
+  allViews.forEach(id => { const el = document.getElementById(id); if(el) el.style.display = 'none'; });
+  document.getElementById('filterBar').style.display = 'none';
+
+  const allNavIds = ['nav-beranda','nav-map','nav-table','nav-petugas','nav-absensi','nav-laporan'];
+  allNavIds.forEach(id => { const el = document.getElementById(id); if(el) el.classList.remove('active'); });
+
+  if (view === 'beranda') {
+    document.getElementById('viewBeranda').style.display = '';
+    document.getElementById('nav-beranda').classList.add('active');
+  } else if (view === 'map') {
+    document.getElementById('filterBar').style.display = '';
+    document.getElementById('viewMap').style.display   = '';
+    document.getElementById('nav-map').classList.add('active');
+    setTimeout(() => { if (mapInstance) { mapInstance.invalidateSize(); fitMapToData(); } }, 150);
+  } else if (view === 'table') {
+    document.getElementById('filterBar').style.display  = '';
+    document.getElementById('viewTable').style.display  = '';
+    document.getElementById('nav-table').classList.add('active');
+  } else if (view === 'petugas') {
+    document.getElementById('viewPetugas').style.display = '';
+    document.getElementById('nav-petugas').classList.add('active');
+    initFirebase().then(ok => {
+      if (!ok) return;
+      initMapPetugas();
+      listenPetugas();
+    });
+  } else if (view === 'absensi') {
+    document.getElementById('viewAbsensi').style.display = '';
+    document.getElementById('nav-absensi').classList.add('active');
+    initFirebase().then(ok => { if (ok) listenAbsensi(); });
+  } else if (view === 'laporan') {
+    document.getElementById('viewLaporan').style.display = '';
+    document.getElementById('nav-laporan').classList.add('active');
+    initFirebase().then(ok => { if (ok) listenLaporan(); });
+  }
+}
+
+// Alias for backwards compat
+function switchTab(tab) { switchView(tab); }
+
+// ══════════════════════════════════════
+// FIREBASE INTEGRATION
+// ══════════════════════════════════════
+const FB_CONFIG = {
+  apiKey: "AIzaSyDZRDMn-gvbVQhcyTCxx83i5czwiU8hAJU",
+  authDomain: "ffm-pln.firebaseapp.com",
+  databaseURL: "https://ffm-pln-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "ffm-pln",
+  storageBucket: "ffm-pln.firebasestorage.app",
+  messagingSenderId: "461016001656",
+  appId: "1:461016001656:web:76181eaa68e996b649918d"
+};
+
+let fbApp = null, fbDb = null;
+let petugasMarkers = {}; // id -> leaflet marker
+let mapPetugas = null;
+let fbListeners = {};
+
+// ══════════════════════════════════════
+// MODE ADMIN
+// ══════════════════════════════════════
+// CATATAN: ini solusi PIN sementara supaya tombol hapus tidak terlihat/terpakai
+// oleh sembarang pengguna. Kalau nanti sudah ada halaman login sungguhan,
+// ganti isAdminMode di sini agar mengikuti status login user (role === 'admin'),
+// dan hapus prompt PIN ini.
+const ADMIN_PIN = '821957'; // ganti PIN ini sesuai keinginan Anda
+let isAdminMode = sessionStorage.getItem('ffm_admin') === '1'; // reset tiap tab/browser ditutup
+
+function toggleAdminMode() {
+  if (isAdminMode) {
+    if (!confirm('Keluar dari Mode Admin?')) return;
+    isAdminMode = false;
+    sessionStorage.removeItem('ffm_admin');
+  } else {
+    const pin = prompt('Masukkan PIN Admin untuk mengaktifkan tombol hapus data:');
+    if (pin === null) return; // dibatalkan
+    if (pin !== ADMIN_PIN) { alert('PIN salah.'); return; }
+    isAdminMode = true;
+    sessionStorage.setItem('ffm_admin', '1');
+  }
+  applyAdminUI();
+}
+
+function applyAdminUI() {
+  document.getElementById('user-chip').classList.toggle('is-admin', isAdminMode);
+  document.getElementById('user-role').textContent = isAdminMode ? 'Mode Admin Aktif' : 'UP3 Jayapura';
+  document.getElementById('th-aksi-absensi').style.display = isAdminMode ? '' : 'none';
+
+  // render ulang daftar yang sudah ada di memori, supaya tombol hapus langsung
+  // muncul/hilang saat ini juga, tanpa perlu menunggu data Firebase berubah
+  if (lastPetugasEntries) renderPetugasList(lastPetugasEntries);
+  if (lastAbsensiEntries) renderAbsensiTable(lastAbsensiEntries);
+  if (lastLaporanEntries) renderLaporanGrid(lastLaporanEntries);
+}
+
+async function hapusPetugas(id) {
+  if (!isAdminMode) return;
+  if (!confirm('Hapus data petugas ini dari peta & daftar petugas aktif?')) return;
+  try { await window._fbRemove(window._fbRef(fbDb, 'petugas/' + id)); }
+  catch(e) { alert('Gagal menghapus: ' + e.message); }
+}
+async function hapusAbsensi(id) {
+  if (!isAdminMode) return;
+  if (!confirm('Hapus data absensi ini? Tindakan ini tidak bisa dibatalkan.')) return;
+  try { await window._fbRemove(window._fbRef(fbDb, 'absensi/' + id)); }
+  catch(e) { alert('Gagal menghapus: ' + e.message); }
+}
+async function hapusLaporan(id) {
+  if (!isAdminMode) return;
+  if (!confirm('Hapus laporan pekerjaan ini? Tindakan ini tidak bisa dibatalkan.')) return;
+  try { await window._fbRemove(window._fbRef(fbDb, 'laporan/' + id)); }
+  catch(e) { alert('Gagal menghapus: ' + e.message); }
+}
+
+async function initFirebase() {
+  if (fbApp) return true;
+  try {
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+    const { getDatabase, ref, onValue, remove } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+    fbApp = initializeApp(FB_CONFIG, 'supervisor');
+    fbDb  = getDatabase(fbApp);
+    window._fbRef = ref; window._fbOnValue = onValue; window._fbRemove = remove;
+    return true;
+  } catch(e) {
+    console.error('Firebase init gagal:', e);
+    return false;
+  }
+}
+
+// ── Badge "Petugas Aktif" (sidebar) ───
+// Listener ringan ini sengaja dipisah dari listenPetugas() di bawah,
+// agar HANYA meng-update angka badge di sidebar tanpa menyentuh peta.
+// Dipanggil langsung saat halaman dimuat (lihat initFirebase().then(...) di akhir
+// file), sehingga angka petugas aktif selalu real-time meski tab "Petugas Aktif"
+// belum pernah dibuka & tanpa perlu refresh manual.
+function listenPetugasBadge() {
+  if (fbListeners.petugasBadge) return;
+  const ref = window._fbRef(fbDb, 'petugas');
+  fbListeners.petugasBadge = window._fbOnValue(ref, snap => {
+    const data = snap.val() || {};
+    const aktif = Object.values(data).filter(v => v.status !== 'Offline').length;
+    document.getElementById('nav-badge-petugas').textContent = aktif;
+  });
+}
+
+// ── Petugas Aktif ─────────────────────
+function initMapPetugas() {
+  if (mapPetugas) { setTimeout(() => mapPetugas.invalidateSize(), 150); return; }
+  mapPetugas = L.map('map-petugas', { zoomControl: true }).setView([-2.55, 140.4], 9);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap', maxZoom: 19, subdomains: 'abc'
+  }).addTo(mapPetugas);
+  setTimeout(() => mapPetugas.invalidateSize(), 300);
+}
+
+function createPetugasIcon(status) {
+  const colors = { 'Aktif Bekerja':'#1A8C3C','Perjalanan':'#d97706','Standby':'#0057B8','Offline':'#C0392B' };
+  const c = colors[status] || '#94a3b8';
+  return L.divIcon({
+    className: '',
+    html: `<div style="width:32px;height:32px;border-radius:50%;background:${c};border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;font-size:14px">👷</div>`,
+    iconSize: [32,32], iconAnchor: [16,16]
+  });
+}
+
+function statusClass(s) {
+  if (!s) return 'ps-offline';
+  if (s.includes('Aktif')) return 'ps-aktif';
+  if (s.includes('Perjalanan')) return 'ps-perjalanan';
+  if (s.includes('Standby')) return 'ps-standby';
+  return 'ps-offline';
+}
+
+let lastPetugasEntries = null;
+
+function renderPetugasList(entries) {
+  lastPetugasEntries = entries;
+  const list = document.getElementById('petugasList');
+  if (entries.length === 0) {
+    list.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;font-size:13px">Tidak ada petugas online</div>';
+    return;
+  }
+  list.innerHTML = entries.sort((a,b) => (b[1].ts||0)-(a[1].ts||0)).map(([id, p]) => {
+    const minsAgo = p.ts ? Math.round((Date.now()-p.ts)/60000) : null;
+    const ago = minsAgo === null ? '—' : minsAgo < 1 ? 'baru saja' : minsAgo + ' menit lalu';
+    const delBtn = isAdminMode ? `<button class="btn-del" title="Hapus data petugas ini" onclick="hapusPetugas('${id}')">🗑</button>` : '';
+    return `<div class="petugas-card">
+      <div class="petugas-avatar">👷</div>
+      <div style="flex:1;min-width:0">
+        <div class="petugas-name">${p.nama||'—'}</div>
+        <div class="petugas-meta">${p.regu||'—'} · ${p.ulp||'—'}</div>
+        <div class="petugas-meta" style="margin-top:3px">📡 ${ago} · ${p.lat ? p.lat.toFixed(4)+', '+p.lng.toFixed(4) : 'GPS —'}</div>
+      </div>
+      <span class="petugas-status ${statusClass(p.status)}">${p.status||'Offline'}</span>
+      ${delBtn}
+    </div>`;
+  }).join('');
+}
+
+function listenPetugas() {
+  if (fbListeners.petugas) return;
+  const ref = window._fbRef(fbDb, 'petugas');
+  fbListeners.petugas = window._fbOnValue(ref, snap => {
+    const data = snap.val() || {};
+    const entries = Object.entries(data);
+
+    // update badge
+    const aktif = entries.filter(([,v]) => v.status !== 'Offline').length;
+    document.getElementById('nav-badge-petugas').textContent = aktif;
+
+    // update map markers
+    const seen = new Set();
+    entries.forEach(([id, p]) => {
+      seen.add(id);
+      if (!p.lat || !p.lng) return;
+      if (petugasMarkers[id]) {
+        petugasMarkers[id].setLatLng([p.lat, p.lng]);
+        petugasMarkers[id].setIcon(createPetugasIcon(p.status));
+      } else {
+        const m = L.marker([p.lat, p.lng], { icon: createPetugasIcon(p.status) }).addTo(mapPetugas);
+        m.bindPopup(`
+          <div class="popup-title">👷 ${p.nama||'—'}</div>
+          <div class="popup-row"><span class="popup-key">NIP</span><span class="popup-val">${p.nip||'—'}</span></div>
+          <div class="popup-row"><span class="popup-key">Regu</span><span class="popup-val">${p.regu||'—'}</span></div>
+          <div class="popup-row"><span class="popup-key">ULP</span><span class="popup-val">${p.ulp||'—'}</span></div>
+          <div class="popup-row"><span class="popup-key">Status</span><span class="popup-val" style="color:#1A8C3C;font-weight:700">${p.status||'—'}</span></div>
+          <div class="popup-row"><span class="popup-key">Akurasi</span><span class="popup-val">${p.acc||'—'} m</span></div>
+        `, { maxWidth: 240 });
+        petugasMarkers[id] = m;
+      }
+    });
+    // remove stale markers
+    Object.keys(petugasMarkers).forEach(id => {
+      if (!seen.has(id)) { mapPetugas.removeLayer(petugasMarkers[id]); delete petugasMarkers[id]; }
+    });
+
+    // update count
+    document.getElementById('petugasMapCount').textContent = aktif + ' petugas aktif';
+
+    // update list
+    renderPetugasList(entries);
+  });
+}
+
+let lastAbsensiEntries = null;
+
+function renderAbsensiTable(todayEntries) {
+  lastAbsensiEntries = todayEntries;
+  const tbody = document.getElementById('absensiBody');
+  const colspan = isAdminMode ? 9 : 8;
+  if (todayEntries.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="${colspan}" class="empty">Belum ada absensi hari ini</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = todayEntries.map(([id, a]) => {
+    const waktu = a.waktu ? new Date(a.waktu).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) : '—';
+    const gps = a.lat ? `${a.lat.toFixed(4)}, ${a.lng.toFixed(4)}` : '—';
+    const fotoSrc = a.fotoBase64 || a.fotoUrl || '';
+    const foto = fotoSrc
+      ? `<img class="absen-thumb" src="${fotoSrc}" onclick="bukaFotoFullscreen(this)" title="Lihat foto" style="cursor:pointer">`
+      : '<span style="color:var(--text-muted);font-size:11px">—</span>';
+    const aksiCell = isAdminMode
+      ? `<td><button class="btn-del" title="Hapus data absensi ini" onclick="hapusAbsensi('${id}')">🗑</button></td>`
+      : '';
+    return `<tr>
+      <td style="font-family:var(--mono);font-size:11px;white-space:nowrap">${waktu}</td>
+      <td style="font-weight:600">${a.nama||'—'}</td>
+      <td style="font-family:var(--mono);font-size:11px">${a.nip||'—'}</td>
+      <td>${a.regu||'—'}</td>
+      <td>${a.ulp||'—'}</td>
+      <td><span class="badge badge-blue"><span class="badge-dot"></span>${a.lokasi||'—'}</span></td>
+      <td style="font-family:var(--mono);font-size:10px;color:var(--text-secondary)">${gps}</td>
+      <td>${foto}</td>
+      ${aksiCell}
+    </tr>`;
+  }).join('');
+}
+
+// ── Absensi ───────────────────────────
+function listenAbsensi() {
+  if (fbListeners.absensi) return;
+  const ref = window._fbRef(fbDb, 'absensi');
+  fbListeners.absensi = window._fbOnValue(ref, snap => {
+    const data = snap.val() || {};
+    const entries = Object.entries(data);
+
+    // filter hari ini
+    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+    const todayEntries = entries
+      .filter(([,v]) => v.waktu && v.waktu >= todayStart.getTime())
+      .sort((a,b) => (b[1].waktu||0)-(a[1].waktu||0));
+
+    document.getElementById('absensiCount').textContent = todayEntries.length + ' absen';
+    renderAbsensiTable(todayEntries);
+  });
+}
+
+let lastLaporanEntries = null;
+
+function renderLaporanGrid(entries) {
+  lastLaporanEntries = entries;
+  const grid = document.getElementById('laporanGrid');
+  if (entries.length === 0) {
+    grid.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;font-size:13px;grid-column:1/-1">Belum ada laporan pekerjaan</div>';
+    return;
+  }
+  grid.innerHTML = entries.map(([id, l]) => {
+    const waktu = l.waktu ? new Date(l.waktu).toLocaleString('id-ID') : '—';
+    const before = l.fotoBeforeBase64 || l.fotoBeforeUrl || l.fotoBefore || '';
+    const after  = l.fotoAfterBase64  || l.fotoAfterUrl  || l.fotoAfter  || '';
+    const photos = (before || after) ? `
+      <div class="laporan-photos">
+        <div>
+          ${before ? `<img src="${before}" onclick="bukaFotoFullscreen(this)" style="cursor:pointer">` : '<div style="background:#f1f5f9;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:24px">📷</div>'}
+          <div class="photo-label">SEBELUM</div>
+        </div>
+        <div>
+          ${after ? `<img src="${after}" onclick="bukaFotoFullscreen(this)" style="cursor:pointer">` : '<div style="background:#f1f5f9;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:24px">📷</div>'}
+          <div class="photo-label">SESUDAH</div>
+        </div>
+      </div>` : '';
+    const delBtn = isAdminMode ? `<button class="btn-del" title="Hapus laporan ini" onclick="hapusLaporan('${id}')">🗑</button>` : '';
+    return `<div class="laporan-card">
+      <div class="laporan-card-header">
+        <div>
+          <div class="laporan-card-name">👷 ${l.nama||'—'} <span style="font-weight:400;color:var(--text-secondary);font-size:11px">${l.regu||''} · ${l.ulp||''}</span></div>
+          <div class="laporan-card-meta">${waktu}</div>
+        </div>
+        ${delBtn}
+      </div>
+      ${photos}
+      <div class="laporan-card-body">
+        <b>Pekerjaan:</b> ${l.rincian||'—'}<br>
+        <b>Material:</b> ${l.material||'—'}<br>
+        <b>Target:</b> ${l.target||'—'} &nbsp;|&nbsp; <b>Realisasi:</b> ${l.realisasi||'—'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Laporan Pekerjaan ─────────────────
+function listenLaporan() {
+  if (fbListeners.laporan) return;
+  const ref = window._fbRef(fbDb, 'laporan');
+  fbListeners.laporan = window._fbOnValue(ref, snap => {
+    const data = snap.val() || {};
+    const entries = Object.entries(data).sort((a,b) => (b[1].waktu||0)-(a[1].waktu||0));
+
+    document.getElementById('laporanCount').textContent = entries.length + ' laporan';
+    renderLaporanGrid(entries);
+  });
 }
 
 loadAll();
+switchView('beranda');
+applyAdminUI(); // sinkronkan tampilan dengan status Mode Admin (sessionStorage) saat halaman dibuka
+
+// Sambungkan ke Firebase & nyalakan badge "Petugas Aktif" SEJAK HALAMAN DIBUKA
+// (bukan menunggu user klik menu Petugas Aktif), supaya angkanya selalu akurat
+// real-time tanpa perlu refresh manual.
+initFirebase().then(ok => { if (ok) listenPetugasBadge(); });
+</script>
+<!-- FOTO FULLSCREEN MODAL -->
+<div id="foto-modal" onclick="this.style.display='none'" style="
+  display:none; position:fixed; inset:0; z-index:9999;
+  background:rgba(0,0,0,0.92); cursor:zoom-out;
+  align-items:center; justify-content:center;
+">
+  <img id="foto-modal-img" style="max-width:95vw; max-height:95vh; border-radius:8px; box-shadow:0 8px 40px rgba(0,0,0,0.5);">
+</div>
+
+<script>
+window.bukaFotoFullscreen = function(imgEl) {
+  const modal = document.getElementById('foto-modal');
+  const modalImg = document.getElementById('foto-modal-img');
+  modalImg.src = imgEl.src;
+  modal.style.display = 'flex';
+};
 </script>
 </body>
 </html>

@@ -698,6 +698,22 @@ td.truncate  { max-width: 160px; overflow: hidden; text-overflow: ellipsis; whit
       <a class="nav-item" id="nav-laporan" href="#" onclick="switchView('laporan');return false;">
         <span class="nav-icon">📝</span> Laporan Pekerjaan
       </a>
+      <a class="nav-item" id="nav-rekap" href="#" onclick="switchView('rekap');return false;">
+        <span class="nav-icon">📊</span> Rekap Laporan
+      </a>
+      <a class="nav-item" id="nav-progres" href="#" onclick="switchView('progres');return false;">
+        <span class="nav-icon">📈</span> Progres Program
+      </a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Supervisor</div>
+      <a class="nav-item" id="nav-tiket" href="#" onclick="switchView('tiket');return false;">
+        <span class="nav-icon">🎫</span> Kelola Tiket P0/P1
+      </a>
+      <a class="nav-item" id="nav-verifikasi" href="#" onclick="switchView('verifikasi');return false;">
+        <span class="nav-icon">✅</span> Verifikasi Laporan
+        <span class="nav-badge" id="nav-badge-verifikasi" style="background:var(--warn);display:none">0</span>
+      </a>
     </div>
     <div class="nav-group">
       <div class="nav-group-label">Akses</div>
@@ -905,30 +921,40 @@ td.truncate  { max-width: 160px; overflow: hidden; text-overflow: ellipsis; whit
     <div id="viewAbsensi" style="display:none;" class="firebase-view">
       <div class="fb-header">
         <div>
-          <div class="card-title" style="font-size:16px">📍 Absensi Hari Ini</div>
-          <div style="font-size:12px;color:var(--text-secondary);margin-top:3px">Data masuk dari app petugas · Selfie + GPS</div>
+          <div class="card-title" style="font-size:16px">📍 Absensi Hari Ini — Log Fase</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:3px">Fase bertahap: Standby → Perjalanan → Aktif Bekerja → Selesai · Selfie + GPS tiap fase</div>
         </div>
-        <span id="absensiCount" class="card-count">0 absen</span>
+        <span id="absensiCount" class="card-count">0 petugas</span>
       </div>
+
+      <!-- Per-petugas phase log cards -->
+      <div id="absensi-log-cards" style="margin-top:14px;display:flex;flex-direction:column;gap:12px;">
+        <div style="text-align:center;color:var(--text-muted);padding:40px;font-size:13px">Menunggu data Firebase...</div>
+      </div>
+
+      <!-- Detail table (semua entri) -->
       <div class="card" style="margin-top:14px;">
+        <div class="card-header">
+          <div class="card-title">Detail Log Semua Entri Absensi</div>
+          <span id="absensiDetailCount" class="card-count">0 entri</span>
+        </div>
         <div class="table-container" style="max-height:none;flex:1;">
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Waktu Absen</th>
+                  <th>Waktu</th>
                   <th>Nama</th>
-                  <th>NIP</th>
                   <th>Regu</th>
                   <th>ULP</th>
-                  <th>Lokasi</th>
+                  <th>Fase</th>
                   <th>GPS</th>
                   <th>Foto</th>
                   <th id="th-aksi-absensi" style="display:none">Aksi</th>
                 </tr>
               </thead>
               <tbody id="absensiBody">
-                <tr><td colspan="9" class="empty">Menunggu data Firebase...</td></tr>
+                <tr><td colspan="8" class="empty">Menunggu data Firebase...</td></tr>
               </tbody>
             </table>
           </div>
@@ -946,6 +972,306 @@ td.truncate  { max-width: 160px; overflow: hidden; text-overflow: ellipsis; whit
         <span id="laporanCount" class="card-count">0 laporan</span>
       </div>
       <div id="laporanGrid" style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;">
+        <div style="text-align:center;color:var(--text-muted);padding:40px;font-size:13px;grid-column:1/-1">Menunggu data Firebase...</div>
+      </div>
+    </div>
+
+    <!-- ══ REKAP LAPORAN VIEW ══ -->
+    <div id="viewRekap" style="display:none;" class="firebase-view">
+      <div class="fb-header">
+        <div>
+          <div class="card-title" style="font-size:16px">📊 Rekap Laporan Pekerjaan</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:3px">Ringkasan target & realisasi · Dari laporan terverifikasi</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="tab-btn active" id="rekap-tab-hari" onclick="setRekapPeriode('hari',this)">Hari Ini</button>
+          <button class="tab-btn" id="rekap-tab-minggu" onclick="setRekapPeriode('minggu',this)">Minggu Ini</button>
+          <button class="tab-btn" id="rekap-tab-bulan" onclick="setRekapPeriode('bulan',this)">Bulan Ini</button>
+        </div>
+      </div>
+
+      <!-- KPI Strip Rekap -->
+      <div class="kpi-row" style="margin-top:16px" id="rekap-kpi">
+        <div class="kpi-card green">
+          <div class="kpi-label"><div class="kpi-dot" style="background:var(--ok)"></div>Total Laporan</div>
+          <div class="kpi-value" id="rekap-total">—</div>
+          <div class="kpi-meta">Laporan masuk</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label"><div class="kpi-dot" style="background:var(--ok)"></div>Terverifikasi</div>
+          <div class="kpi-value" id="rekap-verif">—</div>
+          <div class="kpi-meta">Disetujui supervisor</div>
+        </div>
+        <div class="kpi-card amber">
+          <div class="kpi-label"><div class="kpi-dot" style="background:var(--warn)"></div>Menunggu</div>
+          <div class="kpi-value" id="rekap-pending">—</div>
+          <div class="kpi-meta">Belum diverifikasi</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><div class="kpi-dot" style="background:var(--pln-blue-light)"></div>Rata-rata Realisasi</div>
+          <div class="kpi-value" id="rekap-avg">—</div>
+          <div class="kpi-meta">% dari target</div>
+        </div>
+      </div>
+
+      <!-- Tabel Rekap per Tim/ULP -->
+      <div class="grid-2" style="margin-bottom:18px">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Rekap per Tim / Regu</div>
+            <span class="card-count" id="rekap-tim-count">—</span>
+          </div>
+          <div class="table-container">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Tim / Regu</th><th>Laporan</th><th>Target</th><th>Realisasi</th><th>%</th></tr></thead>
+                <tbody id="rekap-tim-body"><tr><td colspan="5" class="empty">Menunggu data...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Rekap per ULP</div>
+            <span class="card-count" id="rekap-ulp-count">—</span>
+          </div>
+          <div class="table-container">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>ULP</th><th>Laporan</th><th>Target</th><th>Realisasi</th><th>%</th></tr></thead>
+                <tbody id="rekap-ulp-body"><tr><td colspan="5" class="empty">Menunggu data...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabel detail laporan periode -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Detail Laporan <span id="rekap-periode-label" style="font-weight:400;color:var(--text-3);font-size:12px">Hari Ini</span></div>
+          <span class="card-count" id="rekap-detail-count">0 laporan</span>
+        </div>
+        <div class="table-container">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Waktu</th><th>Petugas</th><th>Regu</th><th>ULP</th><th>Tiket</th><th>Pekerjaan</th><th>Target</th><th>Realisasi</th><th>Status</th></tr></thead>
+              <tbody id="rekap-detail-body"><tr><td colspan="9" class="empty">Menunggu data...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PROGRES PROGRAM VIEW ══ -->
+    <div id="viewProgres" style="display:none;" class="firebase-view">
+      <div class="fb-header">
+        <div>
+          <div class="card-title" style="font-size:16px">📈 Progres Program Preventif</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:3px">Akumulasi realisasi dari laporan terverifikasi · per program & per ULP</div>
+        </div>
+        <button class="topbar-btn" onclick="bukaModalProgresTarget()" style="font-size:12px;padding:8px 16px">⚙ Atur Target Program</button>
+      </div>
+
+      <!-- Modal Atur Target Program -->
+      <div id="modal-progres-target" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(10,20,36,0.55);align-items:center;justify-content:center;">
+        <div style="background:var(--surface);border-radius:var(--radius-lg);padding:28px;width:100%;max-width:500px;box-shadow:var(--shadow-lg);margin:16px;max-height:90vh;overflow-y:auto">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <div style="font-family:var(--font-display);font-size:16px;font-weight:800">Atur Program & Target</div>
+            <button onclick="tutupModalProgresTarget()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-3)">✕</button>
+          </div>
+          <div style="font-size:12px;color:var(--text-2);margin-bottom:14px">Tambah program preventif beserta target totalnya. Realisasi dihitung otomatis dari laporan terverifikasi.</div>
+          <div id="progres-target-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px"></div>
+          <button onclick="tambahBarisProgramTarget()" style="width:100%;padding:10px;border:1.5px dashed var(--line-strong);border-radius:var(--radius-xs);background:none;font-size:13px;font-weight:600;cursor:pointer;color:var(--text-2)">+ Tambah Program</button>
+          <div style="display:flex;gap:10px;margin-top:16px">
+            <button onclick="tutupModalProgresTarget()" style="flex:1;padding:11px;border:1px solid var(--line);border-radius:var(--radius-xs);background:none;font-size:13px;font-weight:600;cursor:pointer;color:var(--text-2)">Batal</button>
+            <button onclick="simpanProgresTarget()" style="flex:2;padding:11px;border:none;border-radius:var(--radius-xs);background:linear-gradient(135deg,var(--pln-yellow),var(--pln-yellow-deep));color:var(--ink-900);font-size:13px;font-weight:800;cursor:pointer">✓ Simpan</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Bars per Program -->
+      <div class="card" style="margin-top:16px">
+        <div class="card-header">
+          <div class="card-title">Progres per Program</div>
+          <span class="card-count" id="progres-program-count">—</span>
+        </div>
+        <div id="progres-program-list" style="padding:18px;display:flex;flex-direction:column;gap:18px">
+          <div style="text-align:center;color:var(--text-muted);padding:20px;font-size:13px">Belum ada program. Klik "Atur Target Program" untuk menambahkan.</div>
+        </div>
+      </div>
+
+      <!-- Progress Bars per ULP -->
+      <div class="card" style="margin-top:18px">
+        <div class="card-header">
+          <div class="card-title">Progres per ULP</div>
+          <span class="card-count" id="progres-ulp-count">—</span>
+        </div>
+        <div id="progres-ulp-list" style="padding:18px;display:flex;flex-direction:column;gap:16px">
+          <div style="text-align:center;color:var(--text-muted);padding:20px;font-size:13px">Menunggu data laporan...</div>
+        </div>
+      </div>
+
+      <!-- Tabel rekap per Tim/Regu -->
+      <div class="card" style="margin-top:18px">
+        <div class="card-header">
+          <div class="card-title">Kinerja per Tim / Regu</div>
+        </div>
+        <div class="table-container">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Tim / Regu</th><th>ULP</th><th>Jumlah Laporan</th><th>Total Target</th><th>Total Realisasi</th><th>Persentase</th></tr></thead>
+              <tbody id="progres-tim-body"><tr><td colspan="6" class="empty">Menunggu data...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TIKET P0/P1 VIEW ══ -->
+    <div id="viewTiket" style="display:none;" class="firebase-view">
+      <div class="fb-header">
+        <div>
+          <div class="card-title" style="font-size:16px">🎫 Kelola Tiket P0/P1</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:3px">Supervisor input tiket — petugas lapangan tinggal masukan nomor tiket saat laporan</div>
+        </div>
+        <button class="topbar-btn-yellow" onclick="bukaModalTiket()" style="font-size:13px;padding:9px 18px">+ Buat Tiket Baru</button>
+      </div>
+
+      <!-- Form Tiket Modal -->
+      <div id="modal-tiket" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(10,20,36,0.55);align-items:center;justify-content:center;">
+        <div style="background:var(--surface);border-radius:var(--radius-lg);padding:28px;width:100%;max-width:520px;box-shadow:var(--shadow-lg);position:relative;margin:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <div style="font-family:var(--font-display);font-size:16px;font-weight:800">Buat Tiket Pekerjaan</div>
+            <button onclick="tutupModalTiket()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-3);padding:4px">✕</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+            <div>
+              <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-2);display:block;margin-bottom:6px">Nomor Tiket *</label>
+              <input id="tiket-nomor" type="text" placeholder="cth: P1-2025-0042" style="width:100%;border:1px solid var(--line);border-radius:var(--radius-xs);padding:9px 12px;font-size:13px;font-family:var(--mono);outline:none;transition:border-color 0.18s" onfocus="this.style.borderColor='var(--pln-blue-light)'" onblur="this.style.borderColor='var(--line)'">
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-2);display:block;margin-bottom:6px">Prioritas *</label>
+              <select id="tiket-prioritas" style="width:100%;border:1px solid var(--line);border-radius:var(--radius-xs);padding:9px 12px;font-size:13px;outline:none;height:38px;background:var(--surface)">
+                <option value="P0">P0 — Darurat</option>
+                <option value="P1">P1 — Segera</option>
+                <option value="P2">P2 — Normal</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-bottom:12px">
+            <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-2);display:block;margin-bottom:6px">Jenis Pekerjaan *</label>
+            <input id="tiket-jenis" type="text" placeholder="cth: Perbaikan kabel putus penyulang Entrop" style="width:100%;border:1px solid var(--line);border-radius:var(--radius-xs);padding:9px 12px;font-size:13px;outline:none;transition:border-color 0.18s" onfocus="this.style.borderColor='var(--pln-blue-light)'" onblur="this.style.borderColor='var(--line)'">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+            <div>
+              <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-2);display:block;margin-bottom:6px">Lokasi / Aset</label>
+              <input id="tiket-lokasi" type="text" placeholder="cth: Gardu GH-024 Jl. Raya Sentani" style="width:100%;border:1px solid var(--line);border-radius:var(--radius-xs);padding:9px 12px;font-size:13px;outline:none;transition:border-color 0.18s" onfocus="this.style.borderColor='var(--pln-blue-light)'" onblur="this.style.borderColor='var(--line)'">
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-2);display:block;margin-bottom:6px">ULP</label>
+              <input id="tiket-ulp" type="text" placeholder="cth: ULP Sentani" style="width:100%;border:1px solid var(--line);border-radius:var(--radius-xs);padding:9px 12px;font-size:13px;outline:none;transition:border-color 0.18s" onfocus="this.style.borderColor='var(--pln-blue-light)'" onblur="this.style.borderColor='var(--line)'">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+            <div>
+              <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-2);display:block;margin-bottom:6px">Koordinat (lat, lng)</label>
+              <input id="tiket-koordinat" type="text" placeholder="cth: -2.5916, 140.6719" style="width:100%;border:1px solid var(--line);border-radius:var(--radius-xs);padding:9px 12px;font-size:13px;font-family:var(--mono);outline:none;transition:border-color 0.18s" onfocus="this.style.borderColor='var(--pln-blue-light)'" onblur="this.style.borderColor='var(--line)'">
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-2);display:block;margin-bottom:6px">Target Volume</label>
+              <input id="tiket-target" type="number" placeholder="0" style="width:100%;border:1px solid var(--line);border-radius:var(--radius-xs);padding:9px 12px;font-size:13px;outline:none;transition:border-color 0.18s" onfocus="this.style.borderColor='var(--pln-blue-light)'" onblur="this.style.borderColor='var(--line)'">
+            </div>
+          </div>
+          <div id="tiket-err" style="display:none;background:var(--crit-bg);color:var(--crit);padding:9px 13px;border-radius:var(--radius-xs);font-size:12px;margin-bottom:12px;border:1px solid rgba(220,53,69,0.2)"></div>
+          <div style="display:flex;gap:10px">
+            <button onclick="tutupModalTiket()" style="flex:1;padding:11px;border:1px solid var(--line);border-radius:var(--radius-xs);background:none;font-size:13px;font-weight:600;cursor:pointer;color:var(--text-2)">Batal</button>
+            <button onclick="simpanTiket()" style="flex:2;padding:11px;border:none;border-radius:var(--radius-xs);background:linear-gradient(135deg,var(--pln-yellow),var(--pln-yellow-deep));color:var(--ink-900);font-size:13px;font-weight:800;cursor:pointer;box-shadow:var(--shadow-glow-yellow)">✓ Simpan Tiket</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px;">
+        <div class="card-header">
+          <div class="card-title">Daftar Tiket Aktif</div>
+          <span class="card-count" id="tiketCount">0 tiket</span>
+        </div>
+        <div class="table-container" style="max-height:none;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nomor Tiket</th>
+                  <th>Prioritas</th>
+                  <th>Jenis Pekerjaan</th>
+                  <th>Lokasi / Aset</th>
+                  <th>ULP</th>
+                  <th>Target</th>
+                  <th>Status</th>
+                  <th>Dibuat</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tiketBody">
+                <tr><td colspan="9" class="empty">Belum ada tiket. Buat tiket baru di atas.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ VERIFIKASI SUPERVISOR VIEW ══ -->
+    <div id="viewVerifikasi" style="display:none;" class="firebase-view">
+      <div class="fb-header">
+        <div>
+          <div class="card-title" style="font-size:16px">✅ Verifikasi Laporan Pekerjaan</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:3px">Close-loop · Supervisor verifikasi hasil pekerjaan petugas lapangan hari ini</div>
+        </div>
+        <span id="verifikasiCount" class="card-count">0 menunggu</span>
+      </div>
+
+      <!-- Modal Verifikasi -->
+      <div id="modal-verifikasi" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(10,20,36,0.6);align-items:center;justify-content:center;">
+        <div style="background:var(--surface);border-radius:var(--radius-lg);padding:28px;width:100%;max-width:560px;box-shadow:var(--shadow-lg);margin:16px;max-height:90vh;overflow-y:auto;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <div style="font-family:var(--font-display);font-size:16px;font-weight:800">Verifikasi Laporan</div>
+            <button onclick="tutupModalVerifikasi()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-3);padding:4px">✕</button>
+          </div>
+          <div id="verif-detail-body"></div>
+          <div style="margin-top:16px;border-top:1px solid var(--line);padding-top:16px">
+            <div style="font-family:var(--font-display);font-size:13px;font-weight:800;margin-bottom:12px">Form Verifikasi Supervisor</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+              <div>
+                <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-2);display:block;margin-bottom:5px">Target Volume</label>
+                <input id="verif-target" type="number" placeholder="0" style="width:100%;border:1px solid var(--line);border-radius:var(--radius-xs);padding:8px 11px;font-size:13px;outline:none">
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-2);display:block;margin-bottom:5px">Realisasi Volume</label>
+                <input id="verif-realisasi" type="number" placeholder="0" style="width:100%;border:1px solid var(--line);border-radius:var(--radius-xs);padding:8px 11px;font-size:13px;outline:none">
+              </div>
+            </div>
+            <div style="margin-bottom:12px">
+              <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-2);display:block;margin-bottom:5px">Catatan Supervisor</label>
+              <textarea id="verif-catatan" rows="3" placeholder="Catatan hasil verifikasi lapangan..." style="width:100%;border:1px solid var(--line);border-radius:var(--radius-xs);padding:9px 12px;font-size:13px;resize:vertical;outline:none;font-family:var(--font)"></textarea>
+            </div>
+            <div style="display:flex;gap:10px;margin-bottom:10px">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:12px;border:1px solid var(--line);border-radius:var(--radius-xs);flex:1;transition:all 0.18s" id="verif-label-ok">
+                <input type="radio" name="verif-hasil" value="Terverifikasi" id="verif-ok" onchange="highlightVerifOption()">
+                <span style="font-size:13px;font-weight:700;color:var(--ok)">✓ Pekerjaan Selesai</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:12px;border:1px solid var(--line);border-radius:var(--radius-xs);flex:1;transition:all 0.18s" id="verif-label-revisi">
+                <input type="radio" name="verif-hasil" value="Perlu Revisi" id="verif-revisi" onchange="highlightVerifOption()">
+                <span style="font-size:13px;font-weight:700;color:var(--warn)">⚠ Perlu Revisi</span>
+              </label>
+            </div>
+            <div id="verif-err" style="display:none;background:var(--crit-bg);color:var(--crit);padding:8px 12px;border-radius:var(--radius-xs);font-size:12px;margin-bottom:10px"></div>
+            <button id="verif-btn-submit" onclick="submitVerifikasi()" style="width:100%;padding:12px;border:none;border-radius:var(--radius-xs);background:var(--pln-blue);color:#fff;font-size:14px;font-weight:800;cursor:pointer">Kirim Verifikasi</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="verifikasiGrid" style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;">
         <div style="text-align:center;color:var(--text-muted);padding:40px;font-size:13px;grid-column:1/-1">Menunggu data Firebase...</div>
       </div>
     </div>
@@ -1346,11 +1672,11 @@ function updateTable() {
 }
 
 function switchView(view) {
-  const allViews = ['viewBeranda','viewMap','viewTable','viewPetugas','viewAbsensi','viewLaporan'];
+  const allViews = ['viewBeranda','viewMap','viewTable','viewPetugas','viewAbsensi','viewLaporan','viewTiket','viewVerifikasi','viewRekap','viewProgres'];
   allViews.forEach(id => { const el = document.getElementById(id); if(el) el.style.display = 'none'; });
   document.getElementById('filterBar').style.display = 'none';
 
-  const allNavIds = ['nav-beranda','nav-map','nav-table','nav-petugas','nav-absensi','nav-laporan'];
+  const allNavIds = ['nav-beranda','nav-map','nav-table','nav-petugas','nav-absensi','nav-laporan','nav-tiket','nav-verifikasi','nav-rekap','nav-progres'];
   allNavIds.forEach(id => { const el = document.getElementById(id); if(el) el.classList.remove('active'); });
 
   if (view === 'beranda') {
@@ -1381,6 +1707,22 @@ function switchView(view) {
     document.getElementById('viewLaporan').style.display = '';
     document.getElementById('nav-laporan').classList.add('active');
     initFirebase().then(ok => { if (ok) listenLaporan(); });
+  } else if (view === 'rekap') {
+    document.getElementById('viewRekap').style.display = '';
+    document.getElementById('nav-rekap').classList.add('active');
+    initFirebase().then(ok => { if (ok) listenRekap(); });
+  } else if (view === 'progres') {
+    document.getElementById('viewProgres').style.display = '';
+    document.getElementById('nav-progres').classList.add('active');
+    initFirebase().then(ok => { if (ok) { listenProgresData(); listenProgresTarget(); } });
+  } else if (view === 'tiket') {
+    document.getElementById('viewTiket').style.display = '';
+    document.getElementById('nav-tiket').classList.add('active');
+    initFirebase().then(ok => { if (ok) listenTiket(); });
+  } else if (view === 'verifikasi') {
+    document.getElementById('viewVerifikasi').style.display = '';
+    document.getElementById('nav-verifikasi').classList.add('active');
+    initFirebase().then(ok => { if (ok) listenVerifikasi(); });
   }
 }
 
@@ -1533,12 +1875,17 @@ function renderPetugasList(entries) {
     const minsAgo = p.ts ? Math.round((Date.now()-p.ts)/60000) : null;
     const ago = minsAgo === null ? '—' : minsAgo < 1 ? 'baru saja' : minsAgo + ' menit lalu';
     const delBtn = isAdminMode ? `<button class="btn-del" title="Hapus data petugas ini" onclick="hapusPetugas('${id}')">🗑</button>` : '';
+    // Pengganti batas jam paksa: kalau status bukan Offline tapi update GPS sudah lama mati (>4 jam),
+    // tandai sebagai "Sesi Tidak Aktif" — supervisor yang menilai, bukan sistem yang memaksa logout.
+    const tidakAktif = p.status !== 'Offline' && minsAgo !== null && minsAgo > 240;
+    const peringatan = tidakAktif ? `<div style="font-size:10.5px;color:var(--warn);font-weight:700;margin-top:3px">⚠ Sesi tidak aktif — GPS terakhir ${ago}, mohon dicek</div>` : '';
     return `<div class="petugas-card">
       <div class="petugas-avatar">👷</div>
       <div style="flex:1;min-width:0">
         <div class="petugas-name">${p.nama||'—'}</div>
         <div class="petugas-meta">${p.regu||'—'} · ${p.ulp||'—'}</div>
         <div class="petugas-meta" style="margin-top:3px">📡 ${ago} · ${p.lat ? p.lat.toFixed(4)+', '+p.lng.toFixed(4) : 'GPS —'}</div>
+        ${peringatan}
       </div>
       <span class="petugas-status ${statusClass(p.status)}">${p.status||'Offline'}</span>
       ${delBtn}
@@ -1593,35 +1940,105 @@ function listenPetugas() {
 
 let lastAbsensiEntries = null;
 
+const FASE_COLORS = {
+  'Standby':       {bg:'var(--info-bg)',  color:'var(--info)',  border:'rgba(37,99,235,0.25)',  icon:'⏸'},
+  'Perjalanan':    {bg:'var(--warn-bg)',  color:'var(--warn)',  border:'rgba(217,123,10,0.35)', icon:'🚗'},
+  'Aktif Bekerja': {bg:'var(--ok-bg)',    color:'var(--ok)',    border:'rgba(14,161,91,0.35)',  icon:'⚡'},
+  'Selesai':       {bg:'var(--done-bg)',  color:'var(--done)',  border:'rgba(107,122,147,0.35)',icon:'✅'},
+};
+
 function renderAbsensiTable(todayEntries) {
   lastAbsensiEntries = todayEntries;
+
+  // ── Detail table ──────────────────────────────────
   const tbody = document.getElementById('absensiBody');
-  const colspan = isAdminMode ? 9 : 8;
+  const colspan = isAdminMode ? 8 : 7;
+  document.getElementById('absensiDetailCount').textContent = todayEntries.length + ' entri';
+
   if (todayEntries.length === 0) {
     tbody.innerHTML = `<tr><td colspan="${colspan}" class="empty">Belum ada absensi hari ini</td></tr>`;
+  } else {
+    tbody.innerHTML = todayEntries.map(([id, a]) => {
+      const waktu = a.waktu ? new Date(a.waktu).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) : '—';
+      const gps = a.lat ? `${a.lat.toFixed(4)}, ${a.lng.toFixed(4)}` : '—';
+      const fotoSrc = a.fotoBase64 || a.fotoUrl || '';
+      const foto = fotoSrc
+        ? `<img class="absen-thumb" src="${fotoSrc}" onclick="bukaFotoFullscreen(this)" title="Lihat foto" style="cursor:pointer">`
+        : '<span style="color:var(--text-muted);font-size:11px">—</span>';
+      const fase = a.fase || a.lokasi || 'Standby';
+      const fc = FASE_COLORS[fase] || FASE_COLORS['Standby'];
+      const faseBadge = `<span class="badge" style="background:${fc.bg};color:${fc.color};border:1px solid ${fc.border}">${fc.icon} ${fase}</span>`;
+      const aksiCell = isAdminMode
+        ? `<td><button class="btn-del" title="Hapus" onclick="hapusAbsensi('${id}')">🗑</button></td>`
+        : '';
+      return `<tr>
+        <td style="font-family:var(--mono);font-size:11px;white-space:nowrap">${waktu}</td>
+        <td style="font-weight:600">${a.nama||'—'}</td>
+        <td>${a.regu||'—'}</td>
+        <td>${a.ulp||'—'}</td>
+        <td>${faseBadge}</td>
+        <td style="font-family:var(--mono);font-size:10px;color:var(--text-secondary)">${gps}</td>
+        <td>${foto}</td>
+        ${aksiCell}
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Per-petugas phase log cards ───────────────────
+  // Kelompokkan by petugas (nip)
+  const byPetugas = {};
+  todayEntries.forEach(([id, a]) => {
+    const key = a.nip || a.nama || id;
+    if (!byPetugas[key]) byPetugas[key] = { nama: a.nama||'—', nip: a.nip||'—', regu: a.regu||'—', ulp: a.ulp||'—', fases: {} };
+    const fase = a.fase || a.lokasi || 'Standby';
+    if (!byPetugas[key].fases[fase] || (byPetugas[key].fases[fase].waktu||0) < (a.waktu||0)) {
+      byPetugas[key].fases[fase] = a;
+    }
+  });
+
+  const container = document.getElementById('absensi-log-cards');
+  const entries = Object.values(byPetugas);
+  document.getElementById('absensiCount').textContent = entries.length + ' petugas';
+
+  if (entries.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;font-size:13px">Belum ada absensi hari ini</div>';
     return;
   }
-  tbody.innerHTML = todayEntries.map(([id, a]) => {
-    const waktu = a.waktu ? new Date(a.waktu).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) : '—';
-    const gps = a.lat ? `${a.lat.toFixed(4)}, ${a.lng.toFixed(4)}` : '—';
-    const fotoSrc = a.fotoBase64 || a.fotoUrl || '';
-    const foto = fotoSrc
-      ? `<img class="absen-thumb" src="${fotoSrc}" onclick="bukaFotoFullscreen(this)" title="Lihat foto" style="cursor:pointer">`
-      : '<span style="color:var(--text-muted);font-size:11px">—</span>';
-    const aksiCell = isAdminMode
-      ? `<td><button class="btn-del" title="Hapus data absensi ini" onclick="hapusAbsensi('${id}')">🗑</button></td>`
-      : '';
-    return `<tr>
-      <td style="font-family:var(--mono);font-size:11px;white-space:nowrap">${waktu}</td>
-      <td style="font-weight:600">${a.nama||'—'}</td>
-      <td style="font-family:var(--mono);font-size:11px">${a.nip||'—'}</td>
-      <td>${a.regu||'—'}</td>
-      <td>${a.ulp||'—'}</td>
-      <td><span class="badge badge-blue"><span class="badge-dot"></span>${a.lokasi||'—'}</span></td>
-      <td style="font-family:var(--mono);font-size:10px;color:var(--text-secondary)">${gps}</td>
-      <td>${foto}</td>
-      ${aksiCell}
-    </tr>`;
+
+  const FASE_ORDER = ['Standby','Perjalanan','Aktif Bekerja','Selesai'];
+  container.innerHTML = entries.map(p => {
+    const lastFase = FASE_ORDER.slice().reverse().find(f => p.fases[f]) || 'Standby';
+    const lc = FASE_COLORS[lastFase] || FASE_COLORS['Standby'];
+
+    const faseSteps = FASE_ORDER.map((f, i) => {
+      const done = !!p.fases[f];
+      const fc = FASE_COLORS[f];
+      const jam = done ? new Date(p.fases[f].waktu).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) : '—';
+      const fotoSrc = done ? (p.fases[f].fotoBase64||'') : '';
+      const foto = fotoSrc
+        ? `<img src="${fotoSrc}" onclick="bukaFotoFullscreen(this)" style="width:38px;height:38px;object-fit:cover;border-radius:7px;border:1.5px solid ${done?fc.color:' var(--line)'};cursor:pointer;flex-shrink:0">`
+        : `<div style="width:38px;height:38px;border-radius:7px;background:var(--surface-3);border:1.5px dashed var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;color:var(--text-3)">${fc.icon}</div>`;
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;position:relative;">
+        ${i < 3 ? `<div style="position:absolute;top:19px;left:50%;width:100%;height:2px;background:${done&&p.fases[FASE_ORDER[i+1]]?'var(--ok)':'var(--line)'};z-index:0;"></div>` : ''}
+        <div style="position:relative;z-index:1">${foto}</div>
+        <div style="font-size:9px;font-weight:700;color:${done?fc.color:'var(--text-3)'};text-align:center;line-height:1.2">${f}</div>
+        <div style="font-size:9px;color:${done?'var(--text-2)':'var(--text-3)'};font-family:var(--mono)">${jam}</div>
+      </div>`;
+    }).join('');
+
+    return `<div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-xs)">
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);background:${lc.bg}">
+        <div style="width:36px;height:36px;border-radius:var(--radius-xs);background:linear-gradient(150deg,var(--pln-blue),var(--pln-blue-mid));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">👷</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:var(--text-1)">${p.nama}</div>
+          <div style="font-size:11px;color:var(--text-2);margin-top:1px">${p.regu} · ${p.ulp} · NIP ${p.nip}</div>
+        </div>
+        <span class="badge" style="background:${lc.bg};color:${lc.color};border:1px solid ${lc.border}">${lc.icon} ${lastFase}</span>
+      </div>
+      <div style="display:flex;gap:0;padding:16px;justify-content:space-between">
+        ${faseSteps}
+      </div>
+    </div>`;
   }).join('');
 }
 
@@ -1700,14 +2117,625 @@ function listenLaporan() {
   });
 }
 
+// ══════════════════════════════════════
+// TIKET P0/P1 — SUPERVISOR
+// ══════════════════════════════════════
+let currentEditTiketId = null;
+let lastTiketEntries = null;
+
+window.bukaModalTiket = function(id, data) {
+  currentEditTiketId = id || null;
+  document.getElementById('tiket-nomor').value    = data?.nomor    || '';
+  document.getElementById('tiket-prioritas').value= data?.prioritas|| 'P1';
+  document.getElementById('tiket-jenis').value    = data?.jenis    || '';
+  document.getElementById('tiket-lokasi').value   = data?.lokasi   || '';
+  document.getElementById('tiket-ulp').value      = data?.ulp      || '';
+  document.getElementById('tiket-koordinat').value= data?.koordinat|| '';
+  document.getElementById('tiket-target').value   = data?.target   || '';
+  document.getElementById('tiket-err').style.display = 'none';
+  document.getElementById('modal-tiket').style.display = 'flex';
+};
+window.tutupModalTiket = function() {
+  document.getElementById('modal-tiket').style.display = 'none';
+};
+
+window.simpanTiket = async function() {
+  const nomor     = document.getElementById('tiket-nomor').value.trim();
+  const prioritas = document.getElementById('tiket-prioritas').value;
+  const jenis     = document.getElementById('tiket-jenis').value.trim();
+  const lokasi    = document.getElementById('tiket-lokasi').value.trim();
+  const ulp       = document.getElementById('tiket-ulp').value.trim();
+  const koordinat = document.getElementById('tiket-koordinat').value.trim();
+  const target    = document.getElementById('tiket-target').value.trim();
+  const errEl     = document.getElementById('tiket-err');
+
+  if (!nomor || !jenis) {
+    errEl.textContent = 'Nomor Tiket dan Jenis Pekerjaan wajib diisi.';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  if (!fbDb) { alert('Firebase belum terhubung.'); return; }
+  const id = currentEditTiketId || ('tiket_' + nomor.replace(/[^a-zA-Z0-9]/g,'_') + '_' + Date.now().toString(36));
+  const payload = { nomor, prioritas, jenis, lokasi, ulp, koordinat, target: target||null, waktu: Date.now(), statusTiket: 'Aktif' };
+  try {
+    await window._fbSet(window._fbRef(fbDb, 'tiket/' + id), payload);
+    tutupModalTiket();
+  } catch(e) {
+    errEl.textContent = 'Gagal menyimpan: ' + e.message;
+    errEl.style.display = 'block';
+  }
+};
+
+window.hapusTiket = async function(id) {
+  if (!isAdminMode) return;
+  if (!confirm('Hapus tiket ini?')) return;
+  try { await window._fbRemove(window._fbRef(fbDb, 'tiket/' + id)); }
+  catch(e) { alert('Gagal menghapus: ' + e.message); }
+};
+
+function renderTiketTable(entries) {
+  lastTiketEntries = entries;
+  document.getElementById('tiketCount').textContent = entries.length + ' tiket';
+  const tbody = document.getElementById('tiketBody');
+  if (entries.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty">Belum ada tiket. Buat tiket baru di atas.</td></tr>';
+    return;
+  }
+  const prioritasColor = { P0: 'badge-red', P1: 'badge-amber', P2: 'badge-blue' };
+  tbody.innerHTML = entries.sort((a,b)=>(b[1].waktu||0)-(a[1].waktu||0)).map(([id, t]) => {
+    const waktu = t.waktu ? new Date(t.waktu).toLocaleDateString('id-ID') : '—';
+    const pClass = prioritasColor[t.prioritas] || 'badge-gray';
+    const statusCls = t.statusTiket === 'Selesai' ? 'badge-green' : 'badge-blue';
+    const editBtn = `<button onclick="bukaModalTiket('${id}',${JSON.stringify(t).replace(/'/g,"\\'")})" style="background:var(--info-bg);color:var(--info);border:none;border-radius:var(--radius-xs);padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;margin-right:4px">Edit</button>`;
+    const tutupBtn = t.statusTiket !== 'Selesai' ? `<button onclick="tutupTiketManual('${id}')" style="background:var(--ok-bg);color:var(--ok);border:none;border-radius:var(--radius-xs);padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;margin-right:4px" title="Tandai tiket ini selesai secara manual">✓ Tutup</button>` : '';
+    const delBtn = isAdminMode ? `<button class="btn-del" onclick="hapusTiket('${id}')">🗑</button>` : '';
+    return `<tr>
+      <td style="font-family:var(--mono);font-size:12px;font-weight:700">${t.nomor||'—'}</td>
+      <td><span class="badge ${pClass}"><span class="badge-dot"></span>${t.prioritas||'—'}</span></td>
+      <td style="font-weight:600">${t.jenis||'—'}</td>
+      <td style="font-size:12px;color:var(--text-2)">${t.lokasi||'—'}</td>
+      <td>${t.ulp||'—'}</td>
+      <td style="font-family:var(--mono);font-size:11px">${t.target||'—'}</td>
+      <td><span class="badge ${statusCls}"><span class="badge-dot"></span>${t.statusTiket||'Aktif'}</span></td>
+      <td style="font-size:11px;color:var(--text-3)">${waktu}</td>
+      <td>${editBtn}${tutupBtn}${delBtn}</td>
+    </tr>`;
+  }).join('');
+}
+
+function listenTiket() {
+  if (fbListeners.tiket) return;
+  const r = window._fbRef(fbDb, 'tiket');
+  fbListeners.tiket = window._fbOnValue(r, snap => {
+    const data = snap.val() || {};
+    renderTiketTable(Object.entries(data));
+  });
+}
+
+// ══════════════════════════════════════
+// VERIFIKASI SUPERVISOR
+// ══════════════════════════════════════
+let currentVerifId = null;
+let currentVerifLaporan = null;
+let lastVerifEntries = null;
+
+window.bukaModalVerifikasi = function(id, laporan) {
+  currentVerifId = id;
+  currentVerifLaporan = laporan;
+  document.getElementById('verif-target').value    = laporan.target    || '';
+  document.getElementById('verif-realisasi').value = laporan.realisasi || '';
+  document.getElementById('verif-catatan').value   = '';
+  document.querySelectorAll('input[name="verif-hasil"]').forEach(r => r.checked = false);
+  document.getElementById('verif-label-ok').style.background      = '';
+  document.getElementById('verif-label-revisi').style.background  = '';
+  document.getElementById('verif-err').style.display = 'none';
+
+  const before = laporan.fotoBeforeBase64 || '';
+  const after  = laporan.fotoAfterBase64  || '';
+  const waktu  = laporan.waktu ? new Date(laporan.waktu).toLocaleString('id-ID') : '—';
+
+  document.getElementById('verif-detail-body').innerHTML = `
+    <div style="background:var(--surface-2);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px;border:1px solid var(--line)">
+      <div style="font-size:13px;font-weight:700;margin-bottom:8px">👷 ${laporan.nama||'—'} <span style="font-weight:400;color:var(--text-3);font-size:11px">${laporan.regu||''} · ${laporan.ulp||''}</span></div>
+      <div style="font-size:12px;color:var(--text-2);line-height:1.8">
+        <b>Tiket:</b> ${laporan.nomorTiket ? '<span style="font-family:var(--mono);color:var(--pln-blue);font-weight:700">'+laporan.nomorTiket+'</span>' : '—'}<br>
+        <b>Pekerjaan:</b> ${laporan.rincian||'—'}<br>
+        <b>Material:</b> ${laporan.material||'—'}<br>
+        <b>Waktu Laporan:</b> ${waktu}
+      </div>
+    </div>
+    ${(before||after) ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+      <div><div style="font-size:10px;font-weight:700;text-align:center;color:var(--text-3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px">SEBELUM</div>${before?`<img src="${before}" style="width:100%;border-radius:var(--radius-xs);border:1px solid var(--line)">` : '<div style="background:var(--surface-2);aspect-ratio:1;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;font-size:20px">📷</div>'}</div>
+      <div><div style="font-size:10px;font-weight:700;text-align:center;color:var(--text-3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px">SESUDAH</div>${after?`<img src="${after}" style="width:100%;border-radius:var(--radius-xs);border:1px solid var(--line)">` : '<div style="background:var(--surface-2);aspect-ratio:1;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;font-size:20px">📷</div>'}</div>
+    </div>` : ''}
+  `;
+  document.getElementById('modal-verifikasi').style.display = 'flex';
+};
+
+window.tutupModalVerifikasi = function() {
+  document.getElementById('modal-verifikasi').style.display = 'none';
+};
+
+window.highlightVerifOption = function() {
+  const isOk     = document.getElementById('verif-ok').checked;
+  const isRevisi = document.getElementById('verif-revisi').checked;
+  document.getElementById('verif-label-ok').style.background      = isOk     ? 'var(--ok-bg)' : '';
+  document.getElementById('verif-label-ok').style.borderColor     = isOk     ? 'var(--ok)'    : '';
+  document.getElementById('verif-label-revisi').style.background  = isRevisi ? 'var(--warn-bg)' : '';
+  document.getElementById('verif-label-revisi').style.borderColor = isRevisi ? 'var(--warn)'    : '';
+};
+
+window.submitVerifikasi = async function() {
+  const hasil    = document.querySelector('input[name="verif-hasil"]:checked')?.value;
+  const target   = document.getElementById('verif-target').value;
+  const realisasi= document.getElementById('verif-realisasi').value;
+  const catatan  = document.getElementById('verif-catatan').value.trim();
+  const errEl    = document.getElementById('verif-err');
+
+  if (!hasil) { errEl.textContent = 'Pilih hasil verifikasi terlebih dahulu.'; errEl.style.display='block'; return; }
+  errEl.style.display = 'none';
+  if (!fbDb || !currentVerifId) return;
+
+  const btn = document.getElementById('verif-btn-submit');
+  btn.disabled = true; btn.textContent = 'Menyimpan...';
+  try {
+    const upd = {
+      statusVerifikasi: hasil,
+      verifTarget: target || null,
+      verifRealisasi: realisasi || null,
+      verifCatatan: catatan || null,
+      verifWaktu: Date.now(),
+      verifOleh: 'Supervisor FFM'
+    };
+    const { update, get } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+    await update(window._fbRef(fbDb, 'laporan/' + currentVerifId), upd);
+
+    // ── Auto-tutup tiket terkait ──
+    // Begitu laporan yang terhubung ke nomor tiket dinyatakan "Terverifikasi", tiket P0/P1
+    // otomatis ditandai "Selesai" supaya tidak menumpuk "Aktif" selamanya.
+    const nomorTiket = currentVerifLaporan?.nomorTiket;
+    if (hasil === 'Terverifikasi' && nomorTiket) {
+      try {
+        const tiketSnap = await get(window._fbRef(fbDb, 'tiket'));
+        const tiketData = tiketSnap.val() || {};
+        const found = Object.entries(tiketData).find(([,t]) => (t.nomor||'').toUpperCase() === nomorTiket.toUpperCase());
+        if (found) {
+          const [tiketId] = found;
+          await update(window._fbRef(fbDb, 'tiket/' + tiketId), {
+            statusTiket: 'Selesai',
+            selesaiOtomatisPada: Date.now(),
+            selesaiOtomatisDari: currentVerifId
+          });
+        }
+      } catch(e) { console.warn('Auto-tutup tiket gagal:', e.message); }
+    }
+
+    tutupModalVerifikasi();
+  } catch(e) {
+    errEl.textContent = 'Gagal menyimpan: ' + e.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Kirim Verifikasi';
+  }
+};
+
+// Tombol manual untuk supervisor menutup tiket sendiri (cadangan, kalau tidak tertaut/tidak ke-auto-close)
+window.tutupTiketManual = async function(tiketId) {
+  if (!fbDb) return;
+  if (!confirm('Tutup tiket ini? Status akan diubah menjadi "Selesai".')) return;
+  try {
+    const { update } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+    await update(window._fbRef(fbDb, 'tiket/' + tiketId), { statusTiket: 'Selesai', selesaiOtomatisPada: Date.now(), selesaiOtomatisDari: 'manual-supervisor' });
+  } catch(e) { alert('Gagal menutup tiket: ' + e.message); }
+};
+
+function renderVerifikasiGrid(entries) {
+  lastVerifEntries = entries;
+  const menunggu = entries.filter(([,l]) => !l.statusVerifikasi).length;
+  document.getElementById('verifikasiCount').textContent = menunggu + ' menunggu';
+  const badge = document.getElementById('nav-badge-verifikasi');
+  if (menunggu > 0) { badge.textContent = menunggu; badge.style.display = ''; }
+  else badge.style.display = 'none';
+
+  const grid = document.getElementById('verifikasiGrid');
+  if (entries.length === 0) {
+    grid.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;font-size:13px;grid-column:1/-1">Belum ada laporan pekerjaan</div>';
+    return;
+  }
+  // sort: belum diverifikasi dulu, lalu by waktu
+  entries.sort((a,b) => {
+    const aVerif = a[1].statusVerifikasi ? 1 : 0;
+    const bVerif = b[1].statusVerifikasi ? 1 : 0;
+    if (aVerif !== bVerif) return aVerif - bVerif;
+    return (b[1].waktu||0) - (a[1].waktu||0);
+  });
+
+  grid.innerHTML = entries.map(([id, l]) => {
+    const waktu = l.waktu ? new Date(l.waktu).toLocaleString('id-ID') : '—';
+    const before = l.fotoBeforeBase64 || '';
+    const after  = l.fotoAfterBase64  || '';
+    const sv = l.statusVerifikasi;
+    const svColor = sv === 'Terverifikasi' ? 'var(--ok)' : sv === 'Perlu Revisi' ? 'var(--warn)' : 'var(--text-3)';
+    const svBg    = sv === 'Terverifikasi' ? 'var(--ok-bg)' : sv === 'Perlu Revisi' ? 'var(--warn-bg)' : 'var(--surface-2)';
+    const tiketBadge = l.nomorTiket ? `<span style="font-family:var(--mono);font-size:10px;background:var(--info-bg);color:var(--info);padding:2px 8px;border-radius:99px;font-weight:700">${l.nomorTiket}</span>` : '';
+    const statusBadge = sv
+      ? `<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:${svBg};color:${svColor}">${sv === 'Terverifikasi' ? '✓ Terverifikasi' : '⚠ Perlu Revisi'}</span>`
+      : `<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--warn-bg);color:var(--warn)">⏳ Menunggu Verifikasi</span>`;
+
+    const verifInfo = sv ? `
+      <div style="padding:10px 15px;border-top:1px solid var(--line);background:${svBg};font-size:11.5px;color:var(--text-2)">
+        <b>Verifikasi oleh:</b> ${l.verifOleh||'Supervisor'} · ${l.verifWaktu ? new Date(l.verifWaktu).toLocaleString('id-ID') : '—'}<br>
+        <b>Target:</b> ${l.verifTarget||l.target||'—'} &nbsp;|&nbsp; <b>Realisasi:</b> ${l.verifRealisasi||l.realisasi||'—'}<br>
+        ${l.verifCatatan ? `<b>Catatan:</b> ${l.verifCatatan}` : ''}
+      </div>` : '';
+
+    const btnVerif = !sv
+      ? `<button onclick="bukaModalVerifikasi('${id}',${JSON.stringify(l).replace(/"/g,'&quot;')})" style="background:var(--pln-blue);color:#fff;border:none;border-radius:var(--radius-xs);padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;width:100%;margin-top:10px">✅ Verifikasi Sekarang</button>`
+      : `<button onclick="bukaModalVerifikasi('${id}',${JSON.stringify(l).replace(/"/g,'&quot;')})" style="background:none;color:var(--text-2);border:1px solid var(--line);border-radius:var(--radius-xs);padding:6px 14px;font-size:11px;font-weight:600;cursor:pointer;width:100%;margin-top:8px">Ubah Verifikasi</button>`;
+
+    const delBtn = isAdminMode ? `<button class="btn-del" title="Hapus laporan" onclick="hapusLaporan('${id}')">🗑</button>` : '';
+
+    return `<div class="laporan-card">
+      <div class="laporan-card-header">
+        <div style="flex:1;min-width:0">
+          <div class="laporan-card-name">👷 ${l.nama||'—'} <span style="font-weight:400;color:var(--text-3);font-size:11px">${l.regu||''} · ${l.ulp||''}</span></div>
+          <div class="laporan-card-meta" style="margin-top:4px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">${tiketBadge} ${statusBadge}</div>
+          <div class="laporan-card-meta">${waktu}</div>
+        </div>
+        ${delBtn}
+      </div>
+      ${(before||after) ? `<div class="laporan-photos">
+        <div>${before?`<img src="${before}" onclick="bukaFotoFullscreen(this)" style="cursor:pointer">`:'<div style="background:#f1f5f9;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:24px">📷</div>'}<div class="photo-label">SEBELUM</div></div>
+        <div>${after?`<img src="${after}" onclick="bukaFotoFullscreen(this)" style="cursor:pointer">`:'<div style="background:#f1f5f9;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:24px">📷</div>'}<div class="photo-label">SESUDAH</div></div>
+      </div>` : ''}
+      <div class="laporan-card-body">
+        <b>Pekerjaan:</b> ${l.rincian||'—'}<br>
+        <b>Material:</b> ${l.material||'—'}<br>
+        <b>Target:</b> ${l.target||'—'} &nbsp;|&nbsp; <b>Realisasi:</b> ${l.realisasi||'—'}
+        ${btnVerif}
+      </div>
+      ${verifInfo}
+    </div>`;
+  }).join('');
+}
+
+function listenVerifikasi() {
+  if (fbListeners.verifikasi) return;
+  const r = window._fbRef(fbDb, 'laporan');
+  fbListeners.verifikasi = window._fbOnValue(r, snap => {
+    const data = snap.val() || {};
+    const entries = Object.entries(data).sort((a,b) => (b[1].waktu||0)-(a[1].waktu||0));
+    renderVerifikasiGrid(entries);
+  });
+}
+
 loadAll();
 switchView('beranda');
 applyAdminUI(); // sinkronkan tampilan dengan status Mode Admin (sessionStorage) saat halaman dibuka
 
 // Sambungkan ke Firebase & nyalakan badge "Petugas Aktif" SEJAK HALAMAN DIBUKA
-// (bukan menunggu user klik menu Petugas Aktif), supaya angkanya selalu akurat
-// real-time tanpa perlu refresh manual.
-initFirebase().then(ok => { if (ok) listenPetugasBadge(); });
+initFirebase().then(ok => {
+  if (ok) {
+    // patch: expose set untuk tiket
+    import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js').then(m => { window._fbSet = m.set; });
+    listenPetugasBadge();
+    listenVerifikasiBadge();
+  }
+});
+
+function listenVerifikasiBadge() {
+  const r = window._fbRef(fbDb, 'laporan');
+  window._fbOnValue(r, snap => {
+    const data = snap.val() || {};
+    const menunggu = Object.values(data).filter(l => !l.statusVerifikasi).length;
+    const badge = document.getElementById('nav-badge-verifikasi');
+    if (menunggu > 0) { badge.textContent = menunggu; badge.style.display = ''; }
+    else badge.style.display = 'none';
+  });
+}
+
+// ══════════════════════════════════════
+// REKAP LAPORAN
+// ══════════════════════════════════════
+let allLaporanCache = [];
+let rekapPeriode = 'hari';
+
+function getDateRange(periode) {
+  const now = new Date();
+  const todayStart = new Date(now); todayStart.setHours(0,0,0,0);
+  if (periode === 'hari') {
+    return { start: todayStart.getTime(), label: 'Hari Ini · ' + todayStart.toLocaleDateString('id-ID') };
+  } else if (periode === 'minggu') {
+    const day = now.getDay() || 7;
+    const mon = new Date(now); mon.setDate(now.getDate() - day + 1); mon.setHours(0,0,0,0);
+    return { start: mon.getTime(), label: 'Minggu Ini · ' + mon.toLocaleDateString('id-ID') + ' — ' + now.toLocaleDateString('id-ID') };
+  } else {
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    return { start: monthStart.getTime(), label: 'Bulan Ini · ' + monthStart.toLocaleDateString('id-ID',{month:'long',year:'numeric'}) };
+  }
+}
+
+window.setRekapPeriode = function(p, btn) {
+  rekapPeriode = p;
+  document.querySelectorAll('#viewRekap .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderRekap(allLaporanCache);
+};
+
+function renderRekap(entries) {
+  allLaporanCache = entries;
+  const { start, label } = getDateRange(rekapPeriode);
+  const filtered = entries.filter(([,l]) => (l.waktu||0) >= start);
+
+  const total   = filtered.length;
+  const verif   = filtered.filter(([,l]) => l.statusVerifikasi === 'Terverifikasi').length;
+  const pending = filtered.filter(([,l]) => !l.statusVerifikasi).length;
+  const withPct = filtered.filter(([,l]) => l.target && l.realisasi && +l.target > 0);
+  const avgPct  = withPct.length
+    ? Math.round(withPct.reduce((s,[,l]) => s + Math.min(100, Math.round(+l.realisasi / +l.target * 100)), 0) / withPct.length)
+    : 0;
+
+  document.getElementById('rekap-total').textContent   = total;
+  document.getElementById('rekap-verif').textContent   = verif;
+  document.getElementById('rekap-pending').textContent = pending;
+  document.getElementById('rekap-avg').textContent     = withPct.length ? avgPct + '%' : '—';
+  document.getElementById('rekap-periode-label').textContent = label;
+  document.getElementById('rekap-detail-count').textContent  = total + ' laporan';
+
+  // Rekap per Tim
+  const byTim = {};
+  filtered.forEach(([,l]) => {
+    const k = l.regu || '—';
+    if (!byTim[k]) byTim[k] = { count:0, target:0, realisasi:0 };
+    byTim[k].count++;
+    byTim[k].target    += +(l.target||0);
+    byTim[k].realisasi += +(l.realisasi||0);
+  });
+  const timEntries = Object.entries(byTim).sort((a,b) => b[1].realisasi - a[1].realisasi);
+  document.getElementById('rekap-tim-count').textContent = timEntries.length + ' tim';
+  document.getElementById('rekap-tim-body').innerHTML = timEntries.length === 0
+    ? '<tr><td colspan="5" class="empty">Belum ada data</td></tr>'
+    : timEntries.map(([tim, d]) => {
+        const pct = d.target > 0 ? Math.round(d.realisasi / d.target * 100) : 0;
+        const pctColor = pct >= 100 ? 'var(--ok)' : pct >= 70 ? 'var(--warn)' : 'var(--crit)';
+        return `<tr>
+          <td style="font-weight:600">${tim}</td>
+          <td style="font-family:var(--mono)">${d.count}</td>
+          <td style="font-family:var(--mono)">${d.target||'—'}</td>
+          <td style="font-family:var(--mono)">${d.realisasi||'—'}</td>
+          <td style="font-weight:800;color:${pctColor}">${d.target>0?pct+'%':'—'}</td>
+        </tr>`;
+      }).join('');
+
+  // Rekap per ULP
+  const byUlp = {};
+  filtered.forEach(([,l]) => {
+    const k = l.ulp || '—';
+    if (!byUlp[k]) byUlp[k] = { count:0, target:0, realisasi:0 };
+    byUlp[k].count++;
+    byUlp[k].target    += +(l.target||0);
+    byUlp[k].realisasi += +(l.realisasi||0);
+  });
+  const ulpEntries = Object.entries(byUlp).sort((a,b) => b[1].realisasi - a[1].realisasi);
+  document.getElementById('rekap-ulp-count').textContent = ulpEntries.length + ' ULP';
+  document.getElementById('rekap-ulp-body').innerHTML = ulpEntries.length === 0
+    ? '<tr><td colspan="5" class="empty">Belum ada data</td></tr>'
+    : ulpEntries.map(([ulp, d]) => {
+        const pct = d.target > 0 ? Math.round(d.realisasi / d.target * 100) : 0;
+        const pctColor = pct >= 100 ? 'var(--ok)' : pct >= 70 ? 'var(--warn)' : 'var(--crit)';
+        return `<tr>
+          <td style="font-weight:600">${ulp}</td>
+          <td style="font-family:var(--mono)">${d.count}</td>
+          <td style="font-family:var(--mono)">${d.target||'—'}</td>
+          <td style="font-family:var(--mono)">${d.realisasi||'—'}</td>
+          <td style="font-weight:800;color:${pctColor}">${d.target>0?pct+'%':'—'}</td>
+        </tr>`;
+      }).join('');
+
+  // Detail tabel
+  const svBadgeMap = {
+    'Terverifikasi': '<span class="badge badge-green"><span class="badge-dot"></span>Terverifikasi</span>',
+    'Perlu Revisi':  '<span class="badge badge-amber"><span class="badge-dot"></span>Perlu Revisi</span>',
+  };
+  document.getElementById('rekap-detail-body').innerHTML = filtered.length === 0
+    ? '<tr><td colspan="9" class="empty">Tidak ada laporan dalam periode ini</td></tr>'
+    : filtered.sort((a,b)=>(b[1].waktu||0)-(a[1].waktu||0)).map(([,l]) => {
+        const waktu = l.waktu ? new Date(l.waktu).toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+        const sv = l.statusVerifikasi;
+        const svBadge = svBadgeMap[sv] || '<span class="badge badge-gray"><span class="badge-dot"></span>Menunggu</span>';
+        const pct = l.target && l.realisasi && +l.target > 0 ? Math.round(+l.realisasi / +l.target * 100) + '%' : '—';
+        return `<tr>
+          <td style="font-size:11px;white-space:nowrap">${waktu}</td>
+          <td style="font-weight:600;font-size:12px">${l.nama||'—'}</td>
+          <td style="font-size:12px">${l.regu||'—'}</td>
+          <td style="font-size:12px">${l.ulp||'—'}</td>
+          <td style="font-family:var(--mono);font-size:11px">${l.nomorTiket||'—'}</td>
+          <td class="truncate" style="max-width:160px" title="${l.rincian||''}">${l.rincian||'—'}</td>
+          <td style="font-family:var(--mono)">${l.target||'—'}</td>
+          <td style="font-family:var(--mono)">${l.realisasi||'—'}</td>
+          <td>${svBadge}</td>
+        </tr>`;
+      }).join('');
+}
+
+function listenRekap() {
+  if (fbListeners.rekap) { renderRekap(allLaporanCache); return; }
+  const r = window._fbRef(fbDb, 'laporan');
+  fbListeners.rekap = window._fbOnValue(r, snap => {
+    const data = snap.val() || {};
+    renderRekap(Object.entries(data));
+  });
+}
+
+// ══════════════════════════════════════
+// PROGRES PROGRAM
+// ══════════════════════════════════════
+let progresTargetData = [];  // [{nama, target, satuan}]
+let progresLaporanAll = [];
+
+function listenProgresData() {
+  if (fbListeners.progresLaporan) return;
+  const r = window._fbRef(fbDb, 'laporan');
+  fbListeners.progresLaporan = window._fbOnValue(r, snap => {
+    const data = snap.val() || {};
+    progresLaporanAll = Object.values(data).filter(l => l.statusVerifikasi === 'Terverifikasi');
+    renderProgres();
+  });
+}
+
+function listenProgresTarget() {
+  if (fbListeners.progresTarget) return;
+  const r = window._fbRef(fbDb, 'progresTarget');
+  fbListeners.progresTarget = window._fbOnValue(r, snap => {
+    progresTargetData = snap.val() ? Object.entries(snap.val()).map(([id,v])=>({id,...v})) : [];
+    renderProgres();
+    renderProgresTargetModal();
+  });
+}
+
+function renderProgres() {
+  // ── Per Program (dari progresTargetData) ──
+  const programList = document.getElementById('progres-program-list');
+  if (progresTargetData.length === 0) {
+    programList.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;font-size:13px">Belum ada program. Klik "Atur Target Program" untuk menambahkan.</div>';
+    document.getElementById('progres-program-count').textContent = '0 program';
+  } else {
+    document.getElementById('progres-program-count').textContent = progresTargetData.length + ' program';
+    programList.innerHTML = progresTargetData.map(prog => {
+      // hitung realisasi dari laporan terverifikasi yang cocok dengan nama program
+      const realisasi = progresLaporanAll
+        .filter(l => (l.rincian||'').toLowerCase().includes((prog.nama||'').toLowerCase()) || (l.nomorTiket||'') === (prog.tiket||''))
+        .reduce((s,l) => s + +(l.realisasi||0), 0);
+      const target = +(prog.target||0);
+      const pct = target > 0 ? Math.min(100, Math.round(realisasi / target * 100)) : 0;
+      const barColor = pct >= 100 ? 'var(--ok)' : pct >= 70 ? '#22c55e' : pct >= 40 ? 'var(--warn)' : 'var(--crit)';
+      return `<div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px">
+          <div style="font-size:13px;font-weight:700;color:var(--text-1)">${prog.nama||'—'}</div>
+          <div style="font-size:12px;color:var(--text-3);font-family:var(--mono)">${realisasi}/${target} ${prog.satuan||'unit'} &nbsp;<b style="color:${barColor}">(${pct}%)</b></div>
+        </div>
+        <div style="background:var(--surface-3);border-radius:99px;height:10px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${barColor};border-radius:99px;transition:width 0.6s cubic-bezier(0.22,1,0.36,1)"></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Per ULP ──
+  const byUlp = {};
+  progresLaporanAll.forEach(l => {
+    const k = l.ulp || '—';
+    if (!byUlp[k]) byUlp[k] = { realisasi:0, count:0 };
+    byUlp[k].realisasi += +(l.realisasi||0);
+    byUlp[k].count++;
+  });
+  const ulpList = document.getElementById('progres-ulp-list');
+  const ulpEntries = Object.entries(byUlp).sort((a,b)=>b[1].realisasi-a[1].realisasi);
+  document.getElementById('progres-ulp-count').textContent = ulpEntries.length + ' ULP';
+  if (ulpEntries.length === 0) {
+    ulpList.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;font-size:13px">Belum ada laporan terverifikasi</div>';
+  } else {
+    const maxReal = Math.max(...ulpEntries.map(([,d])=>d.realisasi),1);
+    ulpList.innerHTML = ulpEntries.map(([ulp,d]) => {
+      const pct = Math.round(d.realisasi / maxReal * 100);
+      return `<div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+          <div style="font-size:13px;font-weight:700">${ulp}</div>
+          <div style="font-size:12px;color:var(--text-3)">${d.count} laporan · <b style="color:var(--ok)">${d.realisasi} realisasi</b></div>
+        </div>
+        <div style="background:var(--surface-3);border-radius:99px;height:9px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:var(--pln-blue-light);border-radius:99px;transition:width 0.6s cubic-bezier(0.22,1,0.36,1)"></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Per Tim/Regu ──
+  const byTim = {};
+  progresLaporanAll.forEach(l => {
+    const k = l.regu || '—';
+    if (!byTim[k]) byTim[k] = { ulp: l.ulp||'—', count:0, target:0, realisasi:0 };
+    byTim[k].count++;
+    byTim[k].target    += +(l.target||0);
+    byTim[k].realisasi += +(l.realisasi||0);
+  });
+  const timEntries = Object.entries(byTim).sort((a,b)=>b[1].realisasi-a[1].realisasi);
+  document.getElementById('progres-tim-body').innerHTML = timEntries.length === 0
+    ? '<tr><td colspan="6" class="empty">Belum ada data</td></tr>'
+    : timEntries.map(([tim, d]) => {
+        const pct = d.target > 0 ? Math.round(d.realisasi / d.target * 100) : 0;
+        const pctColor = pct >= 100 ? 'var(--ok)' : pct >= 70 ? 'var(--warn)' : 'var(--crit)';
+        return `<tr>
+          <td style="font-weight:700">${tim}</td>
+          <td style="font-size:12px;color:var(--text-2)">${d.ulp}</td>
+          <td style="font-family:var(--mono)">${d.count}</td>
+          <td style="font-family:var(--mono)">${d.target||'—'}</td>
+          <td style="font-family:var(--mono)">${d.realisasi||'—'}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="flex:1;background:var(--surface-3);border-radius:99px;height:7px;overflow:hidden;min-width:60px">
+                <div style="height:100%;width:${Math.min(100,pct)}%;background:${pctColor};border-radius:99px"></div>
+              </div>
+              <span style="font-weight:800;color:${pctColor};font-size:12px;white-space:nowrap">${d.target>0?pct+'%':'—'}</span>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+}
+
+// ── Modal Atur Target Program ──
+window.bukaModalProgresTarget = function() {
+  renderProgresTargetModal();
+  document.getElementById('modal-progres-target').style.display = 'flex';
+};
+window.tutupModalProgresTarget = function() {
+  document.getElementById('modal-progres-target').style.display = 'none';
+};
+
+function renderProgresTargetModal() {
+  const list = document.getElementById('progres-target-list');
+  const rows = progresTargetData.length > 0 ? progresTargetData : [{ nama:'', target:'', satuan:'unit' }];
+  list.innerHTML = rows.map((p, i) => `
+    <div style="display:grid;grid-template-columns:3fr 1.5fr 1.5fr auto;gap:8px;align-items:center" data-idx="${i}">
+      <input type="text" class="pt-nama" value="${p.nama||''}" placeholder="Nama program (cth: Cover Anti Hewan)" style="border:1px solid var(--line);border-radius:var(--radius-xs);padding:8px 10px;font-size:12px;outline:none">
+      <input type="number" class="pt-target" value="${p.target||''}" placeholder="Target" style="border:1px solid var(--line);border-radius:var(--radius-xs);padding:8px 10px;font-size:12px;outline:none">
+      <input type="text" class="pt-satuan" value="${p.satuan||'unit'}" placeholder="unit/km/titik" style="border:1px solid var(--line);border-radius:var(--radius-xs);padding:8px 10px;font-size:12px;outline:none">
+      <button onclick="this.closest('[data-idx]').remove()" style="background:var(--crit-bg);color:var(--crit);border:none;border-radius:var(--radius-xs);width:32px;height:32px;cursor:pointer;font-size:14px;flex-shrink:0">✕</button>
+    </div>
+  `).join('');
+}
+
+window.tambahBarisProgramTarget = function() {
+  const list = document.getElementById('progres-target-list');
+  const row = document.createElement('div');
+  row.setAttribute('data-idx', Date.now());
+  row.style.cssText = 'display:grid;grid-template-columns:3fr 1.5fr 1.5fr auto;gap:8px;align-items:center';
+  row.innerHTML = `
+    <input type="text" class="pt-nama" placeholder="Nama program" style="border:1px solid var(--line);border-radius:var(--radius-xs);padding:8px 10px;font-size:12px;outline:none">
+    <input type="number" class="pt-target" placeholder="Target" style="border:1px solid var(--line);border-radius:var(--radius-xs);padding:8px 10px;font-size:12px;outline:none">
+    <input type="text" class="pt-satuan" placeholder="unit/km" value="unit" style="border:1px solid var(--line);border-radius:var(--radius-xs);padding:8px 10px;font-size:12px;outline:none">
+    <button onclick="this.closest('[data-idx]').remove()" style="background:var(--crit-bg);color:var(--crit);border:none;border-radius:var(--radius-xs);width:32px;height:32px;cursor:pointer;font-size:14px">✕</button>
+  `;
+  list.appendChild(row);
+};
+
+window.simpanProgresTarget = async function() {
+  if (!fbDb) { alert('Firebase belum terhubung.'); return; }
+  const rows = document.querySelectorAll('#progres-target-list [data-idx]');
+  const payload = {};
+  rows.forEach((row, i) => {
+    const nama   = row.querySelector('.pt-nama')?.value.trim();
+    const target = row.querySelector('.pt-target')?.value.trim();
+    const satuan = row.querySelector('.pt-satuan')?.value.trim() || 'unit';
+    if (nama) payload['prog_' + i] = { nama, target: target||'0', satuan };
+  });
+  try {
+    await window._fbSet(window._fbRef(fbDb, 'progresTarget'), payload);
+    tutupModalProgresTarget();
+  } catch(e) { alert('Gagal menyimpan: ' + e.message); }
+};
 </script>
 <!-- FOTO FULLSCREEN MODAL -->
 <div id="foto-modal" onclick="this.style.display='none'" style="

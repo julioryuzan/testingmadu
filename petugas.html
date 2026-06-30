@@ -7,33 +7,24 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* ════════════════════════════════════════════════════════════
-   DESIGN TOKENS — sama dengan dashboard manajer ("Grid Operasional")
-   disesuaikan mobile-first: target sentuh besar, kontras tinggi
-   untuk dipakai di luar ruangan / cahaya matahari Papua.
-════════════════════════════════════════════════════════════ */
 :root {
   --pln-blue:        #003D82;
   --pln-blue-mid:    #0057B8;
   --pln-blue-light:  #1E88E5;
   --pln-yellow:      #FFB800;
   --pln-yellow-deep: #E6A300;
-
   --ink-900: #0A1424;
   --ink-800: #101D33;
   --ink-700: #16253F;
-
   --bg:        #F1F4F9;
   --surface:   #FFFFFF;
   --surface-2: #F5F7FB;
   --surface-3: #E7ECF4;
   --line:      rgba(10,22,40,0.08);
   --line-str:  rgba(10,22,40,0.15);
-
   --text-1: #0B1626;
   --text-2: #4D5D78;
   --text-3: #8C9AB3;
-
   --ok:        #0EA15B;
   --ok-bg:     rgba(14,161,91,0.10);
   --ok-border: rgba(14,161,91,0.35);
@@ -45,483 +36,247 @@
   --crit-border: rgba(220,53,69,0.35);
   --info:      #2563EB;
   --info-bg:   rgba(37,99,235,0.09);
-
+  --violet:    #6D4FD9;
+  --violet-bg: rgba(109,79,217,0.10);
   --radius-lg: 20px;
   --radius:    16px;
   --radius-sm: 12px;
   --radius-xs: 9px;
-
   --font-display: 'Manrope', 'Inter', -apple-system, sans-serif;
   --font: 'Inter', -apple-system, sans-serif;
   --mono: 'SF Mono','JetBrains Mono','Fira Code',monospace;
   --ease: cubic-bezier(0.22,1,0.36,1);
-
   --shadow-sm: 0 1px 3px rgba(10,22,40,0.06), 0 1px 8px rgba(10,22,40,0.05);
   --shadow:    0 6px 22px rgba(10,22,40,0.12);
   --shadow-lg: 0 14px 36px rgba(10,22,40,0.18);
 }
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
 html { -webkit-text-size-adjust: 100%; }
-
 body {
-  background: var(--bg);
-  color: var(--text-1);
-  font-family: var(--font);
-  font-size: 14px; line-height: 1.5;
-  min-height: 100vh;
-  display: flex; flex-direction: column;
-  -webkit-font-smoothing: antialiased;
+  background: var(--bg); color: var(--text-1); font-family: var(--font);
+  font-size: 14px; line-height: 1.5; min-height: 100vh;
+  display: flex; flex-direction: column; -webkit-font-smoothing: antialiased;
 }
-
 :focus-visible { outline: 2px solid var(--pln-blue-light); outline-offset: 2px; border-radius: 4px; }
 
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
-}
-
-/* ── HEADER ── */
+/* HEADER */
 .header {
   background: linear-gradient(120deg, var(--ink-900), var(--pln-blue) 130%);
-  padding: 0 16px;
-  display: flex; align-items: center; gap: 12px;
-  height: 58px; flex-shrink: 0;
-  position: sticky; top: 0; z-index: 100;
+  padding: 0 16px; display: flex; align-items: center; gap: 12px;
+  height: 58px; flex-shrink: 0; position: sticky; top: 0; z-index: 100;
   box-shadow: 0 2px 14px rgba(10,22,40,0.30);
 }
-.header-logo {
-  width: 34px; height: 34px;
-  background: linear-gradient(150deg, var(--pln-yellow), var(--pln-yellow-deep));
-  border-radius: var(--radius-xs);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; flex-shrink: 0;
-  box-shadow: 0 2px 10px rgba(255,184,0,0.4);
-}
-.header-title { font-family: var(--font-display); font-size: 15px; font-weight: 800; color: #fff; letter-spacing: -0.2px; }
-.header-sub   { font-size: 10.5px; color: rgba(255,255,255,0.5); margin-top: 1px; font-weight: 500; }
-
-.conn-pill {
-  margin-left: auto;
-  display: flex; align-items: center; gap: 6px;
-  background: rgba(255,255,255,0.10);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 99px; padding: 5px 11px;
-  font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.75); flex-shrink: 0;
-}
-.conn-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); transition: background 0.3s; }
-.conn-dot.live { background: var(--ok); box-shadow: 0 0 0 0 rgba(14,161,91,0.5); animation: conn-pulse 2s infinite; }
+.header-logo { width:34px; height:34px; background:linear-gradient(150deg,var(--pln-yellow),var(--pln-yellow-deep)); border-radius:var(--radius-xs); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; box-shadow:0 2px 10px rgba(255,184,0,0.4); }
+.header-title { font-family:var(--font-display); font-size:15px; font-weight:800; color:#fff; letter-spacing:-0.2px; }
+.header-sub   { font-size:10.5px; color:rgba(255,255,255,0.5); margin-top:1px; font-weight:500; }
+.conn-pill { margin-left:auto; display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.15); border-radius:99px; padding:5px 11px; font-size:11px; font-weight:600; color:rgba(255,255,255,0.75); flex-shrink:0; }
+.conn-dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.3); transition:background 0.3s; }
+.conn-dot.live { background:var(--ok); box-shadow:0 0 0 0 rgba(14,161,91,0.5); animation:conn-pulse 2s infinite; }
 @keyframes conn-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(14,161,91,0.5)} 50%{box-shadow:0 0 0 5px rgba(14,161,91,0)} }
 
-/* ── SCREENS ── */
-.screen { flex: 1; display: none; flex-direction: column; overflow-y: auto; padding: 16px; gap: 14px; }
-.screen.active { display: flex; }
+/* SCREENS */
+.screen { flex:1; display:none; flex-direction:column; overflow-y:auto; padding:16px; gap:14px; }
+.screen.active { display:flex; }
 
-/* ── CARDS ── */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 20px;
-  box-shadow: var(--shadow-sm);
-}
-.card-title {
-  font-family: var(--font-display);
-  font-size: 11px; font-weight: 800; text-transform: uppercase;
-  letter-spacing: 0.8px; color: var(--text-3);
-  margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
-}
-.card-title::after { content:''; flex:1; height:1px; background: var(--line); }
+/* CARDS */
+.card { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow-sm); }
+.card-title { font-family:var(--font-display); font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-3); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.card-title::after { content:''; flex:1; height:1px; background:var(--line); }
 
-/* ════════════════════════════════
-   LOGIN SCREEN
-   ════════════════════════════════ */
-.login-banner {
-  background:
-    radial-gradient(circle at 85% -10%, rgba(255,184,0,0.18), transparent 55%),
-    linear-gradient(135deg, var(--ink-900), var(--pln-blue) 140%);
-  border-radius: var(--radius-lg);
-  padding: 28px 20px 26px;
-  box-shadow: 0 10px 30px rgba(10,22,40,0.30);
-  position: relative; overflow: hidden;
-}
-.login-banner::before {
-  content: '';
-  position: absolute; top: -30px; right: -30px;
-  width: 130px; height: 130px;
-  background: rgba(255,184,0,0.10);
-  border-radius: 50%;
-}
-.login-banner::after {
-  content: '';
-  position: absolute; bottom: -40px; right: 30px;
-  width: 90px; height: 90px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 50%;
-}
-.login-brand {
-  display: flex; align-items: center; gap: 12px; margin-bottom: 18px;
-  position: relative; z-index: 1;
-}
-.login-brand-icon {
-  width: 48px; height: 48px;
-  background: linear-gradient(150deg, var(--pln-yellow), var(--pln-yellow-deep));
-  border-radius: var(--radius-sm);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 24px;
-  box-shadow: 0 4px 16px rgba(255,184,0,0.45);
-  flex-shrink: 0;
-}
-.login-brand-text .lb-title { font-family: var(--font-display); font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.3px; line-height:1.1; }
-.login-brand-text .lb-sub   { font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 3px; font-weight: 500; }
-.login-tagline { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.6; position: relative; z-index: 1; }
+/* LOGIN */
+.login-banner { background: radial-gradient(circle at 85% -10%,rgba(255,184,0,0.18),transparent 55%), linear-gradient(135deg,var(--ink-900),var(--pln-blue) 140%); border-radius:var(--radius-lg); padding:28px 20px 26px; box-shadow:0 10px 30px rgba(10,22,40,0.30); position:relative; overflow:hidden; }
+.login-brand { display:flex; align-items:center; gap:12px; margin-bottom:18px; position:relative; z-index:1; }
+.login-brand-icon { width:48px; height:48px; background:linear-gradient(150deg,var(--pln-yellow),var(--pln-yellow-deep)); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:0 4px 16px rgba(255,184,0,0.45); flex-shrink:0; }
+.login-brand-text .lb-title { font-family:var(--font-display); font-size:18px; font-weight:800; color:#fff; }
+.login-brand-text .lb-sub   { font-size:12px; color:rgba(255,255,255,0.55); margin-top:3px; font-weight:500; }
+.login-tagline { font-size:13px; color:rgba(255,255,255,0.65); line-height:1.6; position:relative; z-index:1; }
+.login-chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; position:relative; z-index:1; }
+.login-chip { background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.18); border-radius:99px; padding:5px 12px; font-size:11px; font-weight:700; color:rgba(255,255,255,0.85); display:flex; align-items:center; gap:5px; }
 
-.login-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; position: relative; z-index: 1; }
-.login-chip {
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 99px; padding: 5px 12px;
-  font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.85);
-  display: flex; align-items: center; gap: 5px;
-}
+/* FORM */
+.field { margin-bottom:14px; }
+.field:last-child { margin-bottom:0; }
+.field label { display:block; font-size:12px; font-weight:700; color:var(--text-2); margin-bottom:7px; }
+.field input, .field select { width:100%; background:var(--surface-2); border:1.5px solid var(--line); border-radius:var(--radius-sm); padding:13px 14px; font-size:14.5px; color:var(--text-1); font-family:inherit; outline:none; -webkit-appearance:none; transition:border-color 0.2s,box-shadow 0.2s; }
+.field input:focus, .field select:focus { border-color:var(--pln-blue-light); box-shadow:0 0 0 3px rgba(30,136,229,0.12); background:#fff; }
 
-/* ── FORM ── */
-.field { margin-bottom: 14px; }
-.field:last-child { margin-bottom: 0; }
-.field label {
-  display: block; font-size: 12px; font-weight: 700;
-  color: var(--text-2); margin-bottom: 7px; letter-spacing: 0.1px;
-}
-.field input, .field select {
-  width: 100%;
-  background: var(--surface-2);
-  border: 1.5px solid var(--line);
-  border-radius: var(--radius-sm);
-  padding: 13px 14px;
-  font-size: 14.5px; color: var(--text-1);
-  font-family: inherit; outline: none;
-  -webkit-appearance: none; transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-}
-.field input::placeholder { color: var(--text-3); }
-.field input:focus, .field select:focus {
-  border-color: var(--pln-blue-light);
-  box-shadow: 0 0 0 3px rgba(30,136,229,0.12);
-  background: #fff;
-}
-.field select option { background: #fff; }
+/* BUTTONS */
+.btn { width:100%; padding:16px; border-radius:var(--radius-sm); font-size:14.5px; font-weight:800; border:none; cursor:pointer; transition:all 0.16s var(--ease); display:flex; align-items:center; justify-content:center; gap:8px; letter-spacing:-0.1px; font-family:var(--font); min-height:52px; }
+.btn:active { transform:scale(0.975); }
+.btn-primary { background:linear-gradient(135deg,var(--pln-blue-mid),var(--pln-blue)); color:#fff; box-shadow:0 6px 18px rgba(0,61,130,0.30); }
+.btn-success { background:linear-gradient(135deg,#14B86A,var(--ok)); color:#fff; box-shadow:0 6px 16px rgba(14,161,91,0.30); }
+.btn-yellow  { background:linear-gradient(135deg,var(--pln-yellow),var(--pln-yellow-deep)); color:var(--ink-900); box-shadow:0 6px 18px rgba(255,184,0,0.34); font-weight:800; }
+.btn-orange  { background:linear-gradient(135deg,#F97316,#EA580C); color:#fff; box-shadow:0 6px 16px rgba(249,115,22,0.30); }
+.btn-violet  { background:linear-gradient(135deg,#7C3AED,var(--violet)); color:#fff; box-shadow:0 6px 16px rgba(109,79,217,0.30); }
+.btn-red     { background:linear-gradient(135deg,#EF4444,var(--crit)); color:#fff; box-shadow:0 6px 16px rgba(220,53,69,0.30); }
+.btn-ghost   { background:#fff; border:1.5px solid var(--line-str); color:var(--text-2); }
+.btn-sm { padding:11px 14px; font-size:12.5px; border-radius:var(--radius-xs); min-height:42px; }
+.btn:disabled { opacity:0.6; pointer-events:none; }
 
-/* ── BUTTONS ── */
-.btn {
-  width: 100%; padding: 16px;
-  border-radius: var(--radius-sm);
-  font-size: 14.5px; font-weight: 800;
-  border: none; cursor: pointer;
-  transition: all 0.16s var(--ease);
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  letter-spacing: -0.1px;
-  font-family: var(--font);
-  min-height: 52px;
-}
-.btn:active { transform: scale(0.975); }
-.btn-primary { background: linear-gradient(135deg, var(--pln-blue-mid), var(--pln-blue)); color: #fff; box-shadow: 0 6px 18px rgba(0,61,130,0.30); }
-.btn-primary:active { background: var(--pln-blue); }
-.btn-success { background: linear-gradient(135deg, #14B86A, var(--ok)); color: #fff; box-shadow: 0 6px 16px rgba(14,161,91,0.30); }
-.btn-yellow  { background: linear-gradient(135deg, var(--pln-yellow), var(--pln-yellow-deep)); color: var(--ink-900); box-shadow: 0 6px 18px rgba(255,184,0,0.34); font-weight: 800; }
-.btn-ghost   { background: #fff; border: 1.5px solid var(--line-str); color: var(--text-2); }
-.btn-ghost:active { border-color: var(--pln-blue); color: var(--pln-blue); background: var(--surface-2); }
-.btn-sm { padding: 11px 14px; font-size: 12.5px; border-radius: var(--radius-xs); min-height: 42px; }
-
-/* ════════════════════════════════
-   ABSENSI SCREEN
-   ════════════════════════════════ */
-.absen-hero-new {
+/* ═══════════════════════════════════════
+   FASE ABSENSI HERO  
+   ─ progress bar 4 langkah bertahap ─
+═══════════════════════════════════════ */
+.fase-hero {
   background: linear-gradient(135deg, var(--ink-900), var(--pln-blue) 140%);
-  border-radius: var(--radius-lg);
-  padding: 20px;
+  border-radius: var(--radius-lg); padding: 20px;
   box-shadow: 0 10px 28px rgba(10,22,40,0.28);
 }
-.absen-hero-new h2 { font-family: var(--font-display); font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.4px; }
-.absen-hero-new p  { font-size: 12.5px; color: rgba(255,255,255,0.6); margin-top: 4px; }
+.fase-hero-title { font-family:var(--font-display); font-size:18px; font-weight:800; color:#fff; letter-spacing:-0.3px; }
+.fase-hero-sub   { font-size:12px; color:rgba(255,255,255,0.6); margin-top:3px; }
 
-/* step indicator */
-.absen-steps {
-  display: flex; gap: 0; margin-top: 18px;
+.fase-track {
+  display:flex; margin-top:18px; gap:0; position:relative;
 }
-.absen-step {
-  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
-  position: relative;
+.fase-step {
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:6px;
+  position:relative;
 }
-.absen-step:not(:last-child)::after {
-  content: ''; position: absolute;
-  top: 13px; left: 50%; width: 100%; height: 2px;
-  background: rgba(255,255,255,0.18);
+.fase-step:not(:last-child)::after {
+  content:''; position:absolute; top:13px; left:50%; width:100%; height:2px;
+  background:rgba(255,255,255,0.15); z-index:0;
 }
-.absen-step.done::after  { background: rgba(255,255,255,0.55); }
-.step-dot {
-  width: 26px; height: 26px; border-radius: 50%;
-  background: rgba(255,255,255,0.12);
-  border: 2px solid rgba(255,255,255,0.22);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.5);
-  position: relative; z-index: 1;
-  transition: all 0.3s var(--ease);
-  font-family: var(--font-display);
+.fase-step.done::after { background:rgba(255,255,255,0.55); }
+.fase-dot {
+  width:26px; height:26px; border-radius:50%;
+  background:rgba(255,255,255,0.12); border:2px solid rgba(255,255,255,0.22);
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:800; color:rgba(255,255,255,0.5);
+  position:relative; z-index:1; transition:all 0.3s var(--ease);
+  font-family:var(--font-display);
 }
-.absen-step.active .step-dot {
-  background: var(--pln-yellow); border-color: var(--pln-yellow);
-  color: var(--ink-900); box-shadow: 0 2px 10px rgba(255,184,0,0.55);
-}
-.absen-step.done .step-dot {
-  background: rgba(255,255,255,0.92); border-color: rgba(255,255,255,0.92);
-  color: var(--pln-blue);
-}
-.step-label {
-  font-size: 9.5px; font-weight: 700;
-  color: rgba(255,255,255,0.42); text-align: center; line-height: 1.25;
-}
-.absen-step.active .step-label { color: rgba(255,255,255,0.9); }
-.absen-step.done  .step-label  { color: rgba(255,255,255,0.72); }
+.fase-step.done   .fase-dot { background:rgba(255,255,255,0.92); border-color:rgba(255,255,255,0.92); color:var(--pln-blue); }
+.fase-step.active .fase-dot { background:var(--pln-yellow); border-color:var(--pln-yellow); color:var(--ink-900); box-shadow:0 2px 10px rgba(255,184,0,0.55); }
+.fase-label { font-size:9px; font-weight:700; color:rgba(255,255,255,0.42); text-align:center; line-height:1.3; }
+.fase-step.done   .fase-label { color:rgba(255,255,255,0.72); }
+.fase-step.active .fase-label { color:rgba(255,255,255,0.90); }
 
-/* ── LOKASI CARDS ── */
-.loc-grid-new { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
-.loc-card-new {
-  background: var(--surface);
-  border: 2px solid var(--line);
-  border-radius: var(--radius-sm); padding: 17px 8px;
-  text-align: center; cursor: pointer;
-  transition: all 0.18s var(--ease);
-  display: flex; flex-direction: column; align-items: center; gap: 7px;
-  box-shadow: 0 1px 4px rgba(10,22,40,0.04);
-  min-height: 92px; justify-content: center;
+/* fase badge strip */
+.fase-badge-strip {
+  display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;
 }
-.loc-card-new .loc-icon-new { font-size: 27px; }
-.loc-card-new .loc-name { font-size: 12px; font-weight: 700; color: var(--text-2); }
-.loc-card-new .loc-desc { font-size: 10px; color: var(--text-3); line-height: 1.3; }
-.loc-card-new:active { transform: scale(0.97); }
-.loc-card-new.selected {
-  border-color: var(--pln-blue);
-  background: var(--info-bg);
-  box-shadow: 0 0 0 1px var(--pln-blue), 0 4px 14px rgba(0,61,130,0.14);
+.fase-badge {
+  display:flex; align-items:center; gap:6px;
+  background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.18);
+  border-radius:99px; padding:5px 10px; font-size:11px; font-weight:700; color:rgba(255,255,255,0.8);
 }
-.loc-card-new.selected .loc-name { color: var(--pln-blue); }
+.fase-badge.active { background:rgba(255,184,0,0.20); border-color:rgba(255,184,0,0.5); color:var(--pln-yellow); }
+.fase-badge.done   { background:rgba(14,161,91,0.20); border-color:rgba(14,161,91,0.5); color:#5DE8A0; }
 
-/* ── CAMERA ── */
-.camera-box {
-  background: var(--surface-2); border: 2px dashed var(--line-str);
-  border-radius: var(--radius-sm); overflow: hidden;
-  position: relative; aspect-ratio: 3/4; margin-bottom: 10px;
-  display: flex; align-items: center; justify-content: center;
-}
+/* CAMERA */
+.camera-box { background:var(--surface-2); border:2px dashed var(--line-str); border-radius:var(--radius-sm); overflow:hidden; position:relative; aspect-ratio:3/4; margin-bottom:10px; display:flex; align-items:center; justify-content:center; }
 .camera-box video, .camera-box img { width:100%; height:100%; object-fit:cover; display:block; }
 .cam-placeholder { text-align:center; color:var(--text-3); font-size:13px; padding:20px; }
 .cam-placeholder .cam-icon { font-size:36px; margin-bottom:8px; display:block; }
-.cam-badge {
-  position:absolute; top:10px; left:10px;
-  background:rgba(10,22,40,0.78); backdrop-filter:blur(4px);
-  border-radius:var(--radius-xs); padding:5px 9px;
-  font-size:10px; font-family:var(--mono); color:#fff; display:none;
-}
+.cam-badge { position:absolute; top:10px; left:10px; background:rgba(10,22,40,0.78); backdrop-filter:blur(4px); border-radius:var(--radius-xs); padding:5px 9px; font-size:10px; font-family:var(--mono); color:#fff; }
 .camera-actions { display:flex; gap:8px; }
 .camera-actions .btn { flex:1; }
 
-/* ── GPS PANEL ── */
-.gps-panel {
-  background: var(--surface-2); border-radius: var(--radius-sm);
-  padding: 15px; border: 1px solid var(--line);
-}
-.gps-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--line); }
-.gps-row:last-child { border-bottom: none; }
-.gps-key { font-size: 11px; font-weight: 700; color: var(--text-3); }
-.gps-val { font-size: 12.5px; font-weight: 700; font-family: var(--mono); color: var(--pln-blue); }
-.gps-note { font-size: 11px; color: var(--text-2); text-align: center; margin-top: 10px; font-weight: 500; }
+/* GPS */
+.gps-panel { background:var(--surface-2); border-radius:var(--radius-sm); padding:15px; border:1px solid var(--line); }
+.gps-row { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid var(--line); }
+.gps-row:last-child { border-bottom:none; }
+.gps-key { font-size:11px; font-weight:700; color:var(--text-3); }
+.gps-val { font-size:12.5px; font-weight:700; font-family:var(--mono); color:var(--pln-blue); }
+.gps-note { font-size:11px; color:var(--text-2); text-align:center; margin-top:10px; font-weight:500; }
 
-/* ════════════════════════════════
-   STATUS CARDS
-   ════════════════════════════════ */
-.status-grid-new {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-  margin-bottom: 0;
-}
-.sc-new {
-  background: #fff;
-  border: 2px solid var(--line);
-  border-radius: var(--radius);
-  padding: 18px 14px 16px;
-  cursor: pointer; transition: all 0.18s var(--ease);
-  display: flex; flex-direction: column; gap: 8px;
-  box-shadow: 0 1px 4px rgba(10,22,40,0.05);
-  position: relative; overflow: hidden;
-}
-.sc-new:active { transform: scale(0.97); }
-.sc-dot-new {
-  width: 20px; height: 20px; border-radius: 50%;
-  background: var(--surface-3); transition: all 0.25s var(--ease);
-  box-shadow: none;
-}
-.sc-title-new {
-  font-family: var(--font-display);
-  font-size: 15px; font-weight: 800; color: var(--text-1);
-  letter-spacing: -0.3px; line-height: 1.2;
-}
-.sc-desc-new {
-  font-size: 11.5px; color: var(--text-3); line-height: 1.4;
-}
+/* TRACKING STATUS CARDS */
+.status-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.sc { background:#fff; border:2px solid var(--line); border-radius:var(--radius); padding:14px 12px 13px; transition:all 0.18s var(--ease); display:flex; flex-direction:column; gap:6px; box-shadow:0 1px 4px rgba(10,22,40,0.05); }
+.sc-dot { width:18px; height:18px; border-radius:50%; background:var(--surface-3); transition:all 0.25s var(--ease); }
+.sc-title { font-family:var(--font-display); font-size:14px; font-weight:800; color:var(--text-1); letter-spacing:-0.2px; }
+.sc-desc  { font-size:11px; color:var(--text-3); line-height:1.4; }
+.sc.aktif.selected     { border-color:var(--ok); background:var(--ok-bg); }
+.sc.aktif.selected .sc-dot { background:var(--ok); box-shadow:0 0 0 4px rgba(14,161,91,0.2); }
+.sc.aktif.selected .sc-title { color:#0B7A45; }
+.sc.perjalanan.selected { border-color:var(--warn); background:var(--warn-bg); }
+.sc.perjalanan.selected .sc-dot { background:var(--pln-yellow); box-shadow:0 0 0 4px rgba(255,184,0,0.24); }
+.sc.perjalanan.selected .sc-title { color:#A0660A; }
+.sc.standby.selected   { border-color:var(--pln-blue-mid); background:var(--info-bg); }
+.sc.standby.selected .sc-dot { background:var(--pln-blue-mid); box-shadow:0 0 0 4px rgba(0,87,184,0.18); }
+.sc.standby.selected .sc-title { color:var(--pln-blue); }
+.sc.offline.selected   { border-color:var(--crit); background:var(--crit-bg); }
+.sc.offline.selected .sc-dot { background:var(--crit); }
+.sc.offline.selected .sc-title { color:#B52030; }
 
-.sc-new.aktif.selected   { border-color: var(--ok); background: var(--ok-bg); }
-.sc-new.aktif.selected .sc-dot-new   { background: var(--ok); box-shadow: 0 0 0 4px rgba(14,161,91,0.20); }
-.sc-new.aktif.selected .sc-title-new { color: #0B7A45; }
-
-.sc-new.perjalanan.selected { border-color: var(--warn); background: var(--warn-bg); }
-.sc-new.perjalanan.selected .sc-dot-new   { background: var(--pln-yellow); box-shadow: 0 0 0 4px rgba(255,184,0,0.24); }
-.sc-new.perjalanan.selected .sc-title-new { color: #A0660A; }
-
-.sc-new.standby.selected   { border-color: var(--pln-blue-mid); background: var(--info-bg); }
-.sc-new.standby.selected .sc-dot-new   { background: var(--pln-blue-mid); box-shadow: 0 0 0 4px rgba(0,87,184,0.18); }
-.sc-new.standby.selected .sc-title-new { color: var(--pln-blue); }
-
-.sc-new.offline.selected   { border-color: var(--crit); background: var(--crit-bg); }
-.sc-new.offline.selected .sc-dot-new   { background: var(--crit); box-shadow: 0 0 0 4px rgba(220,53,69,0.18); }
-.sc-new.offline.selected .sc-title-new { color: #B52030; }
-
-.status-active-bar {
-  background: var(--surface-2); border: 1px solid var(--line);
-  border-radius: var(--radius-sm); padding: 11px 14px; margin-top: 10px;
-  display: flex; align-items: center; gap: 9px;
-  font-size: 12.5px; color: var(--text-2); font-weight: 500;
-}
-.status-active-bar b { color: var(--pln-blue); font-weight: 800; }
-.sab-dot {
-  width: 8px; height: 8px; border-radius: 50%; background: var(--ok); flex-shrink: 0;
-  box-shadow: 0 0 0 3px rgba(14,161,91,0.2); animation: sab-pulse 2s infinite;
-}
+.status-active-bar { background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-sm); padding:11px 14px; margin-top:10px; display:flex; align-items:center; gap:9px; font-size:12.5px; color:var(--text-2); font-weight:500; }
+.status-active-bar b { color:var(--pln-blue); font-weight:800; }
+.sab-dot { width:8px; height:8px; border-radius:50%; background:var(--ok); flex-shrink:0; box-shadow:0 0 0 3px rgba(14,161,91,0.2); animation:sab-pulse 2s infinite; }
 @keyframes sab-pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
 
-/* ── COUNTER ── */
-.counter-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-top: 1px solid var(--line); margin-top: 10px; }
-.counter-label { font-size: 12px; color: var(--text-2); font-weight: 500; }
-.counter-num   { font-family: var(--font-display); font-size: 27px; font-weight: 800; color: var(--pln-blue); font-variant-numeric: tabular-nums; }
+/* PROGRES TUGAS */
+.progress-bar-wrap { background:var(--surface-3); border-radius:99px; height:10px; overflow:hidden; }
+.progress-bar-fill { height:100%; background:linear-gradient(90deg,var(--ok),#14B86A); border-radius:99px; transition:width 0.6s var(--ease); }
 
-/* ── PROFILE CHIP ── */
-.profile-chip {
-  display: flex; align-items: center; gap: 14px;
-  background: linear-gradient(135deg, var(--ink-900), var(--pln-blue) 140%);
-  border-radius: var(--radius-lg);
-  padding: 17px 18px;
-  box-shadow: 0 10px 26px rgba(10,22,40,0.28);
-}
-.profile-avatar {
-  width: 46px; height: 46px; border-radius: var(--radius-sm);
-  background: linear-gradient(150deg, var(--pln-yellow), var(--pln-yellow-deep));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 22px; flex-shrink: 0;
-  box-shadow: 0 3px 12px rgba(255,184,0,0.42);
-}
-.profile-name { font-family: var(--font-display); font-size: 16px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
-.profile-sub  { font-size: 11.5px; color: rgba(255,255,255,0.6); margin-top: 2px; font-weight: 500; }
+/* COUNTER */
+.counter-row { display:flex; justify-content:space-between; align-items:center; padding:11px 0; border-top:1px solid var(--line); margin-top:10px; }
+.counter-label { font-size:12px; color:var(--text-2); font-weight:500; }
+.counter-num   { font-family:var(--font-display); font-size:27px; font-weight:800; color:var(--pln-blue); }
 
-/* ── PHOTO PAIR ── */
+/* PROFILE CHIP */
+.profile-chip { display:flex; align-items:center; gap:14px; background:linear-gradient(135deg,var(--ink-900),var(--pln-blue) 140%); border-radius:var(--radius-lg); padding:17px 18px; box-shadow:0 10px 26px rgba(10,22,40,0.28); }
+.profile-avatar { width:46px; height:46px; border-radius:var(--radius-sm); background:linear-gradient(150deg,var(--pln-yellow),var(--pln-yellow-deep)); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; box-shadow:0 3px 12px rgba(255,184,0,0.42); }
+.profile-name { font-family:var(--font-display); font-size:16px; font-weight:800; color:#fff; letter-spacing:-0.3px; }
+.profile-sub  { font-size:11.5px; color:rgba(255,255,255,0.6); margin-top:2px; font-weight:500; }
+
+/* FOTO PAIR */
 .photo-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
-.photo-slot {
-  background:var(--surface-2); border:2px dashed var(--line-str);
-  border-radius:var(--radius-sm); aspect-ratio:1;
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:6px; cursor:pointer; position:relative; overflow:hidden; transition:border-color 0.2s var(--ease);
-}
-.photo-slot:active { transform: scale(0.98); }
+.photo-slot { background:var(--surface-2); border:2px dashed var(--line-str); border-radius:var(--radius-sm); aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; cursor:pointer; position:relative; overflow:hidden; transition:border-color 0.2s var(--ease); }
+.photo-slot:active { transform:scale(0.98); }
 .photo-slot img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; }
-.photo-slot .slot-label {
-  font-size:10px; font-weight:700; color:var(--text-2);
-  position:relative; z-index:1;
-  background:rgba(255,255,255,0.88); padding:3px 8px; border-radius:99px;
-}
-.photo-slot.filled { border-color: var(--ok); border-style: solid; }
-.photo-slot.filled .slot-label { position: absolute; bottom: 8px; color: var(--ok); }
-.photo-slot .slot-icon { font-size: 23px; color: var(--text-3); position: relative; z-index: 1; }
+.photo-slot .slot-label { font-size:10px; font-weight:700; color:var(--text-2); position:relative; z-index:1; background:rgba(255,255,255,0.88); padding:3px 8px; border-radius:99px; }
+.photo-slot.filled { border-color:var(--ok); border-style:solid; }
+.photo-slot.filled .slot-label { position:absolute; bottom:8px; color:var(--ok); }
+.photo-slot .slot-icon { font-size:23px; color:var(--text-3); position:relative; z-index:1; }
 
-/* ── TASK ITEMS ── */
-.task-item {
-  background:#fff; border:1px solid var(--line);
-  border-left:3px solid var(--pln-blue);
-  border-radius:var(--radius-sm); padding:13px; margin-bottom:8px;
-  box-shadow: 0 1px 4px rgba(10,22,40,0.04);
-}
+/* TASK ITEMS */
+.task-item { background:#fff; border:1px solid var(--line); border-left:3px solid var(--pln-blue); border-radius:var(--radius-sm); padding:13px; margin-bottom:8px; box-shadow:0 1px 4px rgba(10,22,40,0.04); }
 .task-title { font-size:13px; font-weight:700; color:var(--text-1); margin-bottom:3px; }
 .task-meta  { font-size:11px; color:var(--text-3); }
-.task-badge {
-  display:inline-flex; align-items:center; gap:4px;
-  font-size:10px; font-weight:700;
-  padding:3.5px 9px; border-radius:99px; margin-top:8px;
-}
-.task-badge.done { background:var(--ok-bg); color:var(--ok); }
+.task-badge { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:700; padding:3.5px 9px; border-radius:99px; margin-top:8px; }
 
-/* ── LOG ── */
-.log-list { display:flex; flex-direction:column; gap:6px; max-height:180px; overflow-y:auto; }
+/* LOG */
+.log-list { display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto; }
 .log-item { display:flex; gap:8px; align-items:flex-start; font-size:11px; }
 .log-time { color:var(--text-3); flex-shrink:0; font-family:var(--mono); }
 .log-msg  { color:var(--text-2); }
-.log-msg.ok   { color:var(--ok); font-weight: 600; }
-.log-msg.err  { color:var(--crit); font-weight: 600; }
+.log-msg.ok   { color:var(--ok); font-weight:600; }
+.log-msg.err  { color:var(--crit); font-weight:600; }
 .log-msg.info { color:var(--pln-blue); }
+.log-msg.warn { color:var(--warn); font-weight:600; }
 
-/* ── ERROR BOX ── */
-.error-box {
-  background:var(--crit-bg); border:1px solid var(--crit-border);
-  border-radius:var(--radius-sm); padding:11px 14px;
-  font-size:12px; color:var(--crit); display:none; line-height:1.5; font-weight: 500;
-}
+/* ERROR BOX */
+.error-box { background:var(--crit-bg); border:1px solid var(--crit-border); border-radius:var(--radius-sm); padding:11px 14px; font-size:12px; color:var(--crit); display:none; line-height:1.5; font-weight:500; }
 
-/* ── INFO NOTE ── */
-.info-note {
-  font-size:11.5px; color:var(--text-2); padding:13px 14px;
-  background:var(--info-bg); border-radius:var(--radius-sm);
-  border:1px solid rgba(37,99,235,0.16); line-height:1.6;
-}
+/* INFO NOTE */
+.info-note { font-size:11.5px; color:var(--text-2); padding:13px 14px; background:var(--info-bg); border-radius:var(--radius-sm); border:1px solid rgba(37,99,235,0.16); line-height:1.6; }
 
-/* ── BOTTOM NAV ── */
-.bottom-nav {
-  display:flex; border-top:1px solid var(--line);
-  background:var(--surface); flex-shrink:0;
-  box-shadow:0 -2px 16px rgba(10,22,40,0.08);
-  padding-bottom:env(safe-area-inset-bottom);
-}
-.nav-tab {
-  flex:1; padding:11px 6px;
-  display:flex; flex-direction:column; align-items:center; gap:3px;
-  background:none; border:none;
-  color:var(--text-3); font-size:10px; font-weight:700;
-  cursor:pointer; transition:color 0.2s;
-}
+/* BOTTOM NAV */
+.bottom-nav { display:flex; border-top:1px solid var(--line); background:var(--surface); flex-shrink:0; box-shadow:0 -2px 16px rgba(10,22,40,0.08); padding-bottom:env(safe-area-inset-bottom); }
+.nav-tab { flex:1; padding:11px 6px; display:flex; flex-direction:column; align-items:center; gap:3px; background:none; border:none; color:var(--text-3); font-size:10px; font-weight:700; cursor:pointer; transition:color 0.2s; }
 .nav-tab .tab-icon { font-size:20px; }
 .nav-tab.active { color:var(--pln-blue); }
 
-/* ── MODAL ── */
-.modal-backdrop {
-  position:fixed; inset:0;
-  background:rgba(10,20,36,0.45); backdrop-filter:blur(5px);
-  display:none; align-items:flex-end; justify-content:center;
-  z-index:500; padding-bottom:env(safe-area-inset-bottom);
-}
+/* MODAL */
+.modal-backdrop { position:fixed; inset:0; background:rgba(10,20,36,0.45); backdrop-filter:blur(5px); display:none; align-items:flex-end; justify-content:center; z-index:500; padding-bottom:env(safe-area-inset-bottom); }
 .modal-backdrop.active { display:flex; }
-.modal-sheet {
-  background:var(--surface); border:1px solid var(--line);
-  border-radius:24px 24px 0 0;
-  padding:22px 18px 28px;
-  width:100%; max-width:480px; max-height:92vh; overflow-y:auto;
-  box-shadow:0 -10px 44px rgba(10,22,40,0.20);
-}
+.modal-sheet { background:var(--surface); border:1px solid var(--line); border-radius:24px 24px 0 0; padding:22px 18px 28px; width:100%; max-width:480px; max-height:92vh; overflow-y:auto; box-shadow:0 -10px 44px rgba(10,22,40,0.20); }
 .modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
-.modal-header h3 { font-family: var(--font-display); font-size:17px; font-weight:800; color:var(--text-1); }
-.modal-close {
-  background:var(--surface-2); border:1px solid var(--line);
-  border-radius:var(--radius-xs); width:32px; height:32px;
-  display:flex; align-items:center; justify-content:center;
-  color:var(--text-2); font-size:14px; cursor:pointer;
-}
+.modal-header h3 { font-family:var(--font-display); font-size:17px; font-weight:800; color:var(--text-1); }
+.modal-close { background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-xs); width:32px; height:32px; display:flex; align-items:center; justify-content:center; color:var(--text-2); font-size:14px; cursor:pointer; }
 
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 99px; }
+/* LOC CARDS */
+.loc-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+.loc-card { background:var(--surface); border:2px solid var(--line); border-radius:var(--radius-sm); padding:17px 8px; text-align:center; cursor:pointer; transition:all 0.18s var(--ease); display:flex; flex-direction:column; align-items:center; gap:7px; min-height:90px; justify-content:center; }
+.loc-card .loc-icon { font-size:27px; }
+.loc-card .loc-name { font-size:12px; font-weight:700; color:var(--text-2); }
+.loc-card.selected { border-color:var(--pln-blue); background:var(--info-bg); }
+.loc-card.selected .loc-name { color:var(--pln-blue); }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--surface-3); border-radius:99px; }
 </style>
 </head>
 <body>
@@ -539,10 +294,8 @@ body {
   </div>
 </div>
 
-<!-- ══════ SCREEN: LOGIN ══════ -->
+<!-- ══ SCREEN: LOGIN ══ -->
 <div class="screen active" id="screen-login">
-
-  <!-- Banner atas -->
   <div class="login-banner">
     <div class="login-brand">
       <div class="login-brand-icon">⚡</div>
@@ -551,28 +304,21 @@ body {
         <div class="lb-sub">PLN UP3 Jayapura · Field Force</div>
       </div>
     </div>
-    <div class="login-tagline">Masuk untuk memulai sesi tracking GPS lapangan. Data lokasi aktif selama Anda bertugas.</div>
+    <div class="login-tagline">Masuk untuk memulai sesi. Absensi bertahap: Standby → Perjalanan → Aktif Bekerja → Selesai.</div>
     <div class="login-chips">
       <div class="login-chip">📍 GPS Realtime</div>
-      <div class="login-chip">📷 Selfie Absensi</div>
-      <div class="login-chip">📋 Closed-Loop</div>
+      <div class="login-chip">📷 Foto Tiap Fase</div>
+      <div class="login-chip">📋 Laporan Tugas</div>
+      <div class="login-chip">📊 Progres Live</div>
     </div>
   </div>
 
-  <!-- Identitas -->
   <div class="card">
     <div class="card-title">Identitas Petugas</div>
-    <div class="field">
-      <label>Nama Lengkap</label>
-      <input type="text" id="in-nama" placeholder="Nama petugas..." autocomplete="name">
-    </div>
-    <div class="field">
-      <label>NIP / ID Petugas</label>
-      <input type="text" id="in-nip" placeholder="NIP atau nomor ID..." inputmode="numeric">
-    </div>
+    <div class="field"><label>Nama Lengkap</label><input type="text" id="in-nama" placeholder="Nama petugas..." autocomplete="name"></div>
+    <div class="field"><label>NIP / ID Petugas</label><input type="text" id="in-nip" placeholder="NIP atau nomor ID..." inputmode="numeric"></div>
   </div>
 
-  <!-- Penempatan -->
   <div class="card">
     <div class="card-title">Penempatan</div>
     <div class="field">
@@ -598,88 +344,57 @@ body {
   </div>
 
   <div class="error-box" id="login-err"></div>
-
-  <button class="btn btn-primary" onclick="doLogin()">
-    <span>🚀</span> Mulai Bertugas
-  </button>
-
-  <div class="info-note">
-    Dengan masuk, lokasi GPS perangkat Anda akan dibagikan ke supervisor secara realtime. Data hanya aktif selama sesi berlangsung.
-  </div>
-
+  <button class="btn btn-primary" onclick="doLogin()"><span>🚀</span> Mulai Bertugas</button>
+  <div class="info-note">Dengan masuk, lokasi GPS dibagikan ke supervisor secara realtime. Setiap fase kerja wajib selfie untuk validasi.</div>
 </div>
 
-<!-- ══════ SCREEN: ABSENSI ══════ -->
+<!-- ══ SCREEN: ABSENSI AWAL (STANDBY) ══ -->
 <div class="screen" id="screen-absensi">
 
-  <!-- Hero dengan step indicator -->
-  <div class="absen-hero-new">
-    <h2>Absensi Berbasis Lokasi</h2>
-    <p>Validasi fisik di lapangan sebelum mulai bertugas</p>
-    <div class="absen-steps" id="absen-steps">
-      <div class="absen-step active" id="step-1">
-        <div class="step-dot">1</div>
-        <div class="step-label">Pilih<br>Lokasi</div>
-      </div>
-      <div class="absen-step" id="step-2">
-        <div class="step-dot">2</div>
-        <div class="step-label">Selfie<br>Kehadiran</div>
-      </div>
-      <div class="absen-step" id="step-3">
-        <div class="step-dot">3</div>
-        <div class="step-label">Validasi<br>GPS</div>
-      </div>
-      <div class="absen-step" id="step-4">
-        <div class="step-dot">✓</div>
-        <div class="step-label">Konfirmasi<br>Absen</div>
-      </div>
+  <div class="fase-hero" id="fase-hero">
+    <div class="fase-hero-title" id="fase-hero-title">Absensi Standby</div>
+    <div class="fase-hero-sub" id="fase-hero-sub">Foto selfie & GPS untuk konfirmasi kehadiran awal shift</div>
+    <div class="fase-track">
+      <div class="fase-step active" id="fs-1"><div class="fase-dot">1</div><div class="fase-label">Standby<br><span style="opacity:0.65;font-weight:600">(Foto)</span></div></div>
+      <div class="fase-step"        id="fs-2"><div class="fase-dot">2</div><div class="fase-label">Perjalanan<br><span style="opacity:0.65;font-weight:600">(Auto GPS)</span></div></div>
+      <div class="fase-step"        id="fs-3"><div class="fase-dot">3</div><div class="fase-label">Aktif<br><span style="opacity:0.65;font-weight:600">(Auto)</span></div></div>
+      <div class="fase-step"        id="fs-4"><div class="fase-dot">✓</div><div class="fase-label">Selesai<br><span style="opacity:0.65;font-weight:600">(Foto)</span></div></div>
     </div>
   </div>
 
-  <!-- Step 1: Pilih Lokasi -->
-  <div class="card">
+  <!-- Pilih Lokasi -->
+  <div class="card" id="card-lokasi">
     <div class="card-title">Pilih Lokasi Absen</div>
-    <div class="loc-grid-new">
-      <div class="loc-card-new selected" id="loc-kantor" onclick="pilihLokasiAbsen('Kantor')">
-        <span class="loc-icon-new">🏢</span>
-        <div class="loc-name">Kantor</div>
-        <div class="loc-desc">Gedung UP3 / kantor ULP</div>
+    <div class="loc-grid">
+      <div class="loc-card selected" id="loc-kantor" onclick="pilihLokasi('Kantor')">
+        <span class="loc-icon">🏢</span><div class="loc-name">Kantor</div>
       </div>
-      <div class="loc-card-new" id="loc-posko" onclick="pilihLokasiAbsen('Posko')">
-        <span class="loc-icon-new">⛺</span>
-        <div class="loc-name">Posko</div>
-        <div class="loc-desc">Posko regu / basecamp</div>
-      </div>
-      <div class="loc-card-new" id="loc-kerja" onclick="pilihLokasiAbsen('Lokasi Kerja')">
-        <span class="loc-icon-new">📍</span>
-        <div class="loc-name">Lapangan</div>
-        <div class="loc-desc">Lokasi kerja aktif</div>
+      <div class="loc-card" id="loc-lapangan" onclick="pilihLokasi('Lapangan')">
+        <span class="loc-icon">📍</span><div class="loc-name">Lapangan</div>
       </div>
     </div>
   </div>
 
-  <!-- Step 2: Selfie -->
+  <!-- Selfie -->
   <div class="card">
-    <div class="card-title">Selfie Kehadiran</div>
-    <div class="camera-box" id="absen-camera-box">
-      <div class="cam-placeholder" id="absen-cam-placeholder">
-        <span class="cam-icon">📷</span>Ketuk untuk buka kamera selfie
-      </div>
+    <div class="card-title">📷 Selfie Fase <span id="absen-fase-label">Standby</span></div>
+    <div class="camera-box">
+      <div class="cam-placeholder" id="absen-cam-ph"><span class="cam-icon">📷</span>Ketuk untuk buka kamera selfie</div>
       <video id="absen-video" playsinline autoplay muted style="display:none"></video>
-      <img id="absen-photo-preview" style="display:none">
-      <div class="cam-badge" id="absen-gps-badge">GPS: —</div>
+      <img id="absen-preview" style="display:none">
+      <div class="cam-badge" id="absen-gps-badge" style="display:none">📍 GPS · <span id="absen-gps-badge-val">—</span></div>
     </div>
     <div class="camera-actions">
-      <button class="btn btn-ghost btn-sm" id="absen-btn-cam"    onclick="bukaKameraAbsen()">📷 Buka Kamera</button>
-      <button class="btn btn-primary btn-sm" id="absen-btn-shoot" onclick="ambilFotoAbsen()" style="display:none">📸 Ambil Foto</button>
-      <button class="btn btn-ghost btn-sm"   id="absen-btn-retake" onclick="ulangFotoAbsen()" style="display:none">↺ Ulangi</button>
+      <button class="btn btn-ghost btn-sm"    id="absen-btn-cam"    onclick="bukaKameraAbsen()">📷 Buka Kamera</button>
+      <button class="btn btn-primary btn-sm"  id="absen-btn-shoot"  onclick="ambilFotoAbsen()" style="display:none">📸 Ambil</button>
+      <button class="btn btn-ghost btn-sm"    id="absen-btn-retake" onclick="ulangFotoAbsen()" style="display:none">↺ Ulangi</button>
     </div>
     <canvas id="absen-canvas" style="display:none"></canvas>
   </div>
 
-  <!-- Step 3: GPS -->
+  <!-- GPS -->
   <div class="card">
-    <div class="card-title">Validasi GPS</div>
+    <div class="card-title">📡 Validasi GPS</div>
     <div class="gps-panel">
       <div class="gps-row"><span class="gps-key">Latitude</span><span class="gps-val" id="absen-lat">—</span></div>
       <div class="gps-row"><span class="gps-key">Longitude</span><span class="gps-val" id="absen-lng">—</span></div>
@@ -689,54 +404,83 @@ body {
   </div>
 
   <div class="error-box" id="absen-err"></div>
-
-  <button class="btn btn-yellow" id="absen-btn-submit" onclick="submitAbsensi()">
-    <span>✓</span> Konfirmasi Absen & Mulai Tracking
+  <button class="btn btn-yellow" id="absen-btn-submit" onclick="submitFase()">
+    <span id="absen-btn-icon">✓</span> <span id="absen-btn-text">Konfirmasi Standby</span>
   </button>
-
 </div>
 
-<!-- ══════ SCREEN: TRACKING ══════ -->
+<!-- ══ SCREEN: TRACKING (AKTIF BEKERJA) ══ -->
 <div class="screen" id="screen-tracking" style="padding-bottom:80px">
 
-  <div class="profile-chip" id="profile-chip">
+  <div class="profile-chip">
     <div class="profile-avatar">👷</div>
-    <div>
+    <div style="flex:1">
       <div class="profile-name" id="prof-nama">—</div>
       <div class="profile-sub"  id="prof-sub">—</div>
     </div>
+    <div style="text-align:right">
+      <div style="font-size:10px;color:rgba(255,255,255,0.5);font-weight:600">TUGAS SELESAI</div>
+      <div style="font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--pln-yellow)" id="tugas-selesai-count">0</div>
+    </div>
   </div>
 
+  <!-- FASE PROGRESS -->
+  <div class="card">
+    <div class="card-title">Fase Tugas Hari Ini</div>
+    <div class="fase-track" style="margin-bottom:12px;padding:0 4px">
+      <div class="fase-step" id="tfs-1"><div class="fase-dot" style="width:22px;height:22px;font-size:9.5px">1</div><div class="fase-label">Standby</div></div>
+      <div class="fase-step" id="tfs-2"><div class="fase-dot" style="width:22px;height:22px;font-size:9.5px">2</div><div class="fase-label">Perjalanan</div></div>
+      <div class="fase-step" id="tfs-3"><div class="fase-dot" style="width:22px;height:22px;font-size:9.5px">3</div><div class="fase-label">Aktif</div></div>
+      <div class="fase-step" id="tfs-4"><div class="fase-dot" style="width:22px;height:22px;font-size:9.5px">✓</div><div class="fase-label">Selesai</div></div>
+    </div>
+    <div id="progres-wrap">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+        <div style="font-size:12px;font-weight:700;color:var(--text-2)">Progres Tugas</div>
+        <div style="font-size:12px;font-weight:800;color:var(--ok)" id="progres-pct">0%</div>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progres-fill" style="width:0%"></div></div>
+      <div style="font-size:10.5px;color:var(--text-3);margin-top:6px;text-align:center" id="progres-sub">0 dari target tugas terpenuhi</div>
+    </div>
+    <div class="counter-row" style="margin-top:12px">
+      <span class="counter-label">Tugas selesai hari ini</span>
+      <span class="counter-num" id="tugas-selesai-count2">0</span>
+    </div>
+  </div>
+
+  <!-- STATUS SAYA -->
   <div class="card">
     <div class="card-title">Status Saya</div>
-    <div class="status-grid-new">
-      <div class="sc-new aktif selected" id="sb-aktif" onclick="setStatus('Aktif Bekerja')">
-        <div class="sc-dot-new"></div>
-        <div class="sc-title-new">Aktif Bekerja</div>
-        <div class="sc-desc-new">Sedang mengeksekusi penugasan.</div>
+    <div class="status-grid">
+      <div class="sc aktif" id="sb-aktif">
+        <div class="sc-dot"></div><div class="sc-title">Aktif Bekerja</div><div class="sc-desc">Sedang eksekusi penugasan</div>
       </div>
-      <div class="sc-new perjalanan" id="sb-perjalanan" onclick="setStatus('Perjalanan')">
-        <div class="sc-dot-new"></div>
-        <div class="sc-title-new">Perjalanan</div>
-        <div class="sc-desc-new">Menuju lokasi gangguan/pekerjaan.</div>
+      <div class="sc perjalanan" id="sb-perjalanan">
+        <div class="sc-dot"></div><div class="sc-title">Perjalanan</div><div class="sc-desc">Terdeteksi otomatis via GPS</div>
       </div>
-      <div class="sc-new standby" id="sb-standby" onclick="setStatus('Standby')">
-        <div class="sc-dot-new"></div>
-        <div class="sc-title-new">Standby</div>
-        <div class="sc-desc-new">Siaga di posko operasional.</div>
+      <div class="sc standby" id="sb-standby">
+        <div class="sc-dot"></div><div class="sc-title">Standby</div><div class="sc-desc">Siaga di posko</div>
       </div>
-      <div class="sc-new offline" id="sb-offline" onclick="setStatus('Offline')">
-        <div class="sc-dot-new"></div>
-        <div class="sc-title-new">Offline</div>
-        <div class="sc-desc-new">Gangguan koneksi atau pergantian shift.</div>
+      <div class="sc offline" id="sb-offline">
+        <div class="sc-dot"></div><div class="sc-title">Offline</div><div class="sc-desc">Koneksi/shift berakhir</div>
       </div>
     </div>
     <div class="status-active-bar">
       <div class="sab-dot" id="sab-dot"></div>
-      <span>Status aktif: <b id="status-label">Aktif Bekerja</b></span>
+      <span>Status aktif: <b id="status-label">Standby</b></span>
     </div>
+    <div style="font-size:11px;color:var(--text-3);margin-top:8px;text-align:center">⚙️ Status berubah otomatis sesuai absensi &amp; deteksi GPS</div>
   </div>
 
+  <!-- BANNER PERJALANAN TERDETEKSI -->
+  <div id="banner-perjalanan" style="display:none;background:linear-gradient(135deg,rgba(255,184,0,0.12),rgba(255,184,0,0.04));border:1.5px solid rgba(255,184,0,0.5);border-radius:var(--radius-sm);padding:14px 16px">
+    <div style="font-size:13px;font-weight:800;color:#A0660A;margin-bottom:4px">🚗 Perjalanan Terdeteksi!</div>
+    <div style="font-size:11.5px;color:var(--text-2);margin-bottom:10px" id="banner-perjalanan-desc">GPS mendeteksi kamu sedang bergerak.</div>
+    <button class="btn btn-sm" style="background:var(--ok);color:#fff;width:100%;padding:12px;font-size:13px" onclick="konfirmasiSudahDiLokasi()">
+      📍 Salah Deteksi / Saya Sudah di Lokasi — Batalkan
+    </button>
+  </div>
+
+  <!-- GPS -->
   <div class="card">
     <div class="card-title">Lokasi GPS Live</div>
     <div class="gps-panel">
@@ -749,26 +493,24 @@ body {
       <span class="counter-label">Update terkirim ke dashboard</span>
       <span class="counter-num" id="send-count">0</span>
     </div>
-    <div style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:6px">Otomatis update setiap 15 detik</div>
   </div>
 
+  <!-- LAPORAN PEKERJAAN -->
   <div class="card">
     <div class="card-title">Laporan Pekerjaan</div>
-    <div style="font-size:12.5px;color:var(--text-sec);margin-bottom:12px;line-height:1.7">
-      Dokumentasikan pekerjaan dengan foto <b>Before</b> & <b>After</b> untuk validasi digital tertutup tanpa manipulasi.
+    <div style="font-size:12.5px;color:var(--text-2);margin-bottom:12px;line-height:1.7">
+      Setiap pekerjaan selesai: foto <b>Before & After</b> → kirim laporan → progres naik otomatis.
     </div>
-    <button class="btn btn-primary" onclick="bukaModalLapor()">
-      <span>📋</span> Buat Laporan Baru
-    </button>
+    <button class="btn btn-primary" onclick="bukaModalLapor()"><span>📋</span> Buat Laporan Tugas Baru</button>
   </div>
 
+  <!-- LIST LAPORAN HARI INI -->
   <div class="card">
     <div class="card-title">Laporan Hari Ini</div>
-    <div id="task-list">
-      <div style="font-size:12px;color:var(--text-muted);text-align:center;padding:18px 0">Belum ada laporan untuk hari ini.</div>
-    </div>
+    <div id="task-list"><div style="font-size:12px;color:var(--text-3);text-align:center;padding:18px 0">Belum ada laporan. Selesaikan 1 tugas → kirim laporan.</div></div>
   </div>
 
+  <!-- LOG AKTIVITAS -->
   <div class="card">
     <div class="card-title">Log Aktivitas</div>
     <div class="log-list" id="log-list">
@@ -776,29 +518,32 @@ body {
     </div>
   </div>
 
-  <button class="btn btn-ghost" onclick="doLogout()">Selesai Bertugas</button>
+  <!-- TOMBOL SELESAI BERTUGAS -->
+  <button class="btn btn-red" onclick="mulaiSelesaiBertugas()">🏁 Selesai Bertugas — Foto & Laporan Akhir</button>
 
 </div>
 
 <!-- BOTTOM NAV -->
 <div class="bottom-nav" id="bottom-nav" style="display:none">
-  <button class="nav-tab active" onclick="navTab(this,'dashboard')">
-    <span class="tab-icon">🏠</span>Dashboard
-  </button>
-  <button class="nav-tab" onclick="navTab(this,'laporan')">
-    <span class="tab-icon">📋</span>Laporan
-  </button>
-  <button class="nav-tab" onclick="navTab(this,'log')">
-    <span class="tab-icon">📡</span>Log GPS
-  </button>
+  <button class="nav-tab active" onclick="navTab(this,'dashboard')"><span class="tab-icon">🏠</span>Dashboard</button>
+  <button class="nav-tab" onclick="navTab(this,'laporan')"><span class="tab-icon">📋</span>Laporan</button>
+  <button class="nav-tab" onclick="navTab(this,'log')"><span class="tab-icon">📡</span>Log</button>
 </div>
 
-<!-- ══════ MODAL: LAPORAN ══════ -->
+<!-- ══ MODAL: LAPORAN PEKERJAAN ══ -->
 <div class="modal-backdrop" id="modal-lapor">
   <div class="modal-sheet">
     <div class="modal-header">
-      <h3>Laporan Pekerjaan</h3>
+      <h3>Laporan Pekerjaan Selesai</h3>
       <button class="modal-close" onclick="tutupModalLapor()">✕</button>
+    </div>
+    <div class="field">
+      <label>Nomor Tiket P0/P1 <span style="font-size:10px;color:var(--text-3);font-weight:400">(opsional)</span></label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="lapor-tiket" placeholder="cth: P1-2025-0042" style="font-family:var(--mono);text-transform:uppercase;flex:1" oninput="this.value=this.value.toUpperCase()" onblur="cariTiket()">
+        <button onclick="cariTiket()" style="background:var(--pln-blue);color:#fff;border:none;border-radius:var(--radius-sm);padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">🔍 Cari</button>
+      </div>
+      <div id="tiket-info-box" style="display:none;margin-top:8px;background:var(--info-bg);border:1px solid rgba(37,99,235,0.25);border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;line-height:1.8;color:var(--text-1)"></div>
     </div>
     <div class="field"><label>Rincian Pekerjaan</label><input type="text" id="lapor-rincian" placeholder="cth: Pemasangan Cover Anti Hewan"></div>
     <div class="field"><label>Audit Material</label><input type="text" id="lapor-material" placeholder="cth: Cover Anti Hewan, Cable Tie"></div>
@@ -809,31 +554,29 @@ body {
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--pln-blue);margin-bottom:10px">Foto Before / After</div>
     <div class="photo-pair">
       <div class="photo-slot" id="slot-before" onclick="bukaKameraLapor('before')">
-        <span class="slot-icon">📷</span>
-        <span class="slot-label">Sebelum (Before)</span>
+        <span class="slot-icon">📷</span><span class="slot-label">Sebelum (Before)</span>
       </div>
       <div class="photo-slot" id="slot-after" onclick="bukaKameraLapor('after')">
-        <span class="slot-icon">📷</span>
-        <span class="slot-label">Sesudah (After)</span>
+        <span class="slot-icon">📷</span><span class="slot-label">Sesudah (After)</span>
       </div>
     </div>
     <div class="error-box" id="lapor-err" style="margin-bottom:12px"></div>
-    <div id="lapor-progress" style="font-size:11px;color:var(--text-sec);text-align:center;margin-bottom:10px;display:none"></div>
-    <button class="btn btn-success" id="lapor-btn-submit" onclick="submitLaporan()"><span>✓</span> Kirim Laporan</button>
+    <div id="lapor-progress" style="font-size:11px;color:var(--text-2);text-align:center;margin-bottom:10px;display:none"></div>
+    <button class="btn btn-success" id="lapor-btn-submit" onclick="submitLaporan()"><span>✓</span> Kirim Laporan & Tambah Progres</button>
   </div>
 </div>
 
-<!-- ══════ MODAL: KAMERA ══════ -->
+<!-- ══ MODAL: KAMERA LAPORAN ══ -->
 <div class="modal-backdrop" id="modal-kamera-lapor">
   <div class="modal-sheet">
     <div class="modal-header">
       <h3 id="kamera-lapor-title">Ambil Foto</h3>
       <button class="modal-close" onclick="tutupKameraLapor()">✕</button>
     </div>
-    <div class="camera-box" id="lapor-camera-box">
+    <div class="camera-box">
       <video id="lapor-video" playsinline autoplay muted style="display:none"></video>
       <img id="lapor-photo-preview" style="display:none">
-      <div class="cam-badge" id="lapor-gps-badge" style="display:block;background:rgba(0,61,130,0.75)">📍 GPS terkunci · <span id="lapor-time-badge">--:--</span></div>
+      <div class="cam-badge" style="display:block;background:rgba(0,61,130,0.75)">📍 GPS · <span id="lapor-time-badge">--:--</span></div>
     </div>
     <div class="camera-actions">
       <button class="btn btn-primary btn-sm"  id="lapor-btn-shoot"  onclick="ambilFotoLapor()">📸 Ambil Foto</button>
@@ -844,567 +587,844 @@ body {
   </div>
 </div>
 
+
+<!-- ══ MODAL: SELESAI BERTUGAS ══ -->
+<div class="modal-backdrop" id="modal-selesai">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <h3>🏁 Selesai Bertugas</h3>
+      <button class="modal-close" onclick="tutupModalSelesai()">✕</button>
+    </div>
+    <div style="font-size:12.5px;color:var(--text-2);margin-bottom:14px;line-height:1.7">
+      Ambil foto selfie akhir tugas. Laporan harian otomatis terbuat.
+    </div>
+    <div class="camera-box" id="selesai-cam-box">
+      <div class="cam-placeholder" id="selesai-ph"><span class="cam-icon">📷</span>Selfie akhir tugas</div>
+      <video id="selesai-video" playsinline autoplay muted style="display:none"></video>
+      <img id="selesai-preview" style="display:none">
+      <div class="cam-badge" id="selesai-gps-badge" style="display:none">📍 GPS · <span id="selesai-gps-val">—</span></div>
+    </div>
+    <div class="camera-actions" style="margin-bottom:14px">
+      <button class="btn btn-ghost btn-sm"    id="sl-btn-cam"    onclick="bukaKameraSelesai()">📷 Buka Kamera</button>
+      <button class="btn btn-primary btn-sm"  id="sl-btn-shoot"  onclick="ambilFotoSelesai()" style="display:none">📸 Ambil</button>
+      <button class="btn btn-ghost btn-sm"    id="sl-btn-retake" onclick="ulangFotoSelesai()" style="display:none">↺ Ulangi</button>
+    </div>
+    <canvas id="selesai-canvas" style="display:none"></canvas>
+
+    <!-- Ringkasan laporan akhir -->
+    <div id="selesai-ringkasan" style="display:none;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-3);margin-bottom:10px">Ringkasan Hari Ini</div>
+      <div id="selesai-ringkasan-content" style="font-size:12.5px;line-height:1.9;color:var(--text-1)"></div>
+    </div>
+
+    <div class="error-box" id="selesai-err" style="margin-bottom:12px"></div>
+    <div id="selesai-progress" style="font-size:11px;color:var(--text-2);text-align:center;margin-bottom:10px;display:none"></div>
+    <button class="btn btn-red" id="selesai-btn-submit" onclick="submitSelesai()"><span>🏁</span> Konfirmasi Selesai & Kirim Laporan Akhir</button>
+  </div>
+</div>
+
+<!-- FOTO FULLSCREEN -->
+<div id="foto-modal" onclick="this.style.display='none'" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.92);cursor:zoom-out;align-items:center;justify-content:center;">
+  <img id="foto-modal-img" style="max-width:95vw;max-height:95vh;border-radius:8px;">
+</div>
+
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getDatabase, ref, set, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
-// Firebase Storage tidak digunakan (Spark plan) — foto disimpan sebagai Base64 di Realtime Database
+import { getDatabase, ref, set, update, onValue, onDisconnect, get } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
-const firebaseConfig = {
+const FB_CONFIG = {
   apiKey: "AIzaSyDZRDMn-gvbVQhcyTCxx83i5czwiU8hAJU",
   authDomain: "ffm-pln.firebaseapp.com",
   databaseURL: "https://ffm-pln-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "ffm-pln",
   storageBucket: "ffm-pln.firebasestorage.app",
   messagingSenderId: "461016001656",
-  appId: "1:461016001656:web:76181eaa68e996b649918d",
-  measurementId: "G-ZTNQ49GK9W"
+  appId: "1:461016001656:web:76181eaa68e996b649918d"
 };
 
 let app, db;
-let watchId = null;
-let sendCount = 0;
+let watchId = null, sendCount = 0;
 let currentUser = null;
-let currentStatus = 'Aktif Bekerja';
+let currentStatus = 'Standby';
 let sendTimer = null;
 let lastPos = null;
 
+// ── Fase system ─────────────────────────────────────────
+// faseList: ['Standby', 'Perjalanan', 'Aktif Bekerja', 'Selesai']
+const FASE_LIST = ['Standby','Perjalanan','Aktif Bekerja','Selesai'];
+let faseCurrent = 0; // index 0-based
+let faseLog = []; // array of {fase, waktu, lat, lng, fotoBase64}
+
+// ── Tugas / progres ─────────────────────────────────────
+let laporTugasList = [];
+let tugasTarget = 0; // bisa diisi dari tiket
+let tugasSelesai = 0;
+let editLaporanId = null; // diisi saat petugas membuka laporan "Perlu Revisi" untuk dikirim ulang (menimpa, bukan laporan baru)
+const laporListeners = {}; // pantau perubahan status verifikasi tiap laporan yang dikirim hari ini
+
+// ── Kamera state ────────────────────────────────────────
+let absenStream = null, absenPos = null, absenFotoUrl = null;
+let laporFotoBefore = null, laporFotoAfter = null;
+let laporKameraTarget = null, laporStream = null, laporFotoSementara = null;
+let selesaiStream = null, selesaiFotoUrl = null;
+
 try {
-  app = initializeApp(firebaseConfig);
-  db = getDatabase(app);
+  app = initializeApp(FB_CONFIG);
+  db  = getDatabase(app);
   addLog('Firebase terhubung', 'ok');
   document.getElementById('signal-dot').classList.add('live');
   document.getElementById('conn-label').textContent = 'Live';
 } catch(e) {
-  addLog('Firebase: ' + e.message, 'err');
-  addLog('Mode demo — GPS tetap berjalan', 'info');
+  addLog('Firebase: ' + e.message + ' — mode demo aktif', 'err');
 }
 
-// Kompres foto ke Base64 kecil (max ~200KB) agar muat di Realtime Database (limit 10MB/node)
-function compressToBase64(dataUrl, maxWidth = 800, quality = 0.65) {
-  return new Promise((resolve) => {
+// ════════════════════════════════════════════
+// UTILITIES
+// ════════════════════════════════════════════
+function compressToBase64(dataUrl, maxW=800, q=0.65) {
+  return new Promise(res => {
     const img = new Image();
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const scale  = Math.min(1, maxWidth / img.width);
-      canvas.width  = Math.round(img.width  * scale);
-      canvas.height = Math.round(img.height * scale);
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      resolve(canvas.toDataURL('image/jpeg', quality));
+      const c = document.createElement('canvas');
+      const s = Math.min(1, maxW/img.width);
+      c.width = Math.round(img.width*s); c.height = Math.round(img.height*s);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      res(c.toDataURL('image/jpeg',q));
     };
     img.src = dataUrl;
   });
 }
 
-// ── LOGIN ──────────────────────────────────────────────
+// ── WATERMARK GPS (kamera GPS) ─────────────────────────────
+// Menempelkan koordinat, waktu, dan label ke pojok bawah foto sebagai bukti lokasi.
+// Dipakai untuk semua foto (selfie absensi, before/after laporan, selfie selesai)
+// menggantikan blokir jarak otomatis — supervisor yang menilai kewajaran lokasi saat verifikasi.
+function stampFotoGPS(dataUrl, pos, label) {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = img.width; c.height = img.height;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+
+      const lat = pos?.coords?.latitude, lng = pos?.coords?.longitude;
+      const acc = pos?.coords?.accuracy;
+      const waktu = new Date().toLocaleString('id-ID', { dateStyle:'medium', timeStyle:'medium' });
+      const baris1 = lat!=null ? `📍 ${lat.toFixed(6)}, ${lng.toFixed(6)} ±${Math.round(acc||0)}m` : '📍 GPS tidak tersedia';
+      const baris2 = `${waktu}${label?(' · '+label):''}`;
+
+      const fontSize = Math.max(14, Math.round(c.width / 32));
+      const padding = Math.round(fontSize * 0.6);
+      const barH = fontSize * 2 + padding * 2;
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
+      ctx.fillRect(0, c.height - barH, c.width, barH);
+      ctx.fillStyle = '#FFB800';
+      ctx.font = `700 ${fontSize}px sans-serif`;
+      ctx.textBaseline = 'top';
+      ctx.fillText(baris1, padding, c.height - barH + padding);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = `500 ${Math.round(fontSize*0.88)}px sans-serif`;
+      ctx.fillText(baris2, padding, c.height - barH + padding + fontSize * 1.15);
+
+      res(c.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = () => res(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
+function addLog(msg, type) {
+  const list = document.getElementById('log-list');
+  if (!list) return;
+  const t = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const item = document.createElement('div');
+  item.className = 'log-item';
+  item.innerHTML = `<span class="log-time">${t}</span><span class="log-msg ${type||''}">${msg}</span>`;
+  list.insertBefore(item, list.firstChild);
+  while(list.children.length > 50) list.removeChild(list.lastChild);
+}
+window.addLog = addLog;
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  if (name === 'tracking') document.getElementById('bottom-nav').style.display = 'flex';
+  else document.getElementById('bottom-nav').style.display = 'none';
+}
+window.showScreen = showScreen;
+
+window.bukaFotoFullscreen = function(el) {
+  const m = document.getElementById('foto-modal');
+  document.getElementById('foto-modal-img').src = el.src;
+  m.style.display = 'flex';
+};
+
+// ════════════════════════════════════════════
+// LOGIN
+// ════════════════════════════════════════════
 window.doLogin = function() {
   const nama = document.getElementById('in-nama').value.trim();
   const nip  = document.getElementById('in-nip').value.trim();
   const regu = document.getElementById('in-regu').value;
   const ulp  = document.getElementById('in-ulp').value;
   const errEl = document.getElementById('login-err');
-
-  if (!nama || !nip || !regu || !ulp) {
-    errEl.textContent = 'Semua field wajib diisi.';
-    errEl.style.display = 'block';
-    return;
+  if (!nama||!nip||!regu||!ulp) {
+    errEl.textContent='Semua field wajib diisi.'; errEl.style.display='block'; return;
   }
-  errEl.style.display = 'none';
-
-  currentUser = { nama, nip, regu, ulp,
-    id: nip.replace(/\W/g,'') + '_' + Date.now().toString(36) };
-
+  errEl.style.display='none';
+  currentUser = { nama, nip, regu, ulp, id: nip.replace(/\W/g,'')+'_'+Date.now().toString(36) };
   document.getElementById('prof-nama').textContent = nama;
   document.getElementById('prof-sub').textContent = regu + ' · ' + ulp;
-
+  faseCurrent = 0;
+  faseLog = [];
+  updateFaseHero();
   showScreen('absensi');
-  addLog('Login: ' + nama + ' (' + regu + ')', 'ok');
   startAbsensiGPS();
+  addLog('Login: '+nama+' ('+regu+')', 'ok');
 };
 
-window.doLogout = function() {
-  if (confirm('Selesai bertugas dan hentikan tracking GPS?')) {
-    stopGPS();
-    if (db && currentUser) {
-      set(ref(db, 'petugas/' + currentUser.id + '/status'), 'Offline');
-    }
-    currentUser = null;
-    sendCount = 0;
-    document.getElementById('send-count').textContent = '0';
-    document.getElementById('bottom-nav').style.display = 'none';
-    showScreen('login');
-    addLog('Logout — tracking dihentikan', 'info');
-  }
-};
+// ════════════════════════════════════════════
+// FASE SYSTEM
+// ════════════════════════════════════════════
+function updateFaseHero() {
+  // Layar absensi awal sekarang hanya untuk fase Standby (satu-satunya fase berfoto di awal shift)
+  document.getElementById('fase-hero-title').textContent = 'Absensi Standby';
+  document.getElementById('fase-hero-sub').textContent   = 'Foto selfie & GPS untuk konfirmasi kehadiran awal shift';
+  document.getElementById('absen-fase-label').textContent = 'Standby';
+  document.getElementById('absen-btn-text').textContent   = 'Konfirmasi Standby';
+  document.getElementById('absen-btn-icon').textContent   = '⏸';
 
-function showScreen(name) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
-  if (name === 'tracking') document.getElementById('bottom-nav').style.display = 'flex';
-}
-window.showScreen = showScreen;
-
-// ── STATUS ────────────────────────────────────────────
-window.setStatus = function(s) {
-  currentStatus = s;
-  document.getElementById('status-label').textContent = s;
-  const map = {'Aktif Bekerja':'aktif','Perjalanan':'perjalanan','Standby':'standby','Offline':'offline'};
-  document.querySelectorAll('.sc-new').forEach(b => b.classList.remove('selected'));
-  const key = map[s];
-  if (key) document.getElementById('sb-' + key).classList.add('selected');
-  // update dot color on bar
-  const sabDot = document.getElementById('sab-dot');
-  if (sabDot) {
-    const colors = {'Aktif Bekerja':'#22A64A','Perjalanan':'#FFB800','Standby':'#0057B8','Offline':'#E03131'};
-    sabDot.style.background = colors[s] || '#22A64A';
-  }
-  if (db && currentUser) {
-    set(ref(db, 'petugas/' + currentUser.id + '/status'), s);
-  }
-  addLog('Status: ' + s, 'info');
-  if (lastPos) pushLocation(lastPos);
-};
-
-// ── GPS ───────────────────────────────────────────────
-function startGPS() {
-  if (!navigator.geolocation) {
-    addLog('GPS tidak didukung di browser ini', 'err');
-    document.getElementById('gps-status').textContent = 'GPS tidak tersedia';
-    return;
-  }
-  document.getElementById('gps-status').textContent = 'Meminta izin GPS...';
-  watchId = navigator.geolocation.watchPosition(onPos, onPosErr, {
-    enableHighAccuracy: true, maximumAge: 10000, timeout: 15000
-  });
-  sendTimer = setInterval(() => { if (lastPos) pushLocation(lastPos); }, 15000);
-  addLog('GPS tracking dimulai', 'ok');
-}
-
-function stopGPS() {
-  if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
-  if (sendTimer) { clearInterval(sendTimer); sendTimer = null; }
-}
-
-function onPos(pos) {
-  lastPos = pos;
-  const { latitude: lat, longitude: lng, accuracy: acc } = pos.coords;
-  document.getElementById('gps-lat').textContent = lat.toFixed(6);
-  document.getElementById('gps-lng').textContent = lng.toFixed(6);
-  document.getElementById('gps-acc').textContent = Math.round(acc) + ' m';
-  document.getElementById('gps-status').textContent = acc < 20 ? '✓ Akurasi sangat baik' : acc < 50 ? '✓ Akurasi baik' : '⚠ Akurasi rendah';
-  pushLocation(pos);
-}
-
-function onPosErr(err) {
-  const msgs = {1:'Izin GPS ditolak',2:'GPS tidak tersedia',3:'Timeout GPS'};
-  addLog(msgs[err.code] || 'GPS error', 'err');
-  document.getElementById('gps-status').textContent = msgs[err.code] || 'GPS error';
-}
-
-function pushLocation(pos) {
-  if (!currentUser) return;
-  const { latitude: lat, longitude: lng, accuracy: acc, heading, speed } = pos.coords;
-  const payload = {
-    lat, lng, acc: Math.round(acc),
-    heading: heading || 0,
-    speed: speed ? Math.round(speed * 3.6) : 0,
-    status: currentStatus,
-    nama: currentUser.nama,
-    nip: currentUser.nip,
-    regu: currentUser.regu,
-    ulp: currentUser.ulp,
-    ts: Date.now()
-  };
-
-  if (db) {
-    const petugasRef = ref(db, 'petugas/' + currentUser.id);
-    set(petugasRef, payload).then(() => {
-      sendCount++;
-      document.getElementById('send-count').textContent = sendCount;
-      const t = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-      addLog(t + ' — Lokasi terkirim (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + ')', 'ok');
-      onDisconnect(petugasRef).update({ status: 'Offline', ts: Date.now() });
-    }).catch(e => addLog('Gagal kirim: ' + e.message, 'err'));
-  } else {
-    sendCount++;
-    document.getElementById('send-count').textContent = sendCount;
-    addLog('[DEMO] Posisi: ' + lat.toFixed(5) + ', ' + lng.toFixed(5), 'info');
-  }
-}
-
-// ── LOG ───────────────────────────────────────────────
-function addLog(msg, type) {
-  const list = document.getElementById('log-list');
-  const t = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  const item = document.createElement('div');
-  item.className = 'log-item';
-  item.innerHTML = '<span class="log-time">' + t + '</span><span class="log-msg ' + (type||'') + '">' + msg + '</span>';
-  list.insertBefore(item, list.firstChild);
-  while (list.children.length > 30) list.removeChild(list.lastChild);
-}
-window.addLog = addLog;
-
-// ════════════════════════════════════════════════════════
-// ABSENSI
-// ════════════════════════════════════════════════════════
-let absenLokasi = 'Kantor';
-let absenStream = null;
-let absenPos = null;
-let absenFotoDataUrl = null;
-
-function advanceStep(n) {
-  for (let i = 1; i <= 4; i++) {
-    const el = document.getElementById('step-' + i);
+  // step tracker — fase 0 (Standby) aktif, sisanya menunggu
+  for(let i=1; i<=4; i++) {
+    const el = document.getElementById('fs-'+i);
     if (!el) continue;
-    el.classList.remove('active','done');
-    if (i < n) el.classList.add('done');
-    else if (i === n) el.classList.add('active');
+    el.classList.remove('done','active');
+    if (i===1) el.classList.add('active');
+  }
+
+  document.getElementById('card-lokasi').style.display = 'block';
+}
+
+// update progress tracking screen
+function updateTrackingFase() {
+  for(let i=1; i<=4; i++) {
+    const el = document.getElementById('tfs-'+i);
+    if (!el) continue;
+    el.classList.remove('done','active');
+    if (i-1 < faseCurrent) el.classList.add('done');
+    else if (i-1 === faseCurrent) el.classList.add('active');
   }
 }
 
-window.pilihLokasiAbsen = function(lok) {
-  absenLokasi = lok;
-  document.querySelectorAll('.loc-card-new').forEach(c => c.classList.remove('selected'));
-  const map = {'Kantor':'loc-kantor','Posko':'loc-posko','Lokasi Kerja':'loc-kerja'};
-  document.getElementById(map[lok]).classList.add('selected');
-  advanceStep(2);
-};
-
+// ── GPS untuk absensi screen ────────────────────────────
 function startAbsensiGPS() {
   if (!navigator.geolocation) {
-    document.getElementById('absen-gps-status').textContent = 'GPS tidak tersedia di browser ini';
+    document.getElementById('absen-gps-status').textContent='GPS tidak tersedia';
     return;
   }
-  document.getElementById('absen-gps-status').textContent = 'Mencari lokasi GPS...';
-  navigator.geolocation.getCurrentPosition((pos) => {
+  document.getElementById('absen-gps-status').textContent='Mencari GPS...';
+  navigator.geolocation.getCurrentPosition(pos => {
     absenPos = pos;
-    const { latitude: lat, longitude: lng, accuracy: acc } = pos.coords;
+    const {latitude:lat,longitude:lng,accuracy:acc} = pos.coords;
     document.getElementById('absen-lat').textContent = lat.toFixed(6);
     document.getElementById('absen-lng').textContent = lng.toFixed(6);
-    document.getElementById('absen-gps-status').textContent =
-      '✓ Akurasi ' + Math.round(acc) + ' m · ' + (acc < 30 ? 'Baik' : 'Rendah, coba di area terbuka');
-    document.getElementById('absen-gps-badge').style.display = 'block';
-    document.getElementById('absen-gps-badge').textContent = 'GPS: ' + lat.toFixed(4) + ', ' + lng.toFixed(4);
+    document.getElementById('absen-gps-status').textContent = '✓ Akurasi '+Math.round(acc)+' m';
+    document.getElementById('absen-gps-badge').style.display='block';
+    document.getElementById('absen-gps-badge-val').textContent = lat.toFixed(4)+', '+lng.toFixed(4);
     document.getElementById('absen-time').textContent = new Date().toLocaleString('id-ID');
-    advanceStep(4);
-  }, (err) => {
-    document.getElementById('absen-gps-status').textContent = 'Gagal ambil GPS: ' + err.message;
-  }, { enableHighAccuracy: true, timeout: 15000 });
+  }, err => {
+    document.getElementById('absen-gps-status').textContent='GPS gagal: '+err.message;
+  }, {enableHighAccuracy:true,timeout:15000});
 }
 
+// ── Kamera absensi awal ─────────────────────────────────
 window.bukaKameraAbsen = async function() {
   try {
-    absenStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
-    const video = document.getElementById('absen-video');
-    video.srcObject = absenStream;
-    video.style.display = 'block';
-    document.getElementById('absen-cam-placeholder').style.display = 'none';
-    document.getElementById('absen-photo-preview').style.display = 'none';
-    document.getElementById('absen-btn-cam').style.display = 'none';
-    document.getElementById('absen-btn-shoot').style.display = 'block';
-    document.getElementById('absen-btn-retake').style.display = 'none';
-  } catch (e) {
-    addLog('Gagal akses kamera: ' + e.message, 'err');
-    document.getElementById('absen-cam-placeholder').innerHTML = '<span class="cam-icon">⚠️</span>Kamera tidak bisa diakses<br><span style="font-size:10px">' + e.message + '</span>';
-  }
+    absenStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+    const v = document.getElementById('absen-video');
+    v.srcObject=absenStream; v.style.display='block';
+    document.getElementById('absen-cam-ph').style.display='none';
+    document.getElementById('absen-preview').style.display='none';
+    document.getElementById('absen-btn-cam').style.display='none';
+    document.getElementById('absen-btn-shoot').style.display='block';
+    document.getElementById('absen-btn-retake').style.display='none';
+  } catch(e) { addLog('Kamera gagal: '+e.message,'err'); }
 };
-
 window.ambilFotoAbsen = function() {
-  const video = document.getElementById('absen-video');
-  const canvas = document.getElementById('absen-canvas');
-  canvas.width = video.videoWidth || 480;
-  canvas.height = video.videoHeight || 640;
-  const ctx = canvas.getContext('2d');
-  ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  absenFotoDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-
-  const img = document.getElementById('absen-photo-preview');
-  img.src = absenFotoDataUrl;
-  img.style.display = 'block';
-  video.style.display = 'none';
-
-  if (absenStream) { absenStream.getTracks().forEach(t => t.stop()); absenStream = null; }
-
-  document.getElementById('absen-btn-shoot').style.display = 'none';
-  document.getElementById('absen-btn-retake').style.display = 'block';
-  document.getElementById('absen-time').textContent = new Date().toLocaleString('id-ID');
-  addLog('Selfie absensi diambil', 'ok');
-  advanceStep(3);
+  const v=document.getElementById('absen-video'), c=document.getElementById('absen-canvas');
+  c.width=v.videoWidth||480; c.height=v.videoHeight||640;
+  const ctx=c.getContext('2d'); ctx.translate(c.width,0); ctx.scale(-1,1);
+  ctx.drawImage(v,0,0,c.width,c.height);
+  absenFotoUrl = c.toDataURL('image/jpeg',0.7);
+  const img=document.getElementById('absen-preview');
+  img.src=absenFotoUrl; img.style.display='block';
+  document.getElementById('absen-video').style.display='none';
+  if(absenStream){absenStream.getTracks().forEach(t=>t.stop());absenStream=null;}
+  document.getElementById('absen-btn-shoot').style.display='none';
+  document.getElementById('absen-btn-retake').style.display='block';
+  document.getElementById('absen-time').textContent=new Date().toLocaleString('id-ID');
+  addLog('Selfie '+FASE_LIST[faseCurrent]+' diambil','ok');
 };
-
 window.ulangFotoAbsen = function() {
-  absenFotoDataUrl = null;
-  document.getElementById('absen-photo-preview').style.display = 'none';
-  document.getElementById('absen-btn-retake').style.display = 'none';
+  absenFotoUrl=null;
+  document.getElementById('absen-preview').style.display='none';
+  document.getElementById('absen-btn-retake').style.display='none';
   bukaKameraAbsen();
 };
 
-window.submitAbsensi = async function() {
-  const errEl = document.getElementById('absen-err');
-  const btn   = document.getElementById('absen-btn-submit');
-  if (!absenPos) {
-    errEl.textContent = 'GPS belum terkunci. Mohon tunggu atau coba di area terbuka.';
-    errEl.style.display = 'block';
-    return;
-  }
-  if (!absenFotoDataUrl) {
-    errEl.textContent = 'Selfie absensi wajib diambil sebelum melanjutkan.';
-    errEl.style.display = 'block';
-    return;
-  }
-  errEl.style.display = 'none';
+// ── Submit absensi Standby (satu-satunya fase yang butuh foto di awal) ──
+window.submitFase = async function() {
+  const errEl=document.getElementById('absen-err');
+  const btn=document.getElementById('absen-btn-submit');
+  if(!absenPos){errEl.textContent='GPS belum terkunci.';errEl.style.display='block';return;}
+  if(!absenFotoUrl){errEl.textContent='Selfie wajib diambil.';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  btn.disabled=true; btn.innerHTML='<span>⏳</span> Menyimpan...';
 
-  const waktu = Date.now();
-  const origLabel = btn ? btn.innerHTML : '';
-  if (btn) { btn.disabled = true; btn.innerHTML = '<span>⏳</span> Mengompres & menyimpan foto...'; }
-
-  let fotoBase64 = null;
+  let foto=null;
   try {
-    fotoBase64 = await compressToBase64(absenFotoDataUrl, 800, 0.65);
-    addLog('Foto absensi dikompres ke Base64', 'ok');
-  } catch (e) {
-    addLog('Gagal kompres foto absen: ' + e.message, 'err');
-    errEl.textContent = 'Gagal memproses foto. Coba lagi.';
-    errEl.style.display = 'block';
-    if (btn) { btn.disabled = false; btn.innerHTML = origLabel; }
-    return;
-  }
+    const stamped = await stampFotoGPS(absenFotoUrl, absenPos, 'Absensi Standby — '+absenLokasi);
+    foto = await compressToBase64(stamped,800,0.7);
+  } catch(e){ addLog('Kompres foto gagal','err'); }
 
-  currentUser.absensi = {
-    lokasi: absenLokasi,
-    lat: absenPos.coords.latitude,
-    lng: absenPos.coords.longitude,
-    acc: Math.round(absenPos.coords.accuracy),
-    waktu,
-    fotoBase64
+  const waktu=Date.now();
+  const entry = {
+    fase:'Standby', waktu,
+    lat:absenPos.coords.latitude, lng:absenPos.coords.longitude,
+    acc:Math.round(absenPos.coords.accuracy),
+    fotoBase64:foto
   };
+  faseLog.push(entry);
 
-  if (db && currentUser) {
+  if(db && currentUser) {
+    const payload = {
+      nama:currentUser.nama, nip:currentUser.nip, regu:currentUser.regu, ulp:currentUser.ulp,
+      fase:'Standby', waktu,
+      lat:entry.lat, lng:entry.lng, acc:entry.acc,
+      fotoBase64:foto,
+      lokasi:absenLokasi
+    };
     try {
-      await set(ref(db, 'absensi/' + currentUser.id + '_' + waktu), {
-        nama: currentUser.nama, nip: currentUser.nip, regu: currentUser.regu, ulp: currentUser.ulp,
-        lokasi: absenLokasi,
-        lat: currentUser.absensi.lat, lng: currentUser.absensi.lng, acc: currentUser.absensi.acc,
-        waktu, fotoBase64
-      });
-    } catch (e) {
-      addLog('Gagal simpan absensi: ' + e.message, 'err');
-    }
+      await set(ref(db,'absensi/'+currentUser.id+'_fase0_'+waktu), payload);
+      await set(ref(db,'absensiLog/'+currentUser.id+'/fase0'), payload);
+    } catch(e){addLog('Simpan absensi gagal: '+e.message,'err');}
   }
 
-  if (btn) { btn.disabled = false; btn.innerHTML = origLabel; }
-  addLog('Absensi berhasil di ' + absenLokasi, 'ok');
+  addLog('✓ Absensi Standby tercatat · '+new Date(waktu).toLocaleTimeString('id-ID'),'ok');
+
+  // Standby selesai → langsung masuk tracking. Perjalanan & Aktif Bekerja
+  // diatur otomatis oleh deteksi GPS, tidak perlu absensi foto lagi.
+  faseCurrent = 1;
+  updateTrackingFase();
   showScreen('tracking');
+  setStatus('Standby');
   startGPS();
 };
 
-// ════════════════════════════════════════════════════════
-// CLOSED-LOOP REPORTING
-// ════════════════════════════════════════════════════════
-let laporTugasList = [];
-let laporFotoBefore = null, laporFotoAfter = null;
-let laporKameraTarget = null;
-let laporStream = null;
-let laporFotoSementara = null;
-
-window.bukaModalLapor = function() {
-  document.getElementById('lapor-rincian').value = '';
-  document.getElementById('lapor-material').value = '';
-  document.getElementById('lapor-target').value = '';
-  document.getElementById('lapor-realisasi').value = '';
-  laporFotoBefore = null; laporFotoAfter = null;
-  resetSlotFoto('before'); resetSlotFoto('after');
-  document.getElementById('lapor-err').style.display = 'none';
-  document.getElementById('modal-lapor').classList.add('active');
+// ── Lokasi pilihan ────────────────────────────────────────
+let absenLokasi = 'Kantor';
+window.pilihLokasi = function(lok) {
+  absenLokasi=lok;
+  document.querySelectorAll('.loc-card').forEach(c=>c.classList.remove('selected'));
+  const map={'Kantor':'loc-kantor','Lapangan':'loc-lapangan'};
+  if(map[lok]) document.getElementById(map[lok]).classList.add('selected');
 };
 
+
+// ════════════════════════════════════════════
+// GPS TRACKING + AUTO-DETECT PERJALANAN
+// ════════════════════════════════════════════
+// Auto-travel detection state
+let prevTravelPos = null;       // posisi sebelumnya untuk hitung displacement
+let prevTravelTime = null;      // timestamp posisi sebelumnya
+let travelSpeedBuffer = [];     // buffer speed readings (5 readings)
+const SPEED_THRESHOLD = 12;     // km/h — dinaikkan dari 5, supaya jalan kaki cepat di lokasi tidak salah terdeteksi sebagai "Perjalanan"
+const DISP_THRESHOLD = 120;     // meter dalam jendela waktu — dinaikkan dari 50, mengurangi pemicu akibat pantulan sinyal GPS
+const TRAVEL_CONFIRM_COUNT = 5; // dinaikkan dari 3 — butuh lebih banyak konfirmasi berturut-turut sebelum status berubah
+let travelTriggerCount = 0;     // counter konfirmasi perjalanan
+let autoTravelActive = false;   // apakah sedang dalam mode auto-perjalanan
+
+function haversineDistance(lat1,lng1,lat2,lng2) {
+  const R=6371000, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function checkAutoTravel(pos) {
+  // Hanya aktif setelah absensi Perjalanan (fase >= 1) dan sedang Aktif Bekerja
+  if(faseCurrent < 1) return;
+  if(currentStatus !== 'Aktif Bekerja' && currentStatus !== 'Standby') return;
+  if(autoTravelActive) return; // sudah dalam perjalanan, tidak perlu cek lagi
+
+  const {latitude:lat, longitude:lng, speed, accuracy:acc} = pos.coords;
+  if(acc > 100) return; // GPS akurasi buruk, skip
+
+  const now = Date.now();
+  let isMoving = false;
+
+  // Cek 1: Speed dari GPS (m/s → km/h)
+  if(speed !== null && speed >= 0) {
+    const speedKmh = speed * 3.6;
+    if(speedKmh >= SPEED_THRESHOLD) isMoving = true;
+  }
+
+  // Cek 2: Displacement dari posisi sebelumnya
+  if(prevTravelPos && prevTravelTime) {
+    const dt = (now - prevTravelTime) / 1000; // detik
+    if(dt >= 30 && dt <= 120) { // window 30-120 detik
+      const dist = haversineDistance(
+        prevTravelPos.latitude, prevTravelPos.longitude, lat, lng
+      );
+      // displacement > 50m dalam window waktu → bergerak
+      if(dist > DISP_THRESHOLD) isMoving = true;
+    }
+  }
+
+  if(isMoving) {
+    travelTriggerCount++;
+    if(travelTriggerCount >= TRAVEL_CONFIRM_COUNT) {
+      // Konfirmasi: petugas sedang perjalanan
+      autoTravelActive = true;
+      travelTriggerCount = 0;
+      setStatus('Perjalanan');
+      const banner = document.getElementById('banner-perjalanan');
+      const desc = document.getElementById('banner-perjalanan-desc');
+      desc.textContent = 'GPS mendeteksi kamu sedang bergerak. Tap tombol di bawah jika sudah tiba di lokasi.';
+      banner.style.display = 'block';
+      addLog('🚗 Auto-detect: Perjalanan terdeteksi via GPS','warn');
+    }
+  } else {
+    // Reset counter jika tidak bergerak
+    if(travelTriggerCount > 0) travelTriggerCount--;
+  }
+
+  // Update posisi referensi setiap 30 detik
+  if(!prevTravelTime || (now - prevTravelTime) >= 30000) {
+    prevTravelPos = {latitude: lat, longitude: lng};
+    prevTravelTime = now;
+  }
+}
+
+window.konfirmasiSudahDiLokasi = function() {
+  autoTravelActive = false;
+  travelTriggerCount = 0;
+  prevTravelPos = null;
+  prevTravelTime = null;
+  document.getElementById('banner-perjalanan').style.display = 'none';
+  setStatus('Aktif Bekerja');
+  addLog('📍 Petugas konfirmasi sudah di lokasi','ok');
+};
+
+function startGPS() {
+  if(!navigator.geolocation){addLog('GPS tidak didukung','err');return;}
+  watchId=navigator.geolocation.watchPosition(onPos,onPosErr,{enableHighAccuracy:true,maximumAge:10000,timeout:15000});
+  sendTimer=setInterval(()=>{if(lastPos)pushLocation(lastPos);},15000);
+  addLog('GPS tracking dimulai','ok');
+}
+function stopGPS() {
+  if(watchId!==null){navigator.geolocation.clearWatch(watchId);watchId=null;}
+  if(sendTimer){clearInterval(sendTimer);sendTimer=null;}
+  autoTravelActive=false; travelTriggerCount=0;
+}
+function onPos(pos) {
+  lastPos=pos;
+  const {latitude:lat,longitude:lng,accuracy:acc}=pos.coords;
+  document.getElementById('gps-lat').textContent=lat.toFixed(6);
+  document.getElementById('gps-lng').textContent=lng.toFixed(6);
+  document.getElementById('gps-acc').textContent=Math.round(acc)+' m';
+  document.getElementById('gps-status').textContent=acc<20?'✓ Akurasi sangat baik':acc<50?'✓ Akurasi baik':'⚠ Akurasi rendah';
+  checkAutoTravel(pos);
+  pushLocation(pos);
+}
+function onPosErr(err) {
+  const msgs={1:'Izin GPS ditolak',2:'GPS tidak tersedia',3:'Timeout GPS'};
+  addLog(msgs[err.code]||'GPS error','err');
+  document.getElementById('gps-status').textContent=msgs[err.code]||'GPS error';
+}
+function pushLocation(pos) {
+  if(!currentUser) return;
+  const {latitude:lat,longitude:lng,accuracy:acc,heading,speed}=pos.coords;
+  const payload={lat,lng,acc:Math.round(acc),heading:heading||0,speed:speed?Math.round(speed*3.6):0,status:currentStatus,nama:currentUser.nama,nip:currentUser.nip,regu:currentUser.regu,ulp:currentUser.ulp,ts:Date.now(),fase:FASE_LIST[Math.min(faseCurrent,3)]};
+  if(db){
+    const pr=ref(db,'petugas/'+currentUser.id);
+    set(pr,payload).then(()=>{
+      sendCount++; document.getElementById('send-count').textContent=sendCount;
+      onDisconnect(pr).update({status:'Offline',ts:Date.now()});
+    }).catch(e=>addLog('GPS kirim gagal: '+e.message,'err'));
+  } else {
+    sendCount++; document.getElementById('send-count').textContent=sendCount;
+  }
+}
+
+// ════════════════════════════════════════════
+// STATUS (read-only, diatur oleh absensi & auto-detect)
+// ════════════════════════════════════════════
+window.setStatus = function(s) {
+  currentStatus=s;
+  document.getElementById('status-label').textContent=s;
+  const map={'Aktif Bekerja':'aktif','Perjalanan':'perjalanan','Standby':'standby','Offline':'offline'};
+  document.querySelectorAll('.sc').forEach(b=>b.classList.remove('selected'));
+  const key=map[s];
+  if(key) document.getElementById('sb-'+key).classList.add('selected');
+  const sabDot=document.getElementById('sab-dot');
+  if(sabDot){const colors={'Aktif Bekerja':'#22A64A','Perjalanan':'#FFB800','Standby':'#0057B8','Offline':'#E03131'};sabDot.style.background=colors[s]||'#22A64A';}
+  if(db&&currentUser)set(ref(db,'petugas/'+currentUser.id+'/status'),s);
+  addLog('Status: '+s,'info');
+  if(lastPos)pushLocation(lastPos);
+};
+
+// ════════════════════════════════════════════
+// PROGRES TUGAS
+// ════════════════════════════════════════════
+function updateProgres() {
+  tugasSelesai = laporTugasList.length;
+  document.getElementById('tugas-selesai-count').textContent  = tugasSelesai;
+  document.getElementById('tugas-selesai-count2').textContent = tugasSelesai;
+  const target = Math.max(tugasTarget, 1);
+  const pct = Math.min(100, Math.round(tugasSelesai/target*100));
+  document.getElementById('progres-fill').style.width = pct+'%';
+  document.getElementById('progres-pct').textContent = pct+'%';
+  document.getElementById('progres-sub').textContent = tugasSelesai+' dari '+(tugasTarget||'?')+' tugas terpenuhi';
+}
+
+// ════════════════════════════════════════════
+// LAPORAN PEKERJAAN
+// ════════════════════════════════════════════
+window.bukaModalLapor = function() {
+  editLaporanId = null;
+  document.querySelector('#modal-lapor h3').textContent = 'Laporan Pekerjaan Selesai';
+  document.getElementById('lapor-btn-submit').innerHTML = '<span>✓</span> Kirim Laporan & Tambah Progres';
+  document.getElementById('lapor-tiket').value='';
+  document.getElementById('lapor-rincian').value='';
+  document.getElementById('lapor-material').value='';
+  document.getElementById('lapor-target').value='';
+  document.getElementById('lapor-realisasi').value='';
+  document.getElementById('tiket-info-box').style.display='none';
+  laporFotoBefore=null; laporFotoAfter=null;
+  resetSlotFoto('before'); resetSlotFoto('after');
+  document.getElementById('lapor-err').style.color='';
+  document.getElementById('lapor-err').style.display='none';
+  document.getElementById('modal-lapor').classList.add('active');
+};
 window.tutupModalLapor = function() {
   document.getElementById('modal-lapor').classList.remove('active');
 };
 
-function resetSlotFoto(target) {
-  const slot = document.getElementById('slot-' + target);
-  slot.classList.remove('filled');
-  slot.innerHTML = '<span class="slot-icon">📷</span><span class="slot-label">' + (target === 'before' ? 'Sebelum (Before)' : 'Sesudah (After)') + '</span>';
+let tiketDitemukan=null;
+window.cariTiket = async function() {
+  const nomor=document.getElementById('lapor-tiket').value.trim().toUpperCase();
+  const infoBox=document.getElementById('tiket-info-box');
+  if(!nomor){infoBox.style.display='none';tiketDitemukan=null;return;}
+  if(!db){infoBox.innerHTML='⚠️ Firebase belum terhubung.';infoBox.style.display='block';return;}
+  infoBox.innerHTML='🔍 Mencari tiket <b>'+nomor+'</b>...'; infoBox.style.display='block';
+  try{
+    const snap=await get(ref(db,'tiket'));
+    const data=snap.val()||{};
+    const found=Object.entries(data).find(([,t])=>(t.nomor||'').toUpperCase()===nomor);
+    if(!found){
+      infoBox.innerHTML='❌ Tiket <b>'+nomor+'</b> tidak ditemukan.';
+      infoBox.style.background='var(--crit-bg)'; tiketDitemukan=null;
+    } else {
+      const [,tiket]=found; tiketDitemukan=tiket;
+      infoBox.innerHTML='✅ <b>'+tiket.jenis+'</b> · '+tiket.ulp+'<br>Target: '+tiket.target;
+      infoBox.style.background='var(--ok-bg)';
+      if(tiket.jenis&&!document.getElementById('lapor-rincian').value)document.getElementById('lapor-rincian').value=tiket.jenis;
+      if(tiket.target&&!document.getElementById('lapor-target').value)document.getElementById('lapor-target').value=tiket.target;
+      if(tiket.target)tugasTarget=+(tiket.target)||0;
+    }
+  }catch(e){infoBox.innerHTML='⚠️ Error: '+e.message;}
+};
+
+function resetSlotFoto(t) {
+  const s=document.getElementById('slot-'+t);
+  s.classList.remove('filled');
+  s.innerHTML='<span class="slot-icon">📷</span><span class="slot-label">'+(t==='before'?'Sebelum (Before)':'Sesudah (After)')+'</span>';
 }
 
 window.bukaKameraLapor = async function(target) {
-  laporKameraTarget = target;
-  document.getElementById('kamera-lapor-title').textContent = target === 'before' ? 'Foto Kondisi Sebelum' : 'Foto Kondisi Sesudah';
-  document.getElementById('lapor-time-badge').textContent = new Date().toLocaleTimeString('id-ID');
-  laporFotoSementara = null;
-
-  const video = document.getElementById('lapor-video');
-  const img   = document.getElementById('lapor-photo-preview');
-  video.style.display = 'block'; img.style.display = 'none';
-  document.getElementById('lapor-btn-shoot').style.display = 'block';
-  document.getElementById('lapor-btn-retake').style.display = 'none';
-  document.getElementById('lapor-btn-pakai').style.display = 'none';
-
+  laporKameraTarget=target;
+  document.getElementById('kamera-lapor-title').textContent=target==='before'?'Foto Kondisi Sebelum':'Foto Kondisi Sesudah';
+  document.getElementById('lapor-time-badge').textContent=new Date().toLocaleTimeString('id-ID');
+  laporFotoSementara=null;
+  const v=document.getElementById('lapor-video'),img=document.getElementById('lapor-photo-preview');
+  v.style.display='block'; img.style.display='none';
+  document.getElementById('lapor-btn-shoot').style.display='block';
+  document.getElementById('lapor-btn-retake').style.display='none';
+  document.getElementById('lapor-btn-pakai').style.display='none';
   document.getElementById('modal-kamera-lapor').classList.add('active');
-  try {
-    laporStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
-    video.srcObject = laporStream;
-  } catch (e) {
-    addLog('Gagal akses kamera lapor: ' + e.message, 'err');
-  }
+  try{
+    laporStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+    v.srcObject=laporStream;
+  }catch(e){addLog('Kamera lapor gagal: '+e.message,'err');}
 };
-
 window.tutupKameraLapor = function() {
-  if (laporStream) { laporStream.getTracks().forEach(t => t.stop()); laporStream = null; }
+  if(laporStream){laporStream.getTracks().forEach(t=>t.stop());laporStream=null;}
   document.getElementById('modal-kamera-lapor').classList.remove('active');
 };
-
 window.ambilFotoLapor = function() {
-  const video  = document.getElementById('lapor-video');
-  const canvas = document.getElementById('lapor-canvas');
-  canvas.width = video.videoWidth || 480;
-  canvas.height = video.videoHeight || 640;
-  canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-  laporFotoSementara = canvas.toDataURL('image/jpeg', 0.6);
-
-  document.getElementById('lapor-photo-preview').src = laporFotoSementara;
-  document.getElementById('lapor-photo-preview').style.display = 'block';
-  video.style.display = 'none';
-  if (laporStream) { laporStream.getTracks().forEach(t => t.stop()); laporStream = null; }
-
-  document.getElementById('lapor-btn-shoot').style.display = 'none';
-  document.getElementById('lapor-btn-retake').style.display = 'block';
-  document.getElementById('lapor-btn-pakai').style.display = 'block';
+  const v=document.getElementById('lapor-video'),c=document.getElementById('lapor-canvas');
+  c.width=v.videoWidth||480; c.height=v.videoHeight||640;
+  c.getContext('2d').drawImage(v,0,0,c.width,c.height);
+  laporFotoSementara=c.toDataURL('image/jpeg',0.6);
+  document.getElementById('lapor-photo-preview').src=laporFotoSementara;
+  document.getElementById('lapor-photo-preview').style.display='block';
+  v.style.display='none';
+  if(laporStream){laporStream.getTracks().forEach(t=>t.stop());laporStream=null;}
+  document.getElementById('lapor-btn-shoot').style.display='none';
+  document.getElementById('lapor-btn-retake').style.display='block';
+  document.getElementById('lapor-btn-pakai').style.display='block';
 };
-
-window.ulangFotoLapor = function() {
-  laporFotoSementara = null;
-  bukaKameraLapor(laporKameraTarget);
-};
-
+window.ulangFotoLapor = function(){laporFotoSementara=null;bukaKameraLapor(laporKameraTarget);};
 window.pakaiFotoLapor = function() {
-  if (laporKameraTarget === 'before') laporFotoBefore = laporFotoSementara;
-  else laporFotoAfter = laporFotoSementara;
-
-  const slot = document.getElementById('slot-' + laporKameraTarget);
-  slot.classList.add('filled');
-  slot.innerHTML = '<img src="' + laporFotoSementara + '"><span class="slot-label">' +
-    (laporKameraTarget === 'before' ? 'Sebelum ✓' : 'Sesudah ✓') + '</span>';
-
+  if(laporKameraTarget==='before')laporFotoBefore=laporFotoSementara;
+  else laporFotoAfter=laporFotoSementara;
+  const s=document.getElementById('slot-'+laporKameraTarget);
+  s.classList.add('filled');
+  s.innerHTML='<img src="'+laporFotoSementara+'"><span class="slot-label">'+(laporKameraTarget==='before'?'Sebelum ✓':'Sesudah ✓')+'</span>';
   document.getElementById('modal-kamera-lapor').classList.remove('active');
 };
 
 window.submitLaporan = async function() {
-  const errEl  = document.getElementById('lapor-err');
-  const progEl = document.getElementById('lapor-progress');
-  const btn    = document.getElementById('lapor-btn-submit');
-  const rincian   = document.getElementById('lapor-rincian').value.trim();
-  const material  = document.getElementById('lapor-material').value.trim();
-  const target    = document.getElementById('lapor-target').value;
-  const realisasi = document.getElementById('lapor-realisasi').value;
+  const errEl=document.getElementById('lapor-err');
+  const progEl=document.getElementById('lapor-progress');
+  const btn=document.getElementById('lapor-btn-submit');
+  const rincian=document.getElementById('lapor-rincian').value.trim();
+  const material=document.getElementById('lapor-material').value.trim();
+  const target=document.getElementById('lapor-target').value;
+  const realisasi=document.getElementById('lapor-realisasi').value;
+  const nomorTiket=(document.getElementById('lapor-tiket')?.value||'').trim().toUpperCase()||null;
 
-  if (!rincian) { errEl.textContent = 'Rincian pekerjaan wajib diisi.'; errEl.style.display = 'block'; return; }
-  if (!laporFotoBefore || !laporFotoAfter) { errEl.textContent = 'Foto Before dan After wajib diambil keduanya.'; errEl.style.display = 'block'; return; }
-  errEl.style.display = 'none';
+  if(!rincian){errEl.textContent='Rincian pekerjaan wajib diisi.';errEl.style.display='block';return;}
+  if(!laporFotoBefore||!laporFotoAfter){errEl.textContent='Foto Before dan After wajib diambil keduanya.';errEl.style.display='block';return;}
+  errEl.style.display='none'; btn.disabled=true;
+  progEl.textContent='Mengompres foto...'; progEl.style.display='block';
 
-  const waktu  = Date.now();
-  const uid    = currentUser ? currentUser.id : 'anon';
-  const origLabel = btn.innerHTML;
-  btn.disabled = true;
-  progEl.style.display = 'block';
+  let fB=null,fA=null;
+  try{
+    const sB = await stampFotoGPS(laporFotoBefore, lastPos, 'Sebelum — '+rincian);
+    const sA = await stampFotoGPS(laporFotoAfter,  lastPos, 'Sesudah — '+rincian);
+    fB=await compressToBase64(sB,800,0.65);
+    fA=await compressToBase64(sA,800,0.65);
+  }catch(e){errEl.textContent='Gagal proses foto.';errEl.style.display='block';progEl.style.display='none';btn.disabled=false;return;}
 
-  let fotoBeforeB64 = null, fotoAfterB64 = null;
-  try {
-    progEl.textContent = 'Mengompres foto before...';
-    btn.innerHTML = '<span>⏳</span> Memproses...';
-    fotoBeforeB64 = await compressToBase64(laporFotoBefore, 800, 0.6);
-    progEl.textContent = 'Mengompres foto after...';
-    fotoAfterB64  = await compressToBase64(laporFotoAfter,  800, 0.6);
-  } catch (e) {
-    addLog('Gagal kompres foto laporan: ' + e.message, 'err');
-    errEl.textContent = 'Gagal memproses foto. Coba lagi.';
-    errEl.style.display = 'block';
-    progEl.style.display = 'none';
-    btn.disabled = false;
-    btn.innerHTML = origLabel;
-    return;
-  }
+  const isRevisi = !!editLaporanId;
+  const waktu = isRevisi ? (laporTugasList.find(l=>l.id===editLaporanId)?.waktu || Date.now()) : Date.now();
+  const key = isRevisi ? editLaporanId : (currentUser.id+'_'+waktu);
 
-  const laporan = {
-    nama: currentUser ? currentUser.nama : '—',
-    nip:  currentUser ? currentUser.nip  : '—',
-    regu: currentUser ? currentUser.regu : '—',
-    ulp:  currentUser ? currentUser.ulp  : '—',
-    rincian, material,
-    target: target || null, realisasi: realisasi || null,
-    lat: lastPos ? lastPos.coords.latitude  : null,
-    lng: lastPos ? lastPos.coords.longitude : null,
+  const laporan={
+    nama:currentUser?.nama||'—', nip:currentUser?.nip||'—', regu:currentUser?.regu||'—', ulp:currentUser?.ulp||'—',
+    rincian, material, target:target||null, realisasi:realisasi||null,
+    nomorTiket:nomorTiket||null,
+    lat:lastPos?.coords.latitude||null, lng:lastPos?.coords.longitude||null,
     waktu,
-    status: 'Selesai diverifikasi oleh Supervisor',
-    fotoBeforeBase64: fotoBeforeB64, fotoAfterBase64: fotoAfterB64
+    // Saat dikirim ulang, status verifikasi & catatan lama direset supaya kembali masuk antrean supervisor
+    statusVerifikasi:null, verifCatatan:null, verifOleh:null, verifWaktu:null,
+    direvisiPada: isRevisi ? Date.now() : null,
+    fotoBeforeBase64:fB, fotoAfterBase64:fA,
+    fase:FASE_LIST[Math.min(faseCurrent,3)]
   };
 
-  if (db) {
-    progEl.textContent = 'Menyimpan laporan...';
-    try {
-      await set(ref(db, 'laporan/' + uid + '_' + waktu), laporan);
-      addLog('Laporan pekerjaan terkirim: ' + rincian, 'ok');
-    } catch (e) {
-      addLog('Gagal kirim laporan: ' + e.message, 'err');
-      errEl.textContent = 'Foto terunggah, tetapi gagal menyimpan data laporan: ' + e.message;
-      errEl.style.display = 'block';
-      progEl.style.display = 'none';
-      btn.disabled = false;
-      btn.innerHTML = origLabel;
-      return;
-    }
-  } else {
-    addLog('[DEMO] Laporan tersimpan lokal: ' + rincian, 'info');
+  progEl.textContent= isRevisi ? 'Mengirim ulang laporan...' : 'Menyimpan laporan...';
+  if(db){
+    try{ await set(ref(db,'laporan/'+key), laporan); pantauStatusLaporan(key); }
+    catch(e){addLog('Laporan gagal: '+e.message,'err');}
   }
 
-  progEl.style.display = 'none';
-  btn.disabled = false;
-  btn.innerHTML = origLabel;
+  progEl.style.display='none'; btn.disabled=false;
 
-  laporan.fotoBefore = fotoBeforeB64;
-  laporan.fotoAfter  = fotoAfterB64;
-  laporTugasList.unshift(laporan);
+  if (isRevisi) {
+    const idx = laporTugasList.findIndex(l=>l.id===editLaporanId);
+    if (idx>-1) laporTugasList[idx] = {...laporan, id:key, fotoBefore:fB, fotoAfter:fA};
+    editLaporanId = null;
+    addLog('✓ Laporan direvisi & dikirim ulang: '+rincian,'ok');
+  } else {
+    laporTugasList.unshift({...laporan, id:key, fotoBefore:fB, fotoAfter:fA});
+    addLog('✓ Laporan terkirim: '+rincian+' (realisasi: '+(realisasi||'—')+')','ok');
+  }
+  updateProgres();
   renderTaskList();
-  document.getElementById('modal-lapor').classList.remove('active');
+  tutupModalLapor();
+};
+
+// Pantau perubahan status verifikasi laporan ini secara realtime (supaya badge & tombol "Kirim Ulang" update otomatis)
+function pantauStatusLaporan(key) {
+  if (!db || laporListeners[key]) return;
+  laporListeners[key] = onValue(ref(db, 'laporan/'+key), snap => {
+    const data = snap.val();
+    if (!data) return;
+    const idx = laporTugasList.findIndex(l=>l.id===key);
+    if (idx>-1) {
+      laporTugasList[idx] = {...laporTugasList[idx], statusVerifikasi:data.statusVerifikasi, verifCatatan:data.verifCatatan};
+      renderTaskList();
+      if (data.statusVerifikasi==='Perlu Revisi') addLog('⚠ Laporan "'+laporTugasList[idx].rincian+'" diminta revisi oleh supervisor','warn');
+    }
+  });
+}
+
+// Buka kembali form laporan dalam mode revisi — data lama jadi prefill, dan saat dikirim akan MENIMPA laporan lama (bukan bikin baru)
+window.bukaRevisiLaporan = function(id) {
+  const t = laporTugasList.find(l=>l.id===id);
+  if (!t) return;
+  bukaModalLapor();
+  editLaporanId = id; // diisi SETELAH bukaModalLapor(), karena fungsi itu mereset mode revisi
+  document.getElementById('lapor-tiket').value    = t.nomorTiket||'';
+  document.getElementById('lapor-rincian').value  = t.rincian||'';
+  document.getElementById('lapor-material').value = t.material||'';
+  document.getElementById('lapor-target').value   = t.target||'';
+  document.getElementById('lapor-realisasi').value= t.realisasi||'';
+  if (t.verifCatatan) {
+    const errEl=document.getElementById('lapor-err');
+    errEl.style.color='var(--warn)';
+    errEl.textContent='Catatan supervisor: '+t.verifCatatan+' — silakan perbaiki lalu ambil ulang foto before/after.';
+    errEl.style.display='block';
+  }
+  document.querySelector('#modal-lapor h3').textContent = 'Kirim Ulang Laporan (Revisi)';
+  document.getElementById('lapor-btn-submit').innerHTML = '<span>↺</span> Kirim Ulang Revisi';
 };
 
 function renderTaskList() {
-  const list = document.getElementById('task-list');
-  if (laporTugasList.length === 0) {
-    list.innerHTML = '<div style="font-size:12px;color:var(--text-muted);text-align:center;padding:18px 0">Belum ada laporan untuk hari ini.</div>';
-    return;
-  }
-  list.innerHTML = laporTugasList.map(t => {
-    const jam    = new Date(t.waktu).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
-    const before = t.fotoBefore || t.fotoBeforeBase64 || t.fotoBeforeUrl || '';
-    const after  = t.fotoAfter  || t.fotoAfterBase64  || t.fotoAfterUrl  || '';
-    const thumbs = (before && after)
-      ? '<div style="display:flex;gap:6px;margin-top:8px">' +
-          '<img src="' + before + '" style="width:50%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--border)">' +
-          '<img src="' + after  + '" style="width:50%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--border)">' +
-        '</div>'
-      : '';
-    return '<div class="task-item">' +
-      '<div class="task-title">' + t.rincian + '</div>' +
-      '<div class="task-meta">' + jam + ' · Target ' + (t.target||'—') + ' | Realisasi ' + (t.realisasi||'—') + '</div>' +
-      '<div class="task-badge done">✓ Terkirim</div>' +
-      thumbs +
-    '</div>';
+  const list=document.getElementById('task-list');
+  if(laporTugasList.length===0){list.innerHTML='<div style="font-size:12px;color:var(--text-3);text-align:center;padding:18px 0">Belum ada laporan. Selesaikan 1 tugas → kirim laporan.</div>';return;}
+  list.innerHTML=laporTugasList.map((t,i)=>{
+    const jam=new Date(t.waktu).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+    const before=t.fotoBefore||t.fotoBeforeBase64||'';
+    const after=t.fotoAfter||t.fotoAfterBase64||'';
+    const thumbs=(before&&after)?`<div style="display:flex;gap:6px;margin-top:8px"><img src="${before}" style="width:50%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--line);cursor:pointer" onclick="bukaFotoFullscreen(this)"><img src="${after}" style="width:50%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--line);cursor:pointer" onclick="bukaFotoFullscreen(this)"></div>`:'';
+    const sv=t.statusVerifikasi;
+    const svBadge=sv==='Terverifikasi'?`<div class="task-badge" style="background:var(--ok-bg);color:var(--ok);border:1px solid rgba(14,161,91,0.3)">✓ Terverifikasi</div>`:sv==='Perlu Revisi'?`<div class="task-badge" style="background:var(--warn-bg);color:var(--warn);border:1px solid rgba(217,123,10,0.3)">⚠ Perlu Revisi</div>`:`<div class="task-badge" style="background:var(--info-bg);color:var(--info);border:1px solid rgba(37,99,235,0.2)">⏳ Menunggu Verifikasi</div>`;
+    const catatan = (sv==='Perlu Revisi' && t.verifCatatan) ? `<div style="font-size:11px;color:var(--warn);margin-top:6px;line-height:1.5">📝 ${t.verifCatatan}</div>` : '';
+    const tombolRevisi = sv==='Perlu Revisi' ? `<button onclick="bukaRevisiLaporan('${t.id}')" style="margin-top:8px;width:100%;background:var(--warn);color:#fff;border:none;border-radius:var(--radius-xs);padding:8px;font-size:12px;font-weight:700;cursor:pointer">↺ Kirim Ulang Laporan Ini</button>` : '';
+    return `<div class="task-item"><div style="display:flex;justify-content:space-between;align-items:center"><div class="task-title">✓ ${t.rincian}</div><div style="font-size:10px;font-weight:700;background:var(--ok-bg);color:var(--ok);padding:2px 8px;border-radius:99px">#${laporTugasList.length-i}</div></div><div class="task-meta">${jam} · Target ${t.target||'—'} | Realisasi ${t.realisasi||'—'}</div>${svBadge}${catatan}${thumbs}${tombolRevisi}</div>`;
   }).join('');
 }
-window.renderTaskList = renderTaskList;
+window.renderTaskList=renderTaskList;
 
-window.navTab = function(el, tab) {
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  if (tab === 'laporan') {
-    document.getElementById('task-list').closest('.card').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  } else if (tab === 'log') {
-    document.getElementById('log-list').closest('.card').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  } else {
-    document.getElementById('screen-tracking').scrollTo({ top: 0, behavior: 'smooth' });
+// ════════════════════════════════════════════
+// SELESAI BERTUGAS
+// ════════════════════════════════════════════
+window.mulaiSelesaiBertugas = function() {
+  // Peringatan kalau belum ada laporan pekerjaan sama sekali hari itu —
+  // tetap boleh lanjut (bisa saja memang standby/tidak ada tugas lapangan),
+  // tapi petugas diingatkan dulu dan ditandai di rekap untuk perhatian supervisor.
+  if (laporTugasList.length === 0) {
+    const lanjut = confirm('Anda belum membuat laporan pekerjaan hari ini.\n\nYakin ingin mengakhiri tugas tanpa laporan? Hal ini akan tercatat sebagai "Tanpa Laporan" di rekap supervisor.');
+    if (!lanjut) return;
   }
+  selesaiFotoUrl=null;
+  document.getElementById('selesai-ph').style.display='block';
+  document.getElementById('selesai-preview').style.display='none';
+  document.getElementById('selesai-video').style.display='none';
+  document.getElementById('sl-btn-cam').style.display='block';
+  document.getElementById('sl-btn-shoot').style.display='none';
+  document.getElementById('sl-btn-retake').style.display='none';
+  document.getElementById('selesai-err').style.display='none';
+  document.getElementById('selesai-gps-badge').style.display='none';
+
+  // Tampilkan ringkasan
+  const r=document.getElementById('selesai-ringkasan-content');
+  r.innerHTML=`<b>Petugas:</b> ${currentUser?.nama||'—'} · ${currentUser?.regu||'—'}<br>`+
+    `<b>ULP:</b> ${currentUser?.ulp||'—'}<br>`+
+    `<b>Total Tugas Selesai:</b> <span style="color:var(--ok);font-weight:800">${tugasSelesai} tugas</span><br>`+
+    `<b>Fase Absensi:</b> `+faseLog.map(f=>`${f.fase} (${new Date(f.waktu).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})})`).join(' → ')+'<br>'+
+    `<b>Laporan:</b> `+(laporTugasList.map(l=>l.rincian).join(', ')||'<span style="color:var(--crit);font-weight:700">Tidak ada laporan</span>');
+  document.getElementById('selesai-ringkasan').style.display='block';
+  document.getElementById('modal-selesai').classList.add('active');
+};
+window.tutupModalSelesai = function() {
+  if(selesaiStream){selesaiStream.getTracks().forEach(t=>t.stop());selesaiStream=null;}
+  document.getElementById('modal-selesai').classList.remove('active');
+};
+window.bukaKameraSelesai = async function() {
+  try{
+    selesaiStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+    const v=document.getElementById('selesai-video');
+    v.srcObject=selesaiStream; v.style.display='block';
+    document.getElementById('selesai-ph').style.display='none';
+    document.getElementById('sl-btn-cam').style.display='none';
+    document.getElementById('sl-btn-shoot').style.display='block';
+  }catch(e){addLog('Kamera selesai gagal','err');}
+};
+window.ambilFotoSelesai = function() {
+  const v=document.getElementById('selesai-video'),c=document.getElementById('selesai-canvas');
+  c.width=v.videoWidth||480; c.height=v.videoHeight||640;
+  const ctx=c.getContext('2d'); ctx.translate(c.width,0); ctx.scale(-1,1);
+  ctx.drawImage(v,0,0,c.width,c.height);
+  selesaiFotoUrl=c.toDataURL('image/jpeg',0.7);
+  const img=document.getElementById('selesai-preview');
+  img.src=selesaiFotoUrl; img.style.display='block';
+  v.style.display='none';
+  if(selesaiStream){selesaiStream.getTracks().forEach(t=>t.stop());selesaiStream=null;}
+  document.getElementById('sl-btn-shoot').style.display='none';
+  document.getElementById('sl-btn-retake').style.display='block';
+  if(lastPos){document.getElementById('selesai-gps-badge').style.display='block';document.getElementById('selesai-gps-val').textContent=lastPos.coords.latitude.toFixed(4)+', '+lastPos.coords.longitude.toFixed(4);}
+};
+window.ulangFotoSelesai = function() {
+  selesaiFotoUrl=null;
+  document.getElementById('selesai-preview').style.display='none';
+  document.getElementById('sl-btn-retake').style.display='none';
+  bukaKameraSelesai();
+};
+window.submitSelesai = async function() {
+  const errEl=document.getElementById('selesai-err');
+  const btn=document.getElementById('selesai-btn-submit');
+  if(!selesaiFotoUrl){errEl.textContent='Selfie akhir wajib diambil.';errEl.style.display='block';return;}
+  errEl.style.display='none'; btn.disabled=true;
+  document.getElementById('selesai-progress').textContent='Menyimpan laporan akhir...'; document.getElementById('selesai-progress').style.display='block';
+
+  let foto=null;
+  try{
+    const stamped = await stampFotoGPS(selesaiFotoUrl, lastPos, 'Selesai Bertugas');
+    foto = await compressToBase64(stamped,800,0.7);
+  }catch(e){}
+
+  const waktu=Date.now();
+  // Simpan fase selesai
+  const entry={fase:'Selesai',waktu,lat:lastPos?.coords.latitude||null,lng:lastPos?.coords.longitude||null,acc:lastPos?Math.round(lastPos.coords.accuracy):null,fotoBase64:foto};
+  faseLog.push(entry);
+
+  // Buat rekap laporan harian
+  const rekap={
+    nama:currentUser?.nama||'—', nip:currentUser?.nip||'—', regu:currentUser?.regu||'—', ulp:currentUser?.ulp||'—',
+    tanggal:new Date().toLocaleDateString('id-ID'),
+    waktuSelesai:waktu,
+    tugasSelesai,
+    tanpaLaporan: laporTugasList.length === 0, // penanda untuk supervisor: hari ini selesai tanpa laporan pekerjaan
+    faseLog,
+    laporan:laporTugasList.map(l=>({rincian:l.rincian,target:l.target,realisasi:l.realisasi,waktu:l.waktu})),
+    fotoSelesai:foto
+  };
+
+  if(db&&currentUser){
+    try{
+      await set(ref(db,'absensi/'+currentUser.id+'_faseSelesai_'+waktu),{...entry,nama:currentUser.nama,nip:currentUser.nip,regu:currentUser.regu,ulp:currentUser.ulp,lokasi:'Selesai'});
+      await set(ref(db,'absensiLog/'+currentUser.id+'/faseSelesai'),entry);
+      await set(ref(db,'rekapHarian/'+currentUser.id+'_'+waktu),rekap);
+      await set(ref(db,'petugas/'+currentUser.id+'/status'),'Offline');
+    }catch(e){addLog('Laporan akhir gagal: '+e.message,'err');}
+  }
+
+  addLog('✓ Selesai bertugas. '+tugasSelesai+' tugas dilaporkan.','ok');
+  document.getElementById('selesai-progress').style.display='none';
+  btn.disabled=false;
+  tutupModalSelesai();
+  stopGPS();
+
+  // Reset
+  currentUser=null; laporTugasList=[]; faseLog=[]; faseCurrent=0; tugasSelesai=0;
+  document.getElementById('send-count').textContent='0';
+  showScreen('login');
+};
+
+// ════════════════════════════════════════════
+// NAV TAB
+// ════════════════════════════════════════════
+window.navTab = function(el, tab) {
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  if(tab==='laporan') document.getElementById('task-list').closest('.card').scrollIntoView({behavior:'smooth',block:'start'});
+  else if(tab==='log') document.getElementById('log-list').closest('.card').scrollIntoView({behavior:'smooth',block:'start'});
+  else document.getElementById('screen-tracking').scrollTo({top:0,behavior:'smooth'});
 };
 </script>
 </body>

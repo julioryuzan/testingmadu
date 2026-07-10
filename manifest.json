@@ -1,0 +1,70 @@
+{
+  "name": "Monitoring Gardu PLN UP3 Jayapura",
+  "short_name": "Gardu PLN",
+  "description": "Monitoring dan inspeksi gardu distribusi PLN UP3 Jayapura",
+  "start_url": "./index.html",
+  "id": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#003B7B",
+  "theme_color": "#003B7B",
+  "lang": "id",
+  "scope": "./",
+  "icons": [
+    {
+      "src": "icon-baru-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-baru-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-baru-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-baru-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Scan QR Gardu",
+      "short_name": "Scan QR",
+      "description": "Buka kamera untuk scan QR code gardu",
+      "url": "./index.html?mode=scan",
+      "icons": [
+        {
+          "src": "icon-baru-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Input Inspeksi",
+      "short_name": "Inspeksi",
+      "description": "Input data inspeksi gardu distribusi",
+      "url": "./index.html",
+      "icons": [
+        {
+          "src": "icon-baru-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "categories": ["utilities", "productivity"],
+  "prefer_related_applications": false,
+  "version": "10.1"
+}

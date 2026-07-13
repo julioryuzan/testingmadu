@@ -921,6 +921,7 @@ input[type=number]{-moz-appearance:textfield;}
 .badge-petugas{background:#2563EB;color:#fff;}
 .badge-admin{background:#059669;color:#fff;}
 .badge-superadmin{background:linear-gradient(135deg,#DC2626,#F59E0B);color:#fff;}
+.badge-staffup3{background:linear-gradient(135deg,#7C3AED,#2563EB);color:#fff;}
 
 .topbar-user-info{
   display:flex;flex-direction:column;align-items:flex-end;gap:2px;
@@ -2099,8 +2100,6 @@ input[type=number]{-moz-appearance:textfield;}
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css"/>
 <script src="vendor/leaflet/leaflet.min.js"></script>
 
-<!-- Leaflet.markercluster — anti-lag untuk banyak marker -->
-
 <!-- ══ MOBILE RESPONSIVE FIX (max-width: 768px) ══════════════
      Hanya perbaikan CSS mobile — tidak mengubah logika/alur/desktop
      ══════════════════════════════════════════════════════════ -->
@@ -2484,11 +2483,19 @@ input[type=number]{-moz-appearance:textfield;}
     <div class="topbar-info"><div class="topbar-sub">UP3 Jayapura</div><div class="topbar-title">SOP & Panduan</div></div>
   </div>
   <div class="page-body">
-    <div class="alert alert-info">📋 Standar Operasional Prosedur inspeksi dan pemeliharaan gardu PT. PLN UP3 Jayapura.</div>
+    <div class="alert alert-info">📋 Panduan penggunaan aplikasi, Standar Operasional Prosedur inspeksi, dan pemeliharaan gardu PT. PLN UP3 Jayapura. Tap kartu untuk membuka dokumen.</div>
+
+    <div class="sec">📱 Panduan Penggunaan Aplikasi</div>
+    <div class="sop-card" onclick="bukaDokumen('PANDUAN_APLIKASI','Panduan Aplikasi Manajemen Gardu')"><div class="sop-icon">📘</div><div class="sop-info"><div class="sop-title">Panduan Aplikasi Manajemen Gardu</div><div class="sop-sub">Pengenalan umum & navigasi aplikasi dari awal</div></div><div class="sop-arrow">›</div></div>
+    <div class="sop-card" onclick="bukaDokumen('PANDUAN_TAMBAH_GARDU','Panduan Tambah Gardu Baru')"><div class="sop-icon">➕</div><div class="sop-info"><div class="sop-title">Panduan Tambah Gardu Baru</div><div class="sop-sub">Langkah-langkah menambahkan data gardu baru</div></div><div class="sop-arrow">›</div></div>
+    <div class="sop-card" onclick="bukaDokumen('PANDUAN_EDIT_GARDU','Panduan Edit Data Gardu')"><div class="sop-icon">✏️</div><div class="sop-info"><div class="sop-title">Panduan Edit Data Gardu</div><div class="sop-sub">Cara mengubah data gardu yang sudah ada</div></div><div class="sop-arrow">›</div></div>
+    <div class="sop-card" onclick="bukaDokumen('PANDUAN_FORM_PENGUKURAN','Panduan Form Pengukuran Gardu')"><div class="sop-icon">📏</div><div class="sop-info"><div class="sop-title">Panduan Form Pengukuran Gardu</div><div class="sop-sub">Cara mengisi form inspeksi/pengukuran gardu</div></div><div class="sop-arrow">›</div></div>
+    <div class="sop-card" onclick="bukaDokumen('PANDUAN_EDIT_INSPEKSI','Panduan Edit Data Inspeksi')"><div class="sop-icon">📝</div><div class="sop-info"><div class="sop-title">Panduan Edit Data Inspeksi</div><div class="sop-sub">Cara mengubah data hasil inspeksi/pengukuran</div></div><div class="sop-arrow">›</div></div>
+
     <div class="sec">Pemeliharaan Gardu</div>
-    <div class="sop-card" onclick="bukaLinkSOP('LINK_SOP_PEMELIHARAAN_GARDU')"><div class="sop-icon">📄</div><div class="sop-info"><div class="sop-title">SOP Pemeliharaan Gardu</div><div class="sop-sub">Prosedur pemeliharaan rutin gardu</div></div><div class="sop-arrow">›</div></div>
+    <div class="sop-card" onclick="bukaDokumen('LINK_SOP_PEMELIHARAAN_GARDU','SOP Pemeliharaan Gardu')"><div class="sop-icon">📄</div><div class="sop-info"><div class="sop-title">SOP Pemeliharaan Gardu</div><div class="sop-sub">Prosedur pemeliharaan rutin gardu</div></div><div class="sop-arrow">›</div></div>
     <div class="sec">Keselamatan Kerja</div>
-    <div class="sop-card" onclick="bukaLinkSOP('LINK_SOP_K3')"><div class="sop-icon">⛑️</div><div class="sop-info"><div class="sop-title">SOP K3 Pekerjaan Tegangan Menengah</div><div class="sop-sub">Prosedur keselamatan kerja di area tegangan menengah</div></div><div class="sop-arrow">›</div></div>
+    <div class="sop-card" onclick="bukaDokumen('LINK_SOP_K3','SOP K3 Pekerjaan Tegangan Menengah')"><div class="sop-icon">⛑️</div><div class="sop-info"><div class="sop-title">SOP K3 Pekerjaan Tegangan Menengah</div><div class="sop-sub">Prosedur keselamatan kerja di area tegangan menengah</div></div><div class="sop-arrow">›</div></div>
   </div>
 </div>
 
@@ -3264,6 +3271,29 @@ input[type=number]{-moz-appearance:textfield;}
   </div>
 </div>
 
+<!-- MODAL VIEWER DOKUMEN (Panduan Aplikasi & SOP — PDF Google Drive) -->
+<div id="modal-panduan-pdf" style="display:none;position:fixed;inset:0;z-index:9700;background:rgba(10,45,107,.55);backdrop-filter:blur(6px);flex-direction:column;align-items:center;justify-content:center;overflow:hidden;">
+  <div style="background:#F5F7FA;border-radius:20px;width:100%;height:100%;max-width:900px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 64px rgba(10,45,107,.28),0 4px 16px rgba(10,45,107,.14);margin:16px;">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#0A2D6B,#1048A8);padding:0 12px 0 20px;height:60px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-radius:20px 20px 0 0;">
+      <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">
+        <div style="background:rgba(255,255,255,.18);border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📄</div>
+        <div style="min-width:0;">
+          <div id="panduan-pdf-title" style="font-size:15px;font-weight:700;color:#fff;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Dokumen</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.55);letter-spacing:.3px;text-transform:uppercase;font-weight:500;">UP3 Jayapura · Panduan & SOP</div>
+        </div>
+      </div>
+      <button onclick="bukaPanduanPdfTabBaru()" title="Buka di tab baru / unduh dari Google Drive" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;height:34px;padding:0 12px;font-size:12px;font-weight:700;cursor:pointer;color:#fff;display:flex;align-items:center;gap:6px;flex-shrink:0;white-space:nowrap;">⬇️ Unduh</button>
+      <button onclick="tutupModalPanduanPdf()" title="Tutup" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;width:34px;height:34px;font-size:18px;cursor:pointer;color:rgba(255,255,255,.8);display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
+    </div>
+    <!-- Body: iframe preview (Google Drive embeddable /preview endpoint) -->
+    <div style="flex:1;background:#525659;position:relative;min-height:0;">
+      <div id="panduan-pdf-loading" class="loading" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;background:#525659;z-index:2;"><div class="spinner"></div>Memuat dokumen...</div>
+      <iframe id="panduan-pdf-frame" src="about:blank" style="width:100%;height:100%;border:0;position:relative;z-index:1;" allow="autoplay" onload="var l=document.getElementById('panduan-pdf-loading');if(l)l.style.display='none';"></iframe>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL RESET PASSWORD (oleh Admin) -->
 <div id="modal-reset-password" style="display:none;position:fixed;inset:0;z-index:9650;background:rgba(0,0,0,.6);align-items:center;justify-content:center;">
   <div style="background:var(--pln-card);border-radius:var(--radius);padding:var(--sp-lg);width:100%;max-width:360px;box-shadow:var(--shadow-lg);">
@@ -3346,12 +3376,14 @@ input[type=number]{-moz-appearance:textfield;}
         <select id="uf-role" class="form-select" onchange="onUFRoleChange()">
           <option value="petugas">Petugas</option>
           <option value="admin">Admin ULP</option>
+          <option value="staff_up3">Staff UP3</option>
           <option value="superadmin">Super Admin</option>
         </select>
       </div>
-      <div class="form-group" id="uf-ulp-wrap"><label class="form-label">ULP *</label>
+      <div class="form-group" id="uf-ulp-wrap"><label class="form-label">Unit Kerja *</label>
         <select id="uf-ulp" class="form-select">
-          <option value="">-- Pilih ULP --</option>
+          <option value="">-- Pilih Unit Kerja --</option>
+          <option>UP3 JAYAPURA</option>
           <option>ULP ABEPURA</option>
           <option>ULP JAYAPURA</option>
           <option>ULP SENTANI</option>
@@ -4007,7 +4039,8 @@ input[type=number]{-moz-appearance:textfield;}
 //  [AUTH v2] SISTEM LOGIN SERVER-SIDE
 //  Password disimpan di Google Spreadsheet B (rahasia),
 //  BUKAN di file HTML ini. HTML ini tidak mengandung password apapun.
-//  Role: superadmin | adminulp | petugas
+//  Role: superadmin | staff_up3 | admin | petugas
+//  (staff_up3 = hak akses SAMA PERSIS dengan superadmin, lihat isFullAccessRole())
 //  Storage: sessionStorage (session token sementara)
 // ══════════════════════════════════════════════════════════════
 
@@ -4179,6 +4212,23 @@ function clearSession() {
   sessionStorage.removeItem('plnSession');
 }
 
+// ── Role dengan akses penuh lintas-ULP ───────────────────────
+// 'staff_up3' adalah role baru dengan hak akses SAMA PERSIS dengan
+// 'superadmin' (lihat semua ULP, semua fitur admin). Satu-satunya
+// alasan dipisah jadi role sendiri (bukan sekadar alias) adalah supaya
+// tetap bisa dibedakan secara administratif di daftar user / label UI.
+// Semua pengecekan hak akses di klien HARUS lewat helper ini, JANGAN
+// bandingkan langsung ke 'superadmin' saja, supaya staff_up3 otomatis
+// ikut ter-cover di mana pun helper ini dipakai.
+//
+// PENTING: ini hanya lapisan UI. Otorisasi sesungguhnya tetap harus
+// ditegakkan di RPC Supabase (SECURITY DEFINER) sisi server — fungsi
+// SQL seperti fn_hapus_gardu, fn_hapus_inspeksi, fn_tambah_user, dsb.
+// juga perlu diupdate agar mengizinkan role 'staff_up3' setara 'superadmin'.
+function isFullAccessRole(role) {
+  return role === 'superadmin' || role === 'staff_up3';
+}
+
 // Toggle show/hide password di halaman login
 function toggleShowPassword() {
   var inp = document.getElementById('login-password');
@@ -4316,8 +4366,8 @@ function onLoginSuccess(user) {
   var badge = document.getElementById('topbar-user-badge');
   var uLabel = document.getElementById('topbar-username-label');
   if (badge) {
-    var roleLabel = user.role === 'superadmin' ? 'SUPER ADMIN' : user.role === 'admin' ? 'Admin ULP' : 'PETUGAS';
-    var roleClass = user.role === 'superadmin' ? 'badge-superadmin' : user.role === 'admin' ? 'badge-admin' : 'badge-petugas';
+    var roleLabel = user.role === 'staff_up3' ? 'STAFF UP3' : isFullAccessRole(user.role) ? 'SUPER ADMIN' : user.role === 'admin' ? 'Admin ULP' : 'PETUGAS';
+    var roleClass = user.role === 'staff_up3' ? 'badge-staffup3' : isFullAccessRole(user.role) ? 'badge-superadmin' : user.role === 'admin' ? 'badge-admin' : 'badge-petugas';
     badge.textContent = roleLabel;
     badge.className = 'user-badge ' + roleClass;
   }
@@ -4341,22 +4391,24 @@ function onLoginSuccess(user) {
   // Atur icon kunci
   var lockBtn = document.getElementById('btn-admin-lock');
   if (lockBtn) {
-    if (user.role === 'superadmin') { lockBtn.style.color = 'var(--pln-kuning)'; lockBtn.title = 'Super Admin'; }
+    if (user.role === 'staff_up3') { lockBtn.style.color = 'var(--pln-kuning)'; lockBtn.title = 'Staff UP3'; }
+    else if (isFullAccessRole(user.role)) { lockBtn.style.color = 'var(--pln-kuning)'; lockBtn.title = 'Super Admin'; }
     else if (user.role === 'admin') { lockBtn.style.color = '#FCD34D'; lockBtn.title = 'Admin ULP: '+user.ulp; }
     else { lockBtn.style.color = 'rgba(255,255,255,.45)'; lockBtn.title = 'Petugas'; }
   }
   if (dtbLock) {
-    if (user.role === 'superadmin') { dtbLock.style.color = 'var(--pln-kuning)'; dtbLock.title = 'Super Admin'; }
+    if (user.role === 'staff_up3') { dtbLock.style.color = 'var(--pln-kuning)'; dtbLock.title = 'Staff UP3'; }
+    else if (isFullAccessRole(user.role)) { dtbLock.style.color = 'var(--pln-kuning)'; dtbLock.title = 'Super Admin'; }
     else if (user.role === 'admin') { dtbLock.style.color = '#FCD34D'; dtbLock.title = 'Admin ULP: '+user.ulp; }
     else { dtbLock.style.color = 'rgba(255,255,255,.45)'; dtbLock.title = 'Petugas'; }
   }
 
   // Tampilkan/sembunyikan tombol Kelola User
   var btnUser = document.getElementById('btn-kelola-user');
-  if (btnUser) btnUser.style.display = user.role === 'superadmin' ? '' : 'none';
+  if (btnUser) btnUser.style.display = isFullAccessRole(user.role) ? '' : 'none';
 
   // Set state admin & ULP
-  if (user.role !== 'superadmin' && user.ulp) {
+  if (!isFullAccessRole(user.role) && user.ulp) {
     currentULP = user.ulp;
   } else {
     currentULP = '';
@@ -4367,9 +4419,9 @@ function onLoginSuccess(user) {
   activeFilterStatus = '';
 
   var filterULPRow = document.getElementById('filter-ulp-row');
-  if (filterULPRow) filterULPRow.style.display = (user.role === 'superadmin') ? '' : 'none';
+  if (filterULPRow) filterULPRow.style.display = (isFullAccessRole(user.role)) ? '' : 'none';
 
-  var ulpUntukFilter = (user.role !== 'superadmin' && user.ulp) ? user.ulp : '';
+  var ulpUntukFilter = (!isFullAccessRole(user.role) && user.ulp) ? user.ulp : '';
   muatDaftarGardu(true, ulpUntukFilter);
   // MED-4 & MED-5 FIX: Sinkronkan ULP_SHEET_MAP dari DB, lalu bangun filter peta dinamis
   syncULPSheetMap();
@@ -4455,7 +4507,7 @@ function filterGarduByULP(data, ulpFilter) {
 // Wrapper lama (tetap ada untuk backward compat)
 function filterGarduBySession(data) {
   var s = getSession();
-  if (!s || s.role === 'superadmin' || !s.ulp) return data;
+  if (!s || isFullAccessRole(s.role) || !s.ulp) return data;
   return filterGarduByULP(data, s.ulp);
 }
 
@@ -4474,7 +4526,7 @@ function bukaMenuAdmin() {
     return;
   }
   // Superadmin langsung masuk (tidak perlu PIN tambahan)
-  if (s.role === 'superadmin') {
+  if (isFullAccessRole(s.role)) {
     _tampilkanPanelAdmin(s);
     return;
   }
@@ -4531,14 +4583,14 @@ function _tampilkanModalPinAdmin(s) {
 
 function _tampilkanPanelAdmin(s) {
   // Tandai PIN sudah diverifikasi untuk sesi ini
-  if (s.role !== 'superadmin') _adminUlpVerified = true;
+  if (!isFullAccessRole(s.role)) _adminUlpVerified = true;
 
   var titleEl = document.getElementById('admin-panel-title');
   var subEl   = document.getElementById('admin-panel-sub');
-  var isSuperadmin = (s.role === 'superadmin');
+  var isSuperadmin = (isFullAccessRole(s.role));
 
   if (isSuperadmin) {
-    if (titleEl) titleEl.textContent = '🔓 Super Admin Aktif';
+    if (titleEl) titleEl.textContent = s.role === 'staff_up3' ? '🔓 Staff UP3 Aktif' : '🔓 Super Admin Aktif';
     if (subEl)   subEl.textContent   = 'Akses penuh ke semua ULP';
   } else {
     if (titleEl) titleEl.textContent = '🔓 Admin: ' + (s.ulp || 'ULP Anda');
@@ -4616,10 +4668,15 @@ function renderUserList() {
       wrap.innerHTML = '<div style="text-align:center;padding:20px;color:var(--pln-text3);font-size:var(--fs-sm);">Belum ada user.</div>';
       return;
     }
-    var html = '<div class="user-table-row user-table-head"><span>User</span><span>Role / ULP</span><span></span><span></span></div>';
+    // Daftar utama HANYA menampilkan user aktif. User nonaktif (hasil
+    // soft-delete via hapusUser) disembunyikan ke bagian collapsible
+    // di bawah supaya tidak menumpuk tapi tetap bisa diaktifkan lagi.
+    var htmlActive   = '<div class="user-table-row user-table-head"><span>User</span><span>Role / Unit Kerja</span><span></span><span></span></div>';
+    var htmlInactive = '';
+    var inactiveCount = 0;
     users.forEach(function(u, i) {
       var isAktif   = !u.aktif || (u.aktif||'').toUpperCase() === 'YA';
-      var roleStr   = u.role === 'superadmin' ? '⭐ Super Admin' : u.role === 'admin' ? '🟢 Admin ULP' : '🔵 Petugas';
+      var roleStr   = u.role === 'staff_up3' ? '🟣 Staff UP3' : isFullAccessRole(u.role) ? '⭐ Super Admin' : u.role === 'admin' ? '🟢 Admin ULP' : '🔵 Petugas';
       var ulpStr    = u.ulp ? ('<br><span style="opacity:.6;font-size:9px;">'+esc(u.ulp)+'</span>') : '';
       var pinBadge  = u.hasPIN
         ? '<span style="font-size:9px;background:#D1FAE5;color:#065F46;border-radius:4px;padding:1px 5px;margin-left:4px;">🔑 PIN ✓</span>'
@@ -4627,16 +4684,56 @@ function renderUserList() {
       var aktifBadge = isAktif
         ? '<span style="font-size:9px;background:#D1FAE5;color:#065F46;border-radius:4px;padding:1px 5px;margin-left:4px;">✅ Aktif</span>'
         : '<span style="font-size:9px;background:#FEE2E2;color:#991B1B;border-radius:4px;padding:1px 5px;margin-left:4px;">🚫 Nonaktif</span>';
-      var canDel = u.role !== 'superadmin';
-      html += '<div class="user-table-row">';
-      html += '<span><b>'+esc(u.username)+'</b><br><span style="opacity:.6;font-size:9px;">'+esc(u.nama)+'</span>'+pinBadge+aktifBadge+'</span>';
-      html += '<span>'+roleStr+ulpStr+'</span>';
-      html += '<button class="user-action-btn btn-edit-user" onclick="editUser('+i+',null)">✏️ Edit</button>';
-      html += canDel ? '<button class="user-action-btn btn-del-user" onclick="hapusUser(\''+esc(u.username)+'\',\''+esc(u.nama)+'\')">🗑️</button>' : '<span></span>';
-      html += '</div>';
+      var canDel = !isFullAccessRole(u.role);
+      var row = '<div class="user-table-row">';
+      row += '<span><b>'+esc(u.username)+'</b><br><span style="opacity:.6;font-size:9px;">'+esc(u.nama)+'</span>'+pinBadge+aktifBadge+'</span>';
+      row += '<span>'+roleStr+ulpStr+'</span>';
+      row += '<button class="user-action-btn btn-edit-user" onclick="editUser('+i+',null)">✏️ Edit</button>';
+      if (isAktif) {
+        row += canDel ? '<button class="user-action-btn btn-del-user" onclick="hapusUser(\''+esc(u.username)+'\',\''+esc(u.nama)+'\')">🗑️</button>' : '<span></span>';
+      } else {
+        row += canDel ? '<button class="user-action-btn" onclick="aktifkanUserMgmt(\''+esc(u.username)+'\',\''+esc(u.nama)+'\')" style="color:#065F46;">✅ Aktifkan</button>' : '<span></span>';
+      }
+      row += '</div>';
+      if (isAktif) { htmlActive += row; } else { htmlInactive += row; inactiveCount++; }
     });
+
+    var html = htmlActive;
+    if (inactiveCount > 0) {
+      html += '<div style="padding:8px 12px;border-top:1px solid var(--pln-border);">'
+            +   '<button type="button" id="btn-toggle-inactive-user" data-count="'+inactiveCount+'" onclick="toggleInactiveUserList()" style="background:none;border:none;color:var(--pln-biru2);font-size:var(--fs-xs);font-weight:700;cursor:pointer;padding:0;">👁️ Tampilkan '+inactiveCount+' user nonaktif</button>'
+            + '</div>'
+            + '<div id="inactive-user-rows" style="display:none;">' + htmlInactive + '</div>';
+    }
     wrap.innerHTML = html;
     wrap._userCache = users;
+  });
+}
+
+// ── Tampilkan/sembunyikan user nonaktif (hasil soft-delete) ───
+function toggleInactiveUserList() {
+  var el  = document.getElementById('inactive-user-rows');
+  var btn = document.getElementById('btn-toggle-inactive-user');
+  if (!el || !btn) return;
+  var count   = btn.getAttribute('data-count') || '';
+  var showing = el.style.display !== 'none';
+  el.style.display = showing ? 'none' : 'block';
+  btn.textContent = showing
+    ? ('👁️ Tampilkan ' + count + ' user nonaktif')
+    : ('🙈 Sembunyikan ' + count + ' user nonaktif');
+}
+
+// ── Aktifkan kembali user yang sudah di-nonaktifkan (soft delete) ──
+function aktifkanUserMgmt(username, nama) {
+  var label = nama ? '"' + nama + '" (' + username + ')' : '"' + username + '"';
+  var s = getSession();
+  apiGet({ action: 'aktifkanUser', token: s ? s.token : '', username: username, aktifkan: true }, function(res) {
+    if (res.status === 'ok') {
+      renderUserList();
+      showAlert('✅ Akun ' + label + ' berhasil diaktifkan kembali.');
+    } else {
+      showAlert('❌ ' + userFriendlyError(res.message, 'Gagal mengaktifkan user.'));
+    }
   });
 }
 
@@ -4677,7 +4774,8 @@ function tutupFormUser() {
 function onUFRoleChange() {
   var role = document.getElementById('uf-role').value;
   var wrap = document.getElementById('uf-ulp-wrap');
-  if (wrap) wrap.style.display = (role === 'superadmin') ? 'none' : '';
+  // Superadmin & Staff UP3 sama-sama akses lintas-ULP → tidak perlu pilih ULP.
+  if (wrap) wrap.style.display = isFullAccessRole(role) ? 'none' : '';
 }
 
 function simpanUser() {
@@ -4700,7 +4798,7 @@ function simpanUser() {
   if (!uname || !nama) return showMsg('Username dan nama wajib diisi.', true);
   if (!usernameLama && !pass) return showMsg('Password wajib diisi untuk user baru.', true);
   if (pass && pass.length < 6) return showMsg('Password minimal 6 karakter.', true);
-  if (role !== 'superadmin' && !ulp) return showMsg('ULP wajib dipilih untuk role ini.', true);
+  if (!isFullAccessRole(role) && !ulp) return showMsg('Unit Kerja wajib dipilih untuk role ini.', true);
 
   showMsg('Menyimpan ke server...', false);
   var params = {
@@ -4709,7 +4807,7 @@ function simpanUser() {
     username: uname,
     nama: nama,
     role: role,
-    ulp: role === 'superadmin' ? '' : ulp
+    ulp: isFullAccessRole(role) ? '' : ulp
   };
   if (usernameLama) params.usernameLama = usernameLama;
   if (pass) params.password = pass;
@@ -4776,7 +4874,7 @@ function renderUserListULP() {
     }
     var myULP = (s.ulp || '').toUpperCase();
     var users = (res.data || []).filter(function(u) {
-      return u.role !== 'superadmin' && (u.ulp || '').toUpperCase() === myULP;
+      return !isFullAccessRole(u.role) && (u.ulp || '').toUpperCase() === myULP;
     });
     wrap._userUlpCache = users;
     if (!users.length) {
@@ -4883,8 +4981,8 @@ function simpanUserULP() {
   if (!nama)  return showMsg('Nama lengkap wajib diisi.', true);
   if (!usernameLama && !pass) return showMsg('Password wajib diisi untuk user baru.', true);
   if (pass && pass.length < 6) return showMsg('Password minimal 6 karakter.', true);
-  // Admin ULP tidak boleh buat superadmin
-  if (role === 'superadmin') return showMsg('Anda tidak dapat membuat akun Superadmin.', true);
+  // Admin ULP tidak boleh buat akun dengan akses lintas-ULP (Superadmin / Staff UP3)
+  if (isFullAccessRole(role)) return showMsg('Anda tidak dapat membuat akun Superadmin / Staff UP3.', true);
 
   showMsg('Menyimpan...', false);
   var params = {
@@ -5348,7 +5446,7 @@ function cacheClear(k){ if(k) delete _cache[k]; else _cache={}; }
 function muatDaftarGardu(force, ulpFilter){
   // ulpFilter: string ULP eksplisit (opsional). Jika tidak diisi, ambil dari session.
   var s = getSession();
-  var activeULP = (ulpFilter !== undefined) ? ulpFilter : ((s && s.role !== 'superadmin') ? (s.ulp || '') : '');
+  var activeULP = (ulpFilter !== undefined) ? ulpFilter : ((s && !isFullAccessRole(s.role)) ? (s.ulp || '') : '');
 
   _cacheKey = 'gardu_' + (activeULP ? activeULP.replace(/\s+/g,'_').toUpperCase() : 'ALL'); // O4: granular cache per ULP
   var cached = !force && cacheGet(_cacheKey);
@@ -5478,7 +5576,7 @@ function renderDaftarGardu(data){
     var rawCache = cacheGet(_cacheKey || 'gardu_ALL'); // O4: granular cache
     var totalRaw = rawCache ? rawCache.length : 0;
     var ulpMsg = '';
-    if (s && s.role !== 'superadmin' && s.ulp && totalRaw > 0) {
+    if (s && !isFullAccessRole(s.role) && s.ulp && totalRaw > 0) {
       // Ada data di cache tapi tidak ada yang cocok dengan ULP session
       var sheetVal = ulpAkunToSheet(s.ulp);
       var ulpUnik = {};
@@ -5761,7 +5859,7 @@ function renderDetailGardu(g, riwayat){
     // aman, batasan yang sama WAJIB juga ditegakkan di sisi server pada
     // fungsi fn_hapus_inspeksi (cek role di dalam fungsi, bukan hanya di
     // klien) — lihat catatan di percakapan untuk contoh SQL-nya.
-    var _canDeleteInspeksi = _sRiwayat && _sRiwayat.role === 'superadmin';
+    var _canDeleteInspeksi = _sRiwayat && isFullAccessRole(_sRiwayat.role);
     riwayat.forEach(function(r, idx){
       var prosen = r['PROSEN'] !== '' && r['PROSEN'] !== null ? parseFloat(r['PROSEN']) : null;
       var bc = prosen === null ? 'badge-nonaktif' : prosen > 80 ? 'badge-kritis' : prosen > 60 ? 'badge-perlu' : 'badge-normal';
@@ -5781,7 +5879,7 @@ function renderDetailGardu(g, riwayat){
 
       // MED-10 FIX: _sRiwayat sudah diambil sebelum loop — tidak perlu panggil getSession() lagi
       var _canEditInspeksi = _sRiwayat && (
-        _sRiwayat.role === 'admin' || _sRiwayat.role === 'superadmin' ||
+        _sRiwayat.role === 'admin' || isFullAccessRole(_sRiwayat.role) ||
         (_sRiwayat.role === 'petugas' && _sRiwayat.nama && r['PETUGAS'] &&
           String(_sRiwayat.nama).toLowerCase().trim() === String(r['PETUGAS']).toLowerCase().trim())
       );
@@ -6394,20 +6492,97 @@ function toggleRiwayat(id, btn) {
     : '<span>▲ Sembunyikan Detail</span>';
 }
 
-// ── SOP LINKS CONFIG ─────────────────────────────────────────
-// Ganti URL di bawah ini dengan link Google Drive Anda
-var SOP_LINKS = {
+// ── DOKUMEN / PANDUAN LINKS CONFIG ─────────────────────────────
+// Tempel link "Bagikan" dari Google Drive apa adanya (boleh format
+// /view?usp=sharing, /view?usp=drive_link, /edit, ?id=..., dll — otomatis
+// diproses, tidak perlu diutak-atik manual). WAJIB: setelan share file di
+// Drive = "Siapa saja yang memiliki link → Pelihat", supaya petugas yang
+// belum tentu login akun Google yang sama tetap bisa membukanya.
+var DOKUMEN_LINKS = {
+  // ── Panduan Aplikasi ──
+  'PANDUAN_APLIKASI':        'https://drive.google.com/file/d/1mJhv4P9WHeZy1ScXDpkE6NnJjuRas0zN/view?usp=sharing',
+  'PANDUAN_TAMBAH_GARDU':    'https://drive.google.com/file/d/1r2OX0xT2x7dwdz-idmEQLtF9NEIiNV0g/view?usp=drive_link',
+  'PANDUAN_EDIT_GARDU':      'https://drive.google.com/file/d/1Umb2OoIj-lWrTI4qRsU26sex6SfUZ-u7/view?usp=drive_link',
+  'PANDUAN_FORM_PENGUKURAN': 'https://drive.google.com/file/d/1WLro7lQA3OwVqIpGs_cGy9i3t6SRv9ht/view?usp=drive_link',
+  'PANDUAN_EDIT_INSPEKSI':   'https://drive.google.com/file/d/1ru03wUZ2r0EhsqwsbfbctzHEWHsjek9z/view?usp=drive_link',
+  // ── SOP & K3 (belum diisi — ganti saat linknya sudah ada) ──
   'LINK_SOP_PEMELIHARAAN_GARDU': 'ISI_LINK_DRIVE_SOP_PEMELIHARAAN_DI_SINI',
   'LINK_SOP_K3':                 'ISI_LINK_DRIVE_SOP_K3_DI_SINI'
 };
-function bukaLinkSOP(key) {
-  var url = SOP_LINKS[key];
+
+// Ambil FILE_ID Google Drive dari berbagai format URL yang biasa muncul
+// dari tombol "Bagikan" Drive:
+//  - https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+//  - https://drive.google.com/file/d/FILE_ID/view?usp=drive_link
+//  - https://drive.google.com/file/d/FILE_ID/edit
+//  - https://drive.google.com/open?id=FILE_ID
+//  - https://drive.google.com/uc?id=FILE_ID&export=download
+function ekstrakDriveFileId(url) {
+  if (!url) return null;
+  var m = url.match(/\/file\/d\/([a-zA-Z0-9_-]{10,})/) ||
+          url.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+  return m ? m[1] : null;
+}
+
+// Buka dokumen (Panduan Aplikasi atau SOP) — dipanggil dari kartu di tab
+// "SOP & Panduan". Link Google Drive dibuka LANGSUNG DI DALAM APLIKASI
+// lewat modal preview (tidak perlu keluar/pindah tab), link non-Drive
+// tetap dibuka di tab baru sebagai fallback.
+function bukaDokumen(key, judul) {
+  var url = DOKUMEN_LINKS[key];
   if (!url || url.indexOf('ISI_LINK') === 0) {
-    alert('Link SOP belum diisi.\nSilakan isi URL di bagian SOP_LINKS dalam kode.');
+    alert((judul ? judul + '\n\n' : '') + 'Link dokumen belum diisi.\nSilakan isi URL di bagian DOKUMEN_LINKS dalam kode (key: ' + key + ').');
     return;
   }
-  window.open(url, '_blank', 'noopener');
+  var fileId = ekstrakDriveFileId(url);
+  if (fileId) {
+    bukaModalPanduanPdf(fileId, judul, url);
+  } else {
+    window.open(url, '_blank', 'noopener');
+  }
 }
+
+// Alias — kompatibilitas mundur, kalau masih ada pemanggil lama bukaLinkSOP()
+function bukaLinkSOP(key) { bukaDokumen(key, null); }
+
+var _panduanPdfLinkAsli = '';
+function bukaModalPanduanPdf(fileId, judul, urlAsli) {
+  _panduanPdfLinkAsli = urlAsli || '';
+  var titleEl = document.getElementById('panduan-pdf-title');
+  if (titleEl) titleEl.textContent = judul || 'Dokumen';
+  var loadingEl = document.getElementById('panduan-pdf-loading');
+  if (loadingEl) loadingEl.style.display = 'flex'; // reset spinner tiap buka dokumen baru
+  var frame = document.getElementById('panduan-pdf-frame');
+  if (frame) frame.src = 'https://drive.google.com/file/d/' + fileId + '/preview';
+  var modal = document.getElementById('modal-panduan-pdf');
+  if (modal) modal.style.display = 'flex';
+}
+
+function tutupModalPanduanPdf() {
+  var modal = document.getElementById('modal-panduan-pdf');
+  if (modal) modal.style.display = 'none';
+  var frame = document.getElementById('panduan-pdf-frame');
+  if (frame) frame.src = 'about:blank'; // hentikan loading PDF & bebaskan memori
+}
+
+function bukaPanduanPdfTabBaru() {
+  if (_panduanPdfLinkAsli) window.open(_panduanPdfLinkAsli, '_blank', 'noopener');
+}
+
+// Tutup modal saat klik backdrop (area luar kartu) — konsisten dengan
+// modal lain di aplikasi ini (mis. modal-konfirmasi, modal-keluar-form).
+document.addEventListener('click', function(e) {
+  var modal = document.getElementById('modal-panduan-pdf');
+  if (modal && e.target === modal) tutupModalPanduanPdf();
+});
+
+// Tutup modal dengan tombol Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var modal = document.getElementById('modal-panduan-pdf');
+    if (modal && modal.style.display === 'flex') tutupModalPanduanPdf();
+  }
+});
 
 function tutupDetail(){
   var dv = document.getElementById('detail-view');
@@ -6433,6 +6608,92 @@ function tutupDetail(){
 var _fiGardu = null;        // object gardu yg sedang diinspeksi
 var _fiJurusanCount = 0;   // jumlah jurusan aktif (max 6)
 var _fiManualCalc = false;  // apakah kalkulasi manual diaktifkan
+var _fiConfirmedZeroIds = null; // {id:true,...} field kosong yg sudah dikonfirmasi user utk disimpan sebagai 0
+
+// Field pengukuran yang BOLEH kosong secara teknis (mis. gardu 1 fasa
+// tidak punya arus S/T, sensor tertentu tidak dipakai di lokasi tsb),
+// tapi user tetap diminta konfirmasi eksplisit dulu sebelum kolom kosong
+// tersebut disimpan sebagai 0 ke database — supaya tidak ada kolom yang
+// "kelewatan tanpa sadar" oleh petugas saat input di lapangan.
+var FI_OPTIONAL_NUMERIC_FIELDS = [
+  {id:'fi-r-total',   label:'Arus R (A)'},
+  {id:'fi-s-total',   label:'Arus S (A)'},
+  {id:'fi-t-total',   label:'Arus T (A)'},
+  {id:'fi-n-total',   label:'Arus N (A)'},
+  {id:'fi-v-rn',      label:'Tegangan R-N (V)'},
+  {id:'fi-v-sn',      label:'Tegangan S-N (V)'},
+  {id:'fi-v-tn',      label:'Tegangan T-N (V)'},
+  {id:'fi-v-rs',      label:'Tegangan R-S (V)'},
+  {id:'fi-v-st',      label:'Tegangan S-T (V)'},
+  {id:'fi-v-rt',      label:'Tegangan R-T (V)'},
+  {id:'fi-thd-r',     label:'THD R (%)'},
+  {id:'fi-thd-s',     label:'THD S (%)'},
+  {id:'fi-thd-t',     label:'THD T (%)'},
+  {id:'fi-ipeak-r',   label:'IPeak R (A)'},
+  {id:'fi-ipeak-s',   label:'IPeak S (A)'},
+  {id:'fi-ipeak-t',   label:'IPeak T (A)'},
+  {id:'fi-tpf-r',     label:'TPF R'},
+  {id:'fi-tpf-s',     label:'TPF S'},
+  {id:'fi-tpf-t',     label:'TPF T'}
+];
+
+// Kembalikan daftar field opsional yang saat ini masih kosong.
+// Field manual (daya-pakai/prosen/tdk-seimbang) sengaja TIDAK dicek di
+// sini — itu hasil kalkulasi/override, bukan pengukuran mentah.
+// Suffix field pengukuran per-jurusan (kartu "+ Tambah Jurusan"), sama
+// persis dengan field yang dibaca fiGetJurusanData().
+var FI_JURUSAN_FIELD_SUFFIXES = [
+  {suf:'-r',      label:'Arus R'},
+  {suf:'-s',      label:'Arus S'},
+  {suf:'-t',      label:'Arus T'},
+  {suf:'-n',      label:'Arus N'},
+  {suf:'-rn',     label:'Tegangan R-N'},
+  {suf:'-sn',     label:'Tegangan S-N'},
+  {suf:'-tn',     label:'Tegangan T-N'},
+  {suf:'-rs',     label:'Tegangan R-S'},
+  {suf:'-st',     label:'Tegangan S-T'},
+  {suf:'-rt',     label:'Tegangan R-T'},
+  {suf:'-thdr',   label:'THD R'},
+  {suf:'-thds',   label:'THD S'},
+  {suf:'-thdt',   label:'THD T'},
+  {suf:'-ipeakr', label:'IPeak R'},
+  {suf:'-ipeaks', label:'IPeak S'},
+  {suf:'-ipeakt', label:'IPeak T'},
+  {suf:'-tpfr',   label:'TPF R'},
+  {suf:'-tpfs',   label:'TPF S'},
+  {suf:'-tpft',   label:'TPF T'}
+];
+
+function fiGetEmptyOptionalFields() {
+  var empty = FI_OPTIONAL_NUMERIC_FIELDS.filter(function(f) {
+    var el = document.getElementById(f.id);
+    if (!el) return false;
+    return !el.value.trim();
+  });
+
+  // Field per-jurusan: jurusan yang SELURUHNYA kosong (tidak ada nama/R/S/T)
+  // tidak akan disertakan saat submit — lihat fiGetJurusanData() — jadi tidak
+  // perlu ditanyakan. Jurusan yang sudah mulai diisi (ada nama atau salah
+  // satu arus) tapi field lainnya masih kosong, itu yang perlu dikonfirmasi.
+  for (var i = 1; i <= _fiJurusanCount; i++) {
+    var namaEl = document.getElementById('fi-jur'+i+'-nama');
+    var rEl    = document.getElementById('fi-jur'+i+'-r');
+    var sEl    = document.getElementById('fi-jur'+i+'-s');
+    var tEl    = document.getElementById('fi-jur'+i+'-t');
+    var adaIsi = (namaEl && namaEl.value.trim()) || (rEl && rEl.value.trim()) ||
+                 (sEl && sEl.value.trim()) || (tEl && tEl.value.trim());
+    if (!adaIsi) continue;
+    FI_JURUSAN_FIELD_SUFFIXES.forEach(function(js) {
+      var id = 'fi-jur'+i+js.suf;
+      var el = document.getElementById(id);
+      if (el && !el.value.trim()) {
+        empty.push({ id: id, label: 'Jurusan ' + i + ' — ' + js.label });
+      }
+    });
+  }
+
+  return empty;
+}
 
 // ── Buka form inspeksi dari detail gardu ─────────────────────
 function bukaFormInspeksi(noGardu) {
@@ -6450,6 +6711,7 @@ function bukaFormInspeksi(noGardu) {
   _fiGardu = g;
   _fiJurusanCount = 0;
   _fiManualCalc = false;
+  _fiConfirmedZeroIds = null; // reset konfirmasi field-kosong dari sesi form sebelumnya
 
   // Isi info gardu (readonly display)
   document.getElementById('fi-topbar-title').textContent = noGardu;
@@ -6560,6 +6822,7 @@ function _fiDoClose() {
   fiStopAutosave();
   document.getElementById('form-inspeksi-view').style.display = 'none';
   _fiGardu = null;
+  _fiConfirmedZeroIds = null; // reset supaya sesi form berikutnya tidak mewarisi konfirmasi lama
   try { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); } catch(e) { window.scrollTo(0, 0); }
   document.documentElement.scrollTop = 0;
   document.body.scrollTop = 0;
@@ -6945,7 +7208,19 @@ function fiToggleJurusan(n) {
 function fiGetJurusanData() {
   var result = [];
   for (var i = 1; i <= _fiJurusanCount; i++) {
-    var getV = function(id){ var el=document.getElementById(id); return el&&el.value.trim() ? parseFloat(el.value)||null : null; };
+    // FIX: sebelumnya pakai `parseFloat(el.value)||null` — bug, karena 0 itu
+    // falsy di JS, jadi nilai 0 yang benar-benar diketik user ikut berubah
+    // jadi null (hilang). Sekarang pakai isNaN() supaya 0 valid tetap 0.
+    // Field yang KOSONG (bukan diisi 0) tetap null, KECUALI sudah dikonfirmasi
+    // user via popup "Ada Field Kosong" — baru jadi 0.
+    var getV = function(id){
+      var el = document.getElementById(id);
+      if (!el) return null;
+      var v = el.value.trim();
+      if (!v) return (_fiConfirmedZeroIds && _fiConfirmedZeroIds[id]) ? 0 : null;
+      var n = parseFloat(v);
+      return isNaN(n) ? null : n;
+    };
     var getS = function(id){ var el=document.getElementById(id); return el&&el.value.trim() ? el.value.trim() : null; };
     var nama = getS('fi-jur'+i+'-nama');
     var titik = getS('fi-jur'+i+'-titik');
@@ -7145,7 +7420,12 @@ function fiValidate() {
   var rA = parseFloat(document.getElementById('fi-r-total').value);
   var sA = parseFloat(document.getElementById('fi-s-total').value);
   var tA = parseFloat(document.getElementById('fi-t-total').value);
-  if (!rA && !sA && !tA) errs.push('Minimal satu nilai arus (R/S/T) harus diisi.');
+  // CATATAN: validasi "minimal satu arus harus diisi" SENGAJA dihapus dari sini.
+  // Field arus R/S/T sudah terdaftar di FI_OPTIONAL_NUMERIC_FIELDS, jadi kalau
+  // kosong akan ditangani oleh popup konfirmasi (fiGetEmptyOptionalFields +
+  // bukaModalKonfirmasi di submitFormInspeksi) — bukan diblokir hard-error
+  // di sini. User tinggal konfirmasi lewat popup, lalu field kosong disimpan
+  // sebagai 0 ke database.
   // FIX: Daya trafo (kVA) diisi otomatis (readonly) dari data gardu. Jika data
   // gardu tidak punya KAPASITAS_KVA/DAYA_KVA, field ini kosong dan sebelumnya
   // baru ketahuan gagal setelah submit ke server dengan pesan yang tidak jelas.
@@ -7198,12 +7478,47 @@ function submitFormInspeksi() {
     return;
   }
 
+  // Cek field pengukuran opsional yang masih kosong. Kalau ada dan belum
+  // dikonfirmasi user pada percobaan submit ini, tampilkan popup konfirmasi
+  // dulu — JANGAN langsung kirim ke server. Field yang sudah dikonfirmasi
+  // akan disimpan sebagai 0 (bukan null / kosong).
+  // Hanya field yang BELUM pernah dikonfirmasi user yang perlu ditanyakan lagi —
+  // ini penting kalau submit sebelumnya gagal (mis. jaringan putus) lalu user
+  // menekan Simpan ulang, atau user mengisi sebagian field lalu mengosongkan
+  // field lain sebelum submit ulang.
+  var emptyFields = fiGetEmptyOptionalFields();
+  var belumDikonfirmasi = emptyFields.filter(function(f) {
+    return !(_fiConfirmedZeroIds && _fiConfirmedZeroIds[f.id]);
+  });
+  if (belumDikonfirmasi.length) {
+    var daftarKosong = belumDikonfirmasi.map(function(f){ return '• ' + f.label; }).join('<br>');
+    bukaModalKonfirmasi({
+      warna:      '#F59E0B',
+      ikon:       '⚠️',
+      judul:      'Ada Field Kosong',
+      pesan:      'Field pengukuran berikut belum diisi:<br><br>' + daftarKosong +
+                  '<br><br>Jika dilanjutkan, field tersebut akan disimpan dengan nilai <b>0</b>. Lanjutkan simpan?',
+      labelAksi:  'Ya, Simpan dengan 0',
+      labelBatal: 'Kembali Isi Dulu'
+    }, function() {
+      if (!_fiConfirmedZeroIds) _fiConfirmedZeroIds = {};
+      belumDikonfirmasi.forEach(function(f) { _fiConfirmedZeroIds[f.id] = true; });
+      submitFormInspeksi(); // ulangi submit — sekarang sudah terkonfirmasi, lanjut ke bawah
+    });
+    return;
+  }
+
   // Ambil nilai — gunakan _safeParseInput untuk menangani koma desimal format Indonesia
   var getV = function(id){
     var el = document.getElementById(id);
     if (!el) return null;
     var s = el.value.trim();
-    if (!s) return null;
+    if (!s) {
+      // Field kosong: kalau field ini ada di daftar opsional DAN sudah
+      // dikonfirmasi user di atas, simpan sebagai 0. Selain itu (mis.
+      // field manual daya-pakai/prosen/tdk-seimbang), tetap null seperti semula.
+      return (_fiConfirmedZeroIds && _fiConfirmedZeroIds[id]) ? 0 : null;
+    }
     // Normalisasi: "53,789" (koma=desimal ID) → 53.789
     // "1.234,56" (titik=ribuan) → 1234.56
     // "53.789" dengan tepat 3 digit → ambiguous; jika >9999 tanpa titik, titik=ribuan
@@ -7309,6 +7624,7 @@ function submitFormInspeksi() {
     // Sukses — hapus draft yang tersimpan
     var noGardu = _fiGardu['NO_GARDU'];
     fiClearDraft(noGardu);
+    _fiConfirmedZeroIds = null; // reset supaya form berikutnya tidak mewarisi konfirmasi lama
     fiSetAlert('Inspeksi berhasil disimpan! ' + (res.message||''), true);
     btnSimpan.textContent = '✅ Tersimpan';
     btnSimpan.style.background = 'var(--pln-green)';
@@ -7343,7 +7659,7 @@ function hapusInspeksiById(id, tglLabel) {
   // inspeksi — hanya superadmin. Otorisasi final tetap harus ditegakkan
   // di server (fn_hapus_inspeksi), ini hanya lapisan tambahan di klien.
   var _sDel = getSession();
-  if (!_sDel || _sDel.role !== 'superadmin') {
+  if (!_sDel || !isFullAccessRole(_sDel.role)) {
     showAlert('❌ Akun Anda tidak memiliki izin untuk menghapus data inspeksi. Hubungi superadmin.');
     return;
   }
@@ -8031,7 +8347,7 @@ function simpanEditPemeliharaan() {
 
 function bukaModalExport() {
   var s = getSession();
-  var isNonSuperadmin = s && s.role !== 'superadmin' && s.ulp;
+  var isNonSuperadmin = s && !isFullAccessRole(s.role) && s.ulp;
   var sel = document.getElementById('export-ulp-filter');
   if (isNonSuperadmin) {
     // Non-superadmin: kunci ke ULP sendiri, tidak bisa pilih ULP lain
@@ -8138,7 +8454,7 @@ function doExport() {
   // Kirim parameter ULP ke server untuk non-superadmin (hemat bandwidth & cegah kebocoran data)
   var s = getSession();
   var exportParams = { action: 'getExportRekap', bulan: '' };
-  if (s && s.role !== 'superadmin' && s.ulp) {
+  if (s && !isFullAccessRole(s.role) && s.ulp) {
     var sheetVal = ulpAkunToSheet(s.ulp);
     if (sheetVal) exportParams.ulp = sheetVal;
   }
@@ -9211,7 +9527,7 @@ function muatRekap() {
   var s = getSession();
   // Superadmin: lihat semua ULP. Admin ULP & Petugas: filter ke ULP masing-masing
   var params = { action:'getRekap' };
-  if (s && s.role !== 'superadmin' && s.ulp) {
+  if (s && !isFullAccessRole(s.role) && s.ulp) {
     params.ulp = s.ulp;
   }
   apiGet(params, function(res) {
@@ -9227,7 +9543,7 @@ function muatRekap() {
 function renderRekap(d) {
   var html = '';
   var s = getSession();
-  var isNonSuperadmin = s && s.role !== 'superadmin' && s.ulp;
+  var isNonSuperadmin = s && !isFullAccessRole(s.role) && s.ulp;
 
   // Tampilkan label ULP untuk non-superadmin (admin ULP & petugas)
   if (isNonSuperadmin) {
@@ -9437,7 +9753,7 @@ function muatGarduKritis() {
   var s = getSession();
   var params = { action: 'getGarduKritis' };
   // Superadmin lihat semua, admin ULP & petugas filter ke ULP masing-masing
-  if (s && s.role !== 'superadmin' && s.ulp) {
+  if (s && !isFullAccessRole(s.role) && s.ulp) {
     params.ulp = s.ulp;
   }
   apiGet(params, function(res) {
@@ -9453,7 +9769,7 @@ function muatGarduKritis() {
     }
     var d = res.data;
     // Filter sisi klien sebagai pengaman tambahan
-    if (s && s.role !== 'superadmin' && s.ulp) {
+    if (s && !isFullAccessRole(s.role) && s.ulp) {
       var ulpEnum = _normalizeUlpEnumClient(s.ulp);
       if (d.bebanLebih) d.bebanLebih = d.bebanLebih.filter(function(g){ return _normalizeUlpEnumClient(g.ulp||'') === ulpEnum; });
       if (d.overdue)    d.overdue    = d.overdue.filter(function(g){    return _normalizeUlpEnumClient(g.ulp||'') === ulpEnum; });
@@ -9796,6 +10112,48 @@ function setSelectOrFallback(selectEl, val) {
   }
 }
 
+// ── Cek field kosong pada form Gardu (Tambah/Edit) ───────────────────────────
+// Field kosong TIDAK memblokir simpan — hanya memicu popup konfirmasi ke user.
+// Pengecekan murni berdasarkan string kosong ('') vs terisi, BUKAN truthy/falsy
+// angka — jadi kalau user benar-benar mengetik "0", field itu dianggap TERISI
+// dan nilai 0 tetap dikirim apa adanya ke server (lihat _tambahGardu/_editGardu
+// di supabase-api.js: pola `p.x ? parseFloat(p.x) : null` sudah otomatis
+// menganggap string "0" sebagai terisi, jadi tidak perlu diubah).
+var GARDU_FIELD_LABELS = [
+  { id: 'unitup',               label: 'Unit UP3' },
+  { id: 'penyulang',            label: 'Penyulang' },
+  { id: 'alamat',               label: 'Alamat' },
+  { id: 'daya',                 label: 'Daya (kVA)' },
+  { id: 'tipe',                 label: 'Tipe' },
+  { id: 'kepemilikan',          label: 'Status Kepemilikan' },
+  { id: 'merek',                label: 'Merek Trafo' },
+  { id: 'np-serial',            label: 'Serial Number' },
+  { id: 'np-arus-primer',       label: 'Arus Primer' },
+  { id: 'np-arus-sekunder',     label: 'Arus Sekunder' },
+  { id: 'np-tegangan-primer',   label: 'Tegangan Primer' },
+  { id: 'np-tegangan-sekunder', label: 'Tegangan Sekunder' },
+  { id: 'np-frekuensi',         label: 'Frekuensi' },
+  { id: 'np-vektor',            label: 'Vektor Grup' },
+  { id: 'np-jenis-oli',         label: 'Jenis Oli' },
+  { id: 'np-volume-oli',        label: 'Volume Oli' },
+  { id: 'np-berat',             label: 'Berat Total' },
+  { id: 'np-tahun',             label: 'Tahun Produksi' },
+  { id: 'lat',                  label: 'Latitude' },
+  { id: 'lng',                  label: 'Longitude' },
+  { id: 'keterangan',           label: 'Keterangan' }
+];
+
+function cariFieldKosongGardu(prefix) {
+  var kosong = [];
+  GARDU_FIELD_LABELS.forEach(function(f) {
+    var el = document.getElementById(prefix + f.id);
+    if (el && (el.value == null || el.value.toString().trim() === '')) {
+      kosong.push(f.label);
+    }
+  });
+  return kosong;
+}
+
 function submitTambahGardu() {
   var noGardu = (document.getElementById('f-nogardu').value||'').trim().toUpperCase();
   var msgEl = document.getElementById('tambah-gardu-msg');
@@ -9855,12 +10213,33 @@ function submitTambahGardu() {
     });
   }
 
-  // Minta PIN konfirmasi untuk operasi tambah gardu
-  bukaModalPinGardu('Konfirmasi PIN — Tambah Gardu', function(pin) {
-    // Tutup modal PIN segera, lalu kirim ke server
-    tutupModalPinGardu();
-    doTambah(pin);
-  });
+  function lanjutkanKePinTambah() {
+    // Minta PIN konfirmasi untuk operasi tambah gardu
+    bukaModalPinGardu('Konfirmasi PIN — Tambah Gardu', function(pin) {
+      // Tutup modal PIN segera, lalu kirim ke server
+      tutupModalPinGardu();
+      doTambah(pin);
+    });
+  }
+
+  // Cek field kosong (di luar NO GARDU & ULP yang sudah wajib) → tampilkan
+  // popup konfirmasi dulu. Kalau user pilih "Lanjutkan", data tetap disimpan
+  // apa adanya (termasuk field yang memang sengaja diisi 0).
+  var fieldKosongTambah = cariFieldKosongGardu('f-');
+  if (fieldKosongTambah.length > 0) {
+    bukaModalKonfirmasi({
+      ikon: '⚠️',
+      judul: 'Ada Field yang Belum Diisi',
+      pesan: 'Field berikut masih kosong:<br><strong>' + fieldKosongTambah.join(', ') + '</strong><br><br>Data tetap bisa disimpan sesuai isian saat ini. Lanjutkan?',
+      labelAksi: '✅ Lanjutkan Simpan',
+      labelBatal: 'Batal, Lengkapi Dulu',
+      warna: '#F59E0B'
+    }, function() {
+      lanjutkanKePinTambah();
+    });
+  } else {
+    lanjutkanKePinTambah();
+  }
 }
 
 function cariGarduUntukEdit() {
@@ -9952,7 +10331,7 @@ function cariGarduUntukEdit() {
     var hapusBtn = document.getElementById('btn-hapus-gardu-edit');
     if (hapusBtn) {
       var _sCheck = getSession();
-      hapusBtn.parentElement.style.display = (_sCheck && _sCheck.role === 'superadmin') ? 'block' : 'none';
+      hapusBtn.parentElement.style.display = (_sCheck && isFullAccessRole(_sCheck.role)) ? 'block' : 'none';
     }
   });
 }
@@ -9979,10 +10358,15 @@ function submitEditGardu() {
   // ── Konfirmasi sebelum simpan ──
   var noBaruVal = (document.getElementById('ef-nogardu-baru').value||'').trim().toUpperCase();
   var _noBaruLabel = noBaruVal && noBaruVal !== noLama ? noLama + ' → ' + noBaruVal : noLama;
+  var _fieldKosongEdit = cariFieldKosongGardu('ef-');
+  var _pesanKonfirmasiEdit = 'Gardu: <strong>' + _noBaruLabel + '</strong><br>ULP: <strong>' + ulpVal + '</strong><br>Status: <strong>' + (document.getElementById('ef-status').value||'AKTIF') + '</strong><br><br>Perubahan ini akan tersimpan ke database.';
+  if (_fieldKosongEdit.length > 0) {
+    _pesanKonfirmasiEdit += '<br><br>⚠️ Field berikut masih kosong: <strong>' + _fieldKosongEdit.join(', ') + '</strong><br>Data tetap akan disimpan sesuai isian saat ini (termasuk jika Anda sengaja mengisi 0).';
+  }
   bukaModalKonfirmasi({
     ikon: '✏️',
     judul: 'Konfirmasi Perubahan Data Gardu',
-    pesan: 'Gardu: <strong>' + _noBaruLabel + '</strong><br>ULP: <strong>' + ulpVal + '</strong><br>Status: <strong>' + (document.getElementById('ef-status').value||'AKTIF') + '</strong><br><br>Perubahan ini akan tersimpan ke database.',
+    pesan: _pesanKonfirmasiEdit,
     labelAksi: '✏️ Simpan Perubahan',
     labelBatal: 'Batal',
     warna: 'var(--pln-biru2)'
@@ -10041,7 +10425,7 @@ function konfirmasiHapusGardu() {
 
   var s = getSession();
   // Hanya superadmin yang boleh hapus gardu
-  if (!s || s.role !== 'superadmin') {
+  if (!s || !isFullAccessRole(s.role)) {
     showAlert('❌ Hanya Superadmin yang dapat menghapus gardu.'); return;
   }
 
@@ -10122,7 +10506,7 @@ function cariGarduDariScannerAuto(val) {
       var _garduUlp = normalizeULP(g['ULP']||'');
       var _userUlp  = normalizeULP(s ? s.ulp||'' : '');
       var _userSheet= normalizeULP(ulpAkunToSheet(s ? s.ulp||'' : ''));
-      if (s && s.role !== 'superadmin' && _garduUlp !== _userUlp && _garduUlp !== _userSheet && ('ULP '+_userSheet) !== _garduUlp) {
+      if (s && !isFullAccessRole(s.role) && _garduUlp !== _userUlp && _garduUlp !== _userSheet && ('ULP '+_userSheet) !== _garduUlp) {
         document.getElementById('list-scan').innerHTML = '<div class="empty-state">🔍 Arahkan kamera ke barcode gardu Anda</div>';
         // Double rAF: tunggu tab selesai render BARU tampilkan popup
         requestAnimationFrame(function(){
@@ -10142,7 +10526,7 @@ function cariGarduDariScannerAuto(val) {
           return;
         }
         var garduList = res2.data;
-        if (s && s.role !== 'superadmin') {
+        if (s && !isFullAccessRole(s.role)) {
           garduList = garduList.filter(function(g){
             var _gu = normalizeULP(g['ULP']||'');
             var _uu = normalizeULP(s.ulp||'');
@@ -10335,10 +10719,17 @@ function tutupBannerInstall() {
 var _pwaInstallPrompt = null;
 
 // ── Android / Chrome / Edge: tangkap event sebelum browser tampilkan prompt ──
+// CATATAN: banner "Pasang sebagai Aplikasi" HANYA untuk tampilan mobile.
+// Di desktop (lebar layar >= 768px, sama dengan breakpoint yang dipakai di
+// seluruh aplikasi ini) banner ini sengaja tidak ditampilkan — install PWA
+// desktop biasanya lewat ikon install di address bar browser, dan banner
+// bottom-sheet ini didesain untuk layar sempit (mobile), bukan desktop.
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault(); // cegah prompt otomatis browser
   _pwaInstallPrompt = e;
 
+  // Desktop → jangan tampilkan banner sama sekali
+  if (window.innerWidth >= 768) return;
   // Jangan tampilkan jika user sudah dismiss di sesi ini
   if (sessionStorage.getItem('pwa_banner_dismissed') === '1') return;
   // Jangan tampilkan jika sudah terinstall (standalone mode)
@@ -10347,6 +10738,16 @@ window.addEventListener('beforeinstallprompt', function(e) {
   var banner = document.getElementById('pwa-install-banner');
   if (banner) {
     banner.style.display = 'flex';
+  }
+});
+
+// Kalau jendela browser di-resize dari lebar mobile ke lebar desktop saat
+// banner sedang tampil (mis. user memutar HP ke mode landscape besar, atau
+// membuka DevTools lalu geser breakpoint), sembunyikan otomatis.
+window.addEventListener('resize', function() {
+  if (window.innerWidth >= 768) {
+    var banner = document.getElementById('pwa-install-banner');
+    if (banner && banner.style.display === 'flex') banner.style.display = 'none';
   }
 });
 
@@ -10417,7 +10818,7 @@ function _updateSidebarUserFooter() {
   if (!suf) return;
   var s = getSession();
   if (s && s.nama) {
-    var roleLabel = s.role === 'superadmin' ? 'Super Admin' : s.role === 'admin' ? 'Admin ULP' : 'Petugas';
+    var roleLabel = s.role === 'staff_up3' ? 'Staff UP3' : isFullAccessRole(s.role) ? 'Super Admin' : s.role === 'admin' ? 'Admin ULP' : 'Petugas';
     var ulpLabel = s.ulp ? s.ulp.replace(/^ULP\s+/i,'') : '';
     suf.innerHTML =
       '<div class="sidebar-user-name">' + esc(s.nama || s.username) + '</div>' +
@@ -10440,7 +10841,7 @@ function _updatePetaULPBanner() {
   var bannerText = document.getElementById('peta-ulp-banner-text');
   var topbarTitle = document.getElementById('peta-topbar-title');
   var filterBar = document.getElementById('peta-ulp-filter-bar');
-  var isNonSuperadmin = s && s.role !== 'superadmin' && s.ulp;
+  var isNonSuperadmin = s && !isFullAccessRole(s.role) && s.ulp;
   if (isNonSuperadmin) {
     var ulpLabel = s.ulp.replace(/^ULP\s+/i, 'ULP ').trim();
     if (banner)      { banner.style.display = 'flex'; }
@@ -10451,7 +10852,7 @@ function _updatePetaULPBanner() {
     if (banner)      { banner.style.display = 'none'; }
     if (topbarTitle) { topbarTitle.textContent = 'Peta Gardu Papua'; }
     // Tampilkan filter bar hanya untuk superadmin
-    if (filterBar && s && s.role === 'superadmin') { filterBar.style.display = 'flex'; }
+    if (filterBar && s && isFullAccessRole(s.role)) { filterBar.style.display = 'flex'; }
     else if (filterBar) { filterBar.style.display = 'none'; }
   }
 }
@@ -10488,15 +10889,36 @@ function _initPetaMap(callback) {
   }
   _petaInitRetryCount = 0; // berhasil visible, reset counter
 
-  // Cek Leaflet tersedia — jika tidak, tampilkan pesan error ramah
+  // Cek Leaflet tersedia — jika tidak, tampilkan pesan error yang MENDIAGNOSIS
+  // penyebab asli, bukan menuduh "CDN diblokir jaringan" (pesan lama ini basi
+  // sejak Leaflet dipindah ke file lokal vendor/leaflet/ — lihat catatan di
+  // <head>). Kalau L undefined, penyebab paling mungkin sekarang adalah file
+  // vendor/leaflet/leaflet.min.js belum ter-upload ke server (404), BUKAN
+  // VPN/firewall. Kita cek langsung via fetch HEAD supaya pesannya akurat.
   if (typeof L === 'undefined') {
     var errWrap = document.getElementById('peta-map-wrap');
-    if (errWrap) errWrap.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:#5F7099;font-size:14px;text-align:center;padding:20px;">' +
-      '<span style="font-size:32px;">🗺️</span>' +
-      '<b style="color:#1048A8;">Leaflet map library gagal dimuat</b>' +
-      '<span>Jaringan memblok CDN peta. Coba:<br>1. Refresh halaman (Ctrl+F5)<br>2. Nonaktifkan VPN/firewall sementara<br>3. Gunakan koneksi data mobile</span>' +
-      '<button onclick="location.reload()" style="padding:8px 20px;background:#1048A8;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;">↻ Refresh Halaman</button>' +
-      '</div>';
+    if (errWrap) {
+      errWrap.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:#5F7099;font-size:14px;text-align:center;padding:20px;">' +
+        '<span style="font-size:32px;">🗺️</span>' +
+        '<b style="color:#1048A8;">Peta gagal dimuat</b>' +
+        '<span id="peta-err-detail">🔍 Memeriksa penyebabnya…</span>' +
+        '<button onclick="location.reload()" style="padding:8px 20px;background:#1048A8;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;">↻ Refresh Halaman</button>' +
+        '</div>';
+      fetch('vendor/leaflet/leaflet.min.js', { method: 'HEAD', cache: 'no-store' })
+        .then(function(res) {
+          var detailEl = document.getElementById('peta-err-detail');
+          if (!detailEl) return;
+          if (res.ok) {
+            detailEl.innerHTML = 'File peta ditemukan di server tapi gagal dijalankan browser (kemungkinan file rusak/ke-corrupt saat upload).<br>Coba refresh paksa (Ctrl+F5 / Cmd+Shift+R). Jika masih gagal, buka Console (F12) untuk lihat pesan error-nya.';
+          } else {
+            detailEl.innerHTML = 'File <code>vendor/leaflet/leaflet.min.js</code> tidak ditemukan di server (HTTP ' + res.status + ').<br>Kemungkinan besar folder <b>vendor/leaflet/</b> belum ter-upload ke hosting/GitHub Pages. Ini bukan masalah jaringan atau VPN — cek deployment-nya.';
+          }
+        })
+        .catch(function() {
+          var detailEl = document.getElementById('peta-err-detail');
+          if (detailEl) detailEl.innerHTML = 'Tidak bisa memeriksa file peta — kemungkinan perangkat sedang offline dan file peta belum tersimpan untuk mode offline.<br>Sambungkan ke internet lalu refresh halaman.';
+        });
+    }
     if (callback) callback();
     return;
   }
@@ -10541,7 +10963,7 @@ function muatPetaGardu(force) {
   _updatePetaULPBanner();
 
   var s = getSession();
-  var isNonSuperadmin = s && s.role !== 'superadmin' && s.ulp;
+  var isNonSuperadmin = s && !isFullAccessRole(s.role) && s.ulp;
 
   // Sudah punya peta + data, tidak perlu fetch ulang
   if (_petaMap && _petaSudahMuat && !force) {
@@ -11042,7 +11464,7 @@ function muatDaftarPemeliharaan(force) {
     }
     var allData = res.data || [];
     // Filter per ULP jika bukan superadmin
-    if (s.role !== 'superadmin' && s.ulp) {
+    if (!isFullAccessRole(s.role) && s.ulp) {
       var ulpNorm = String(s.ulp).trim().toUpperCase();
       allData = allData.filter(function(d) {
         return !d.ulp || String(d.ulp).trim().toUpperCase() === ulpNorm;
@@ -11109,11 +11531,11 @@ function renderDaftarPemeliharaan() {
 
   var isMobile    = window.innerWidth < 768;
   var _sPm        = getSession();
-  var _canDeletePm= _sPm && (_sPm.role === 'admin' || _sPm.role === 'superadmin');
+  var _canDeletePm= _sPm && (_sPm.role === 'admin' || isFullAccessRole(_sPm.role));
   // KRITIS-3 FIX: petugas hanya boleh edit pemeliharaan miliknya sendiri
   // (mengikuti pola yang sama dengan inspeksi — cek nama petugas per-baris, bukan global)
   var _isPetugasPm = _sPm && _sPm.role === 'petugas' && _sPm.nama;
-  var _isAdminPm   = _sPm && (_sPm.role === 'admin' || _sPm.role === 'superadmin');
+  var _isAdminPm   = _sPm && (_sPm.role === 'admin' || isFullAccessRole(_sPm.role));
   // Fungsi cek edit per-baris: admin/superadmin bisa semua; petugas hanya miliknya
   function _canEditThisPm(d) {
     if (!_sPm) return false;
@@ -11318,7 +11740,7 @@ function muatDataPengukuran(force) {
     // muat daftar gardu dulu secara background lalu enrich
     if (Object.keys(garduIndex).length === 0) {
       var sEnrich = getSession();
-      var ulpEnrich = (sEnrich && sEnrich.role !== 'superadmin') ? (sEnrich.ulp || '') : '';
+      var ulpEnrich = (sEnrich && !isFullAccessRole(sEnrich.role)) ? (sEnrich.ulp || '') : '';
       apiGet({ action: 'getDaftarGardu', ulp: ulpEnrich || undefined }, function(gRes) {
         if (gRes.status === 'ok' && gRes.data) {
           allGardu = gRes.data;
@@ -11436,8 +11858,8 @@ function renderTabelPengukuran() {
   html += '</select></div></div>';
 
   var _sUkur = getSession();
-  var _canEditUkur = _sUkur && (_sUkur.role === 'admin' || _sUkur.role === 'superadmin' || _sUkur.role === 'petugas');
-  var _canDeleteUkur = _sUkur && (_sUkur.role === 'admin' || _sUkur.role === 'superadmin');
+  var _canEditUkur = _sUkur && (_sUkur.role === 'admin' || isFullAccessRole(_sUkur.role) || _sUkur.role === 'petugas');
+  var _canDeleteUkur = _sUkur && (_sUkur.role === 'admin' || isFullAccessRole(_sUkur.role));
 
   if (isMobile) {
     // Mobile: card view
@@ -11451,7 +11873,7 @@ function renderTabelPengukuran() {
       var _rid = r['_id'];
       // cek apakah petugas ini yang input (untuk role petugas)
       var _canEditRow = _canEditUkur && (
-        (_sUkur.role === 'admin' || _sUkur.role === 'superadmin') ||
+        (_sUkur.role === 'admin' || isFullAccessRole(_sUkur.role)) ||
         (_sUkur.role === 'petugas' && _sUkur.nama &&
           String(_sUkur.nama).toLowerCase().trim() === String(r['PETUGAS']||'').toLowerCase().trim())
       );
@@ -11515,7 +11937,7 @@ function renderTabelPengukuran() {
       var rowBg = i % 2 === 0 ? '#fff' : '#F8FAFD';
       var _rid = r['_id'];
       var _canEditRow = _canEditUkur && (
-        (_sUkur.role === 'admin' || _sUkur.role === 'superadmin') ||
+        (_sUkur.role === 'admin' || isFullAccessRole(_sUkur.role)) ||
         (_sUkur.role === 'petugas' && _sUkur.nama &&
           String(_sUkur.nama).toLowerCase().trim() === String(r['PETUGAS']||'').toLowerCase().trim())
       );
@@ -14986,7 +15408,7 @@ window.exportErrors        = exportErrors;
 // ── Modal open/close — callable dari main app ────────────────
 function bukaModalCsvImport() {
   var s = getSession();
-  if (!s || s.role !== 'superadmin') {
+  if (!s || !isFullAccessRole(s.role)) {
     showMsg('Akses ditolak. Hanya Superadmin yang dapat menggunakan fitur ini.', true);
     return;
   }

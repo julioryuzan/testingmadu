@@ -39,7 +39,9 @@ var APP_SHELL = [
   './manifest.json',
   './supabase-api.js',
   './icon-baru-192.png',
-  './icon-baru-512.png'
+  './icon-baru-512.png',
+  './vendor/leaflet/leaflet.css',
+  './vendor/leaflet/leaflet.min.js'
 ];
 
 // ── INSTALL ───────────────────────────────────────────────────

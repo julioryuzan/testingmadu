@@ -785,7 +785,10 @@ async function _editGardu(p, signal) {
 // ── HAPUS GARDU via RPC ──────────────────────────────────────
 // DESTRUKTIF: menghapus gardu beserta seluruh riwayat inspeksinya.
 // Memerlukan PIN konfirmasi untuk cegah hapus tidak sengaja.
-// RPC fn_hapus_gardu harus memverifikasi: token valid, role superadmin,
+// RPC fn_hapus_gardu harus memverifikasi: token valid, role superadmin
+// ATAU staff_up3 (lihat isFullAccessRole() di index.html — staff_up3 punya
+// hak akses setara superadmin, RPC SQL ini perlu diupdate agar mengizinkan
+// kedua role tsb, bukan hanya 'superadmin'),
 // PIN benar, gardu ada — baru kemudian hapus cascade.
 async function _hapusGardu(p, signal) {
   if (!p.noGardu) return { status: 'error', message: 'Kode gardu tidak boleh kosong.' };
@@ -1418,7 +1421,9 @@ async function _tambahPemeliharaan(p, signal) {
 // ── GET DAFTAR PEMELIHARAAN via RPC ──────────────────────────
 async function _getDaftarPemeliharaan(p, signal) {
   // Catatan: p_ulp tidak dikirim ke RPC karena filter ULP dilakukan di DB
-  // berdasarkan role user (superadmin lihat semua, selain itu hanya ULP sendiri).
+  // berdasarkan role user (superadmin & staff_up3 lihat semua ULP, selain
+  // itu hanya ULP sendiri — pastikan fn_get_pemeliharaan sudah diupdate
+  // untuk mengenali role staff_up3 juga, bukan hanya 'superadmin').
   // Filter tambahan (kategori, ulp) dilakukan di sisi klien setelah data diterima.
   // p_status TIDAK dikirim karena kolom status tidak ada di tabel pemeliharaan.
   // catatan & foto_urls otomatis ikut di response RPC (sudah ditambahkan di fn_get_pemeliharaan).

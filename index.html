@@ -1137,7 +1137,8 @@ input[type=number]{-moz-appearance:textfield;}
   /* Kecualikan topbar di dalam form view & detail view — harus tetap tampil di desktop */
   .topbar{display:none;}
   #form-inspeksi-view > .topbar,
-  #form-pemeliharaan-view > .topbar {
+  #form-pemeliharaan-view > .topbar,
+  #pbpd-view > .topbar {
     display:flex !important;
     position:sticky;
     top:0;
@@ -1152,7 +1153,7 @@ input[type=number]{-moz-appearance:textfield;}
   /* Sidebar brand becomes richer - show page title + user area on right */
   #bottom-nav{width:220px;}
   #app-content{margin-left:220px;width:calc(100% - 220px);}
-  #form-inspeksi-view,#form-pemeliharaan-view{left:220px!important;}
+  #form-inspeksi-view,#form-pemeliharaan-view,#pbpd-view{left:220px!important;}
   .sidebar-brand{
     position:relative;
     justify-content:flex-start;

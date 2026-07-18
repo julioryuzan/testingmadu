@@ -5742,14 +5742,12 @@ function bukaDetailGardu(noGardu){
 
 // ══ TAMPILAN RINGKAS — mode scan QR sebelum login ═══════════════════
 // Dipakai HANYA saat QR_SCAN_MODE aktif & belum login (lihat window.onload).
-// Sengaja TIDAK menampilkan angka arus/tegangan/THD mentah, riwayat detail,
-// atau breakdown per jurusan — supaya publik/orang awam yang scan QR di
-// lapangan tidak menerima data teknis yang tidak mereka butuhkan/pahami.
-// Status kesehatan digabung jadi SATU badge (ambil yang terburuk antara
-// beban trafo & ketidakseimbangan fasa, standar EDIR 017.E/DIR/2014) agar
-// tidak ada multi-badge yang berpotensi disalahtafsirkan.
-// Detail teknis lengkap tetap ada — muncul otomatis begitu petugas login
-// (lihat renderDetailGardu di bawah, dipakai untuk mode normal & setelah login).
+// Target: petugas/vendor lapangan yang mau cek cepat TANPA login penuh —
+// jadi datanya tetap LENGKAP untuk kebutuhan actionable di lapangan (angka
+// arus per fasa, per jurusan, status HAR) — yang dipangkas cuma:
+// 1) paragraf edukatif/referensi standar (cukup di layar detail penuh),
+// 2) riwayat multi-inspeksi (cuma tampilkan yang PALING BARU),
+// 3) fitur INPUT (gated login, demi akuntabilitas siapa yang input data).
 function renderDetailGarduRingkas(g, riwayat) {
   var kva = parseFloat(g['KAPASITAS_KVA'] || g['DAYA_KVA'] || 0) || 0;
   var latest = (riwayat && riwayat.length) ? riwayat[0] : null;
@@ -5764,28 +5762,67 @@ function renderDetailGarduRingkas(g, riwayat) {
   html += '⚡ Kapasitas Trafo '+(kva||'—')+' kVA';
   html += '</div></div>';
 
-  html += '<div class="card" style="margin-bottom:var(--sp-sm);text-align:center;">';
-  html += '<div style="font-size:var(--fs-xs);font-weight:700;color:var(--pln-text3);margin-bottom:8px;letter-spacing:.3px;">KONDISI GARDU SAAT INI</div>';
-  if (latest && kva > 0) {
+  if (!latest) {
+    html += '<div class="card" style="text-align:center;color:var(--pln-text3);font-size:var(--fs-xs);margin-bottom:var(--sp-sm);">Belum ada data pengukuran untuk gardu ini.</div>';
+  } else {
     var fixA = function(v){ var n=parseFloat(v); if(!isNaN(n)&&n>2000&&n<=9999999){var c=n/1000; if(c<=2000) return c;} return n; };
-    var rr=fixA(latest['R TOTAL']), ss=fixA(latest['S TOTAL']), tt=fixA(latest['T TOTAL']);
-    if (!isNaN(rr)&&!isNaN(ss)&&!isNaN(tt)&&rr>0&&ss>0&&tt>0) {
-      var bebanPct = pbpdPctBeban((rr+ss+tt)/3, kva);
+    var rr=fixA(latest['R TOTAL']), ss=fixA(latest['S TOTAL']), tt=fixA(latest['T TOTAL']), nn=fixA(latest['N TOTAL']);
+    var dataLengkap = !isNaN(rr)&&!isNaN(ss)&&!isNaN(tt)&&rr>0&&ss>0&&tt>0;
+
+    // ── Chip status: Beban Trafo / Ketidakseimbangan / Arus Netral ──
+    html += '<div class="card" style="margin-bottom:var(--sp-sm);">';
+    html += '<div style="font-size:var(--fs-xs);font-weight:700;color:var(--pln-text3);margin-bottom:8px;letter-spacing:.3px;">STATUS GARDU (EDIR 017.E/DIR/2014)</div>';
+    if (dataLengkap && kva > 0) {
+      var avgFasaR = (rr+ss+tt)/3;
+      var bebanPct = pbpdPctBeban(avgFasaR, kva);
       var imbPct   = pbpdPctImbalance(rr,ss,tt);
       var kB = pbpdKlasifikasi(bebanPct, 'beban');
       var kI = pbpdKlasifikasi(imbPct, 'imbalance');
-      var worst = kB.level >= kI.level ? kB : kI;
-      html += '<span class="badge '+worst.cls+'" style="font-size:var(--fs-md);padding:9px 20px;">'+worst.label+'</span>';
-      html += '<div style="font-size:var(--fs-xs);color:var(--pln-text3);margin-top:10px;">Data pengukuran terakhir: '+esc(formatTgl(latest['TGLUKUR'])||latest['TGLUKUR']||'—')+(latest['JAM UKUR']?' pukul '+esc(latest['JAM UKUR']):'')+'</div>';
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">';
+      html += '<div style="background:var(--pln-bg);border-radius:8px;padding:8px;text-align:center;"><div class="lbl">Beban Trafo</div><span class="badge '+kB.cls+'">'+bebanPct.toFixed(1)+'% — '+kB.label+'</span></div>';
+      html += '<div style="background:var(--pln-bg);border-radius:8px;padding:8px;text-align:center;"><div class="lbl">Ketidakseimbangan</div><span class="badge '+kI.cls+'">'+imbPct.toFixed(1)+'% — '+kI.label+'</span></div>';
+      html += '</div>';
+      if (!isNaN(nn) && avgFasaR > 0) {
+        var pctN = (nn/avgFasaR)*100;
+        var kN = pctN>=20 ? {cls:'badge-kritis',label:'Buruk'} : pctN>=15 ? {cls:'badge-edir-kurang',label:'Kurang'} : pctN>=10 ? {cls:'badge-perlu',label:'Cukup'} : {cls:'badge-normal',label:'Baik'};
+        html += '<div style="text-align:center;margin-bottom:10px;"><span class="badge '+kN.cls+'">Arus Netral '+nn.toFixed(1)+' A ('+pctN.toFixed(0)+'% — '+kN.label+')</span></div>';
+      }
+      // Arus per fasa aktual — dibutuhkan buat cocokkan langsung dgn clamp meter
+      html += '<div style="display:flex;justify-content:center;gap:14px;padding-top:8px;border-top:1px solid var(--pln-border);">';
+      [['R',rr,'#C0392B'],['S',ss,'#27AE60'],['T',tt,'#2980B9']].forEach(function(f){
+        html += '<div style="text-align:center;"><div style="width:10px;height:10px;border-radius:50%;background:'+f[2]+';margin:0 auto 4px;"></div>'+
+          '<div style="font-weight:800;font-size:var(--fs-sm);">'+f[1].toFixed(1)+' A</div><div style="font-size:10px;color:var(--pln-text3);">Fasa '+f[0]+'</div></div>';
+      });
+      html += '</div>';
     } else {
-      html += '<div style="font-size:var(--fs-xs);color:var(--pln-text3);">Data pengukuran terakhir belum lengkap.</div>';
+      html += '<div style="font-size:var(--fs-xs);color:var(--pln-text3);text-align:center;">Data arus pengukuran terakhir belum lengkap.</div>';
     }
-  } else {
-    html += '<div style="font-size:var(--fs-xs);color:var(--pln-text3);">Belum ada data pengukuran untuk gardu ini.</div>';
-  }
-  html += '</div>';
+    html += '</div>';
 
-  html += '<div class="alert alert-info" style="margin:0;">🔒 Riwayat inspeksi, data arus/tegangan detail, dan rekomendasi PB/PD hanya bisa dilihat setelah login.</div>';
+    // ── Breakdown per jurusan ──
+    var jur = (latest._jurusanRaw || []).map(function(j){return j||{};}).filter(function(j){return j.nama||j.r_total||j.s_total||j.t_total;});
+    if (jur.length) {
+      html += '<div class="card" style="margin-bottom:var(--sp-sm);">';
+      html += '<div style="font-size:var(--fs-xs);font-weight:700;color:var(--pln-text3);margin-bottom:6px;letter-spacing:.3px;">ARUS PER JURUSAN (A)</div>';
+      html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:var(--fs-xs);">';
+      html += '<thead><tr style="background:var(--pln-bg);"><th style="text-align:left;padding:5px 8px;">Jurusan</th><th style="padding:5px 8px;">R</th><th style="padding:5px 8px;">S</th><th style="padding:5px 8px;">T</th></tr></thead><tbody>';
+      jur.forEach(function(j){
+        html += '<tr style="border-top:1px solid var(--pln-border);"><td style="padding:5px 8px;font-weight:600;">'+esc(j.nama||'—')+'</td>'+
+          '<td style="padding:5px 8px;text-align:center;">'+(parseFloat(j.r_total)||0).toFixed(1)+'</td>'+
+          '<td style="padding:5px 8px;text-align:center;">'+(parseFloat(j.s_total)||0).toFixed(1)+'</td>'+
+          '<td style="padding:5px 8px;text-align:center;">'+(parseFloat(j.t_total)||0).toFixed(1)+'</td></tr>';
+      });
+      html += '</tbody></table></div></div>';
+    }
+
+    // ── Metadata pengukuran terakhir ──
+    html += '<div class="card" style="margin-bottom:var(--sp-sm);font-size:var(--fs-xs);color:var(--pln-text3);">';
+    html += '🕒 Diukur: <b style="color:var(--pln-text2);">'+esc(formatTgl(latest['TGLUKUR'])||latest['TGLUKUR']||'—')+(latest['JAM UKUR']?' pukul '+esc(latest['JAM UKUR']):'')+'</b>';
+    if (latest['PETUGAS']) html += ' oleh <b style="color:var(--pln-text2);">'+esc(latest['PETUGAS'])+'</b>';
+    html += '</div>';
+  }
+
+  html += '<div class="alert alert-info" style="margin:0;">🔒 Riwayat inspeksi lengkap (multi-tanggal), grafik tren, dan fitur input/PB/PD tersedia setelah login — supaya setiap perubahan data tercatat siapa yang input.</div>';
 
   document.getElementById('detail-content').innerHTML = html;
 }

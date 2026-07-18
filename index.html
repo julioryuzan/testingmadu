@@ -4526,6 +4526,8 @@ function onLoginSuccess(user) {
           bukaFormInspeksi(_qrKey);
         } else if (_qrRedir === 'pemeliharaan') {
           bukaFormPemeliharaanDariDetail(_qrKey);
+        } else if (_qrRedir === 'pbpd') {
+          pbpdOpen(_qrKey);
         }
       } else if (_qrTries >= _qrMaxTries) {
         clearInterval(_qrPoll);
@@ -5300,7 +5302,7 @@ window.onload = function(){
           '<button onclick="window.location.reload()" class="btn btn-blue" style="width:100%;margin-top:12px;">↻ Refresh / Coba Lagi</button>';
         return;
       }
-      renderDetailGardu(res.data, res.riwayat || []);
+      renderDetailGarduRingkas(res.data, res.riwayat || []);
 
       // Banner login di bawah konten
       var content = document.getElementById('detail-content');
@@ -5311,6 +5313,7 @@ window.onload = function(){
         '<div style="display:flex;flex-direction:column;gap:10px;">' +
         '<button onclick="window.location.href=window.location.pathname+\'?login=1&redirect=pengukuran&noGardu='+encodeURIComponent(QR_NOGARDU)+'\'" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:clamp(13px,3.5vw,16px);background:linear-gradient(135deg,#1A7A4A,#229A5F);color:#fff;border:none;border-radius:var(--radius-sm);font-size:var(--fs-sm);font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.2px;touch-action:manipulation;box-shadow:0 2px 8px rgba(26,122,74,.3);">📏 Input Pengukuran Gardu</button>' +
         '<button onclick="window.location.href=window.location.pathname+\'?login=1&redirect=pemeliharaan&noGardu='+encodeURIComponent(QR_NOGARDU)+'\'" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:clamp(13px,3.5vw,16px);background:linear-gradient(135deg,#1048A8,#2E7CF6);color:#fff;border:none;border-radius:var(--radius-sm);font-size:var(--fs-sm);font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.2px;touch-action:manipulation;box-shadow:0 2px 8px rgba(16,72,168,.3);">🔧 Input Pemeliharaan</button>' +
+        '<button onclick="window.location.href=window.location.pathname+\'?login=1&redirect=pbpd&noGardu='+encodeURIComponent(QR_NOGARDU)+'\'" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:clamp(13px,3.5vw,16px);background:linear-gradient(135deg,#7C3AED,#A855F7);color:#fff;border:none;border-radius:var(--radius-sm);font-size:var(--fs-sm);font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.2px;touch-action:manipulation;box-shadow:0 2px 8px rgba(124,58,237,.3);">🔌 Rekomendasi PB/PD</button>' +
         '</div>';
       content.appendChild(banner);
     });
@@ -5737,7 +5740,58 @@ function bukaDetailGardu(noGardu){
   });
 }
 
+// ══ TAMPILAN RINGKAS — mode scan QR sebelum login ═══════════════════
+// Dipakai HANYA saat QR_SCAN_MODE aktif & belum login (lihat window.onload).
+// Sengaja TIDAK menampilkan angka arus/tegangan/THD mentah, riwayat detail,
+// atau breakdown per jurusan — supaya publik/orang awam yang scan QR di
+// lapangan tidak menerima data teknis yang tidak mereka butuhkan/pahami.
+// Status kesehatan digabung jadi SATU badge (ambil yang terburuk antara
+// beban trafo & ketidakseimbangan fasa, standar EDIR 017.E/DIR/2014) agar
+// tidak ada multi-badge yang berpotensi disalahtafsirkan.
+// Detail teknis lengkap tetap ada — muncul otomatis begitu petugas login
+// (lihat renderDetailGardu di bawah, dipakai untuk mode normal & setelah login).
+function renderDetailGarduRingkas(g, riwayat) {
+  var kva = parseFloat(g['KAPASITAS_KVA'] || g['DAYA_KVA'] || 0) || 0;
+  var latest = (riwayat && riwayat.length) ? riwayat[0] : null;
+  var html = '';
+
+  html += '<div class="card" style="margin-bottom:var(--sp-sm);">';
+  html += '<div style="font-weight:800;font-size:var(--fs-lg);color:var(--pln-biru2);margin-bottom:2px;">'+esc(g['NO_GARDU']||'—')+'</div>';
+  if (g['NAMA_GARDU'] || g['NAMA']) html += '<div style="font-size:var(--fs-sm);color:var(--pln-text2);margin-bottom:8px;">'+esc(g['NAMA_GARDU']||g['NAMA'])+'</div>';
+  html += '<div style="font-size:var(--fs-xs);color:var(--pln-text3);line-height:1.7;">';
+  html += '📍 '+esc(g['ALAMAT']||'—')+'<br>';
+  html += '🏢 ULP '+esc(g['ULP']||'—')+' · Penyulang '+esc(g['PENYULANG']||'—')+'<br>';
+  html += '⚡ Kapasitas Trafo '+(kva||'—')+' kVA';
+  html += '</div></div>';
+
+  html += '<div class="card" style="margin-bottom:var(--sp-sm);text-align:center;">';
+  html += '<div style="font-size:var(--fs-xs);font-weight:700;color:var(--pln-text3);margin-bottom:8px;letter-spacing:.3px;">KONDISI GARDU SAAT INI</div>';
+  if (latest && kva > 0) {
+    var fixA = function(v){ var n=parseFloat(v); if(!isNaN(n)&&n>2000&&n<=9999999){var c=n/1000; if(c<=2000) return c;} return n; };
+    var rr=fixA(latest['R TOTAL']), ss=fixA(latest['S TOTAL']), tt=fixA(latest['T TOTAL']);
+    if (!isNaN(rr)&&!isNaN(ss)&&!isNaN(tt)&&rr>0&&ss>0&&tt>0) {
+      var bebanPct = pbpdPctBeban((rr+ss+tt)/3, kva);
+      var imbPct   = pbpdPctImbalance(rr,ss,tt);
+      var kB = pbpdKlasifikasi(bebanPct, 'beban');
+      var kI = pbpdKlasifikasi(imbPct, 'imbalance');
+      var worst = kB.level >= kI.level ? kB : kI;
+      html += '<span class="badge '+worst.cls+'" style="font-size:var(--fs-md);padding:9px 20px;">'+worst.label+'</span>';
+      html += '<div style="font-size:var(--fs-xs);color:var(--pln-text3);margin-top:10px;">Data pengukuran terakhir: '+esc(formatTgl(latest['TGLUKUR'])||latest['TGLUKUR']||'—')+(latest['JAM UKUR']?' pukul '+esc(latest['JAM UKUR']):'')+'</div>';
+    } else {
+      html += '<div style="font-size:var(--fs-xs);color:var(--pln-text3);">Data pengukuran terakhir belum lengkap.</div>';
+    }
+  } else {
+    html += '<div style="font-size:var(--fs-xs);color:var(--pln-text3);">Belum ada data pengukuran untuk gardu ini.</div>';
+  }
+  html += '</div>';
+
+  html += '<div class="alert alert-info" style="margin:0;">🔒 Riwayat inspeksi, data arus/tegangan detail, dan rekomendasi PB/PD hanya bisa dilihat setelah login.</div>';
+
+  document.getElementById('detail-content').innerHTML = html;
+}
+
 function renderDetailGardu(g, riwayat){
+
   var statusOp  = (g['STATUS_OPERASIONAL']||'').toUpperCase();
   var isAktif   = statusOp === 'AKTIF';
   var lat = normalizeCoord(g['LATITUDE'] !== undefined && g['LATITUDE'] !== '' ? g['LATITUDE'] : (g['Y'] || ''), true);

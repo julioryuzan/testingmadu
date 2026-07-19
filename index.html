@@ -12253,18 +12253,20 @@ function pbpdRecalc() {
   // Tabel perbandingan semua opsi
   html += '<div class="card" style="margin-bottom:var(--sp-sm);">';
   html += '<div class="sec" style="margin-top:0;">📊 Perbandingan Semua Opsi Fasa</div>';
-  html += '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><table style="width:100%;border-collapse:collapse;font-size:var(--fs-xs);min-width:460px;">';
-  html += '<thead><tr style="background:var(--pln-bg);"><th style="text-align:left;padding:6px 8px;white-space:nowrap;">Fasa</th><th style="padding:6px 8px;white-space:nowrap;">Jurusan</th><th style="padding:6px 8px;white-space:nowrap;">Beban Trafo</th><th style="padding:6px 8px;white-space:nowrap;">Ketidakseimbangan</th></tr></thead><tbody>';
+  html += '<div class="card" style="padding:0;overflow:hidden;margin-bottom:var(--sp-sm);">';
+  html += '<table style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px;">';
+  html += '<colgroup><col style="width:16%;"><col style="width:34%;"><col style="width:25%;"><col style="width:25%;"></colgroup>';
+  html += '<thead><tr style="background:var(--pln-bg);"><th style="text-align:left;padding:6px 4px 6px 8px;">Fasa</th><th style="text-align:left;padding:6px 4px;">Jurusan</th><th style="padding:6px 4px;">Beban</th><th style="padding:6px 8px 6px 4px;">Imbalance</th></tr></thead><tbody>';
   opsi.forEach(function(o, idx) {
     var jr = o.jurusan.length ? o.jurusan[0] : null;
     html += '<tr style="border-top:1px solid var(--pln-border);'+(idx===0?'background:#F6FFED;':'')+'">';
-    html += '<td style="padding:6px 8px;font-weight:700;white-space:nowrap;">'+(idx===0?'⭐ ':'')+esc(o.fasa)+'</td>';
-    html += '<td style="padding:6px 8px;white-space:nowrap;">'+(jr?esc(jr.nama):'—')+'</td>';
-    html += '<td style="padding:6px 8px;"><span class="badge '+o.klasBeban.cls+'">'+o.pctBeban.toFixed(1)+'% '+o.klasBeban.label+'</span></td>';
-    html += '<td style="padding:6px 8px;"><span class="badge '+o.klasImb.cls+'">'+o.pctImb.toFixed(1)+'% '+o.klasImb.label+'</span></td>';
+    html += '<td style="padding:6px 4px 6px 8px;font-weight:700;">'+(idx===0?'⭐':'')+esc(o.fasa)+'</td>';
+    html += '<td style="padding:6px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+(jr?esc(jr.nama):'')+'">'+(jr?esc(jr.nama):'—')+'</td>';
+    html += '<td style="padding:6px 4px;text-align:center;"><span class="badge '+o.klasBeban.cls+'" style="padding:2px 6px;">'+o.pctBeban.toFixed(1)+'%</span></td>';
+    html += '<td style="padding:6px 8px 6px 4px;text-align:center;"><span class="badge '+o.klasImb.cls+'" style="padding:2px 6px;">'+o.pctImb.toFixed(1)+'%</span></td>';
     html += '</tr>';
   });
-  html += '</tbody></table></div></div>';
+  html += '</tbody></table></div>';
 
   html += '<div class="alert alert-info" style="margin:0;font-size:var(--fs-xs);"><span class="alert-icon">ℹ️</span><span class="alert-text">Pemilihan jurusan berdasarkan arus fasa TERENDAH saat ini di jurusan tersebut (indikasi sisa kapasitas). Fitur ini <b>belum</b> mengecek batas KHA fisik kabel jurusan (jenis/luas penampang penghantar) — tetap verifikasi kondisi fisik jaringan di lapangan sebelum eksekusi vendor. Referensi: PLN EDIR 017.E/DIR/2014 Tabel 7.</span></div>';
 

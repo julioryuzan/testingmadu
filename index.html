@@ -12242,19 +12242,22 @@ function pbpdRecalc() {
 
   var html = '';
 
-  // Kartu rekomendasi utama
-  var warnaKartu = terbaik.klasBeban.level >= 2 || terbaik.klasImb.level >= 2 ? 'imbalance-warn' : (terbaik.klasBeban.level>=1||terbaik.klasImb.level>=1 ? 'imbalance-warn' : 'imbalance-ok');
-  html += '<div class="imbalance-alert '+warnaKartu+'" style="margin-bottom:var(--sp-sm);">';
-  html += '<div class="imbalance-header">⭐ Rekomendasi Terbaik</div>';
-  html += '<div style="font-size:var(--fs-lg);font-weight:800;margin:6px 0;">Fasa '+esc(terbaik.fasa)+(jurRekomendasi?' — Jurusan "'+esc(jurRekomendasi.nama)+'"':'')+'</div>';
-  html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">';
-  html += '<span class="badge '+terbaik.klasBeban.cls+'">Beban trafo proyeksi: '+terbaik.pctBeban.toFixed(1)+'% ('+terbaik.klasBeban.label+')</span>';
-  html += '<span class="badge '+terbaik.klasImb.cls+'">Ketidakseimbangan proyeksi: '+terbaik.pctImb.toFixed(1)+'% ('+terbaik.klasImb.label+')</span>';
+  // Kartu rekomendasi utama — ringkas, satu baris tegas (bukan paragraf)
+  var adaPeringatan = terbaik.klasBeban.level >= 2 || terbaik.klasImb.level >= 2;
+  html += '<div class="card" style="border:2px solid '+(adaPeringatan?'#FED7AA':'#B7EB8F')+';background:'+(adaPeringatan?'#FFF3E8':'#F6FFED')+';margin-bottom:var(--sp-sm);">';
+  html += '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">';
+  html += '<span style="font-size:22px;line-height:1;">⭐</span>';
+  html += '<div style="flex:1;min-width:0;">';
+  html += '<div style="font-size:var(--fs-xs);font-weight:700;color:var(--pln-text3);letter-spacing:.3px;margin-bottom:2px;">DIREKOMENDASIKAN</div>';
+  html += '<div style="font-size:var(--fs-lg);font-weight:800;">Fasa '+esc(terbaik.fasa)+(jurRekomendasi?' — Jurusan "'+esc(jurRekomendasi.nama)+'"':'')+'</div>';
   html += '</div>';
-  if (terbaik.klasBeban.level >= 2 || terbaik.klasImb.level >= 2) {
-    html += '<div class="imbalance-rec">⚠️ Opsi terbaik yang tersedia pun sudah masuk zona "'+(terbaik.klasBeban.level>=2?terbaik.klasBeban.label:terbaik.klasImb.label)+'" menurut EDIR 017.E/DIR/2014. PB/PD masih bisa diproses tapi sebaiknya jadi catatan untuk rencana penguatan jaringan/trafo berikutnya.</div>';
-  } else {
-    html += '<div class="imbalance-rec">✅ Kondisi hasil proyeksi masih dalam zona aman (Baik/Cukup). PB/PD dapat direkomendasikan ke opsi ini.</div>';
+  html += '<div style="display:flex;gap:6px;flex-wrap:wrap;">';
+  html += '<span class="badge '+terbaik.klasBeban.cls+'">Beban '+terbaik.pctBeban.toFixed(1)+'%</span>';
+  html += '<span class="badge '+terbaik.klasImb.cls+'">Imbalance '+terbaik.pctImb.toFixed(1)+'%</span>';
+  html += '</div>';
+  html += '</div>';
+  if (adaPeringatan) {
+    html += '<div style="font-size:var(--fs-xs);color:#C2410C;margin-top:8px;padding-top:8px;border-top:1px solid #FED7AA;">⚠️ Opsi terbaik yang tersedia pun sudah masuk zona "'+(terbaik.klasBeban.level>=2?terbaik.klasBeban.label:terbaik.klasImb.label)+'" (EDIR 017.E/DIR/2014). PB/PD tetap bisa diproses, tapi jadikan catatan untuk rencana penguatan jaringan berikutnya.</div>';
   }
   html += '</div>';
 

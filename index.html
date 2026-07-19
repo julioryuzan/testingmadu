@@ -2811,7 +2811,7 @@ input[type=number]{-moz-appearance:textfield;}
   </div>
   <div class="page-body-nonav" style="padding:var(--sp-md);max-width:720px;margin:0 auto;">
 
-    <div class="alert alert-info" style="margin-bottom:var(--sp-sm);">🔌 Rekomendasi jurusan &amp; fasa untuk penyambungan PB/PD, berbasis data pengukuran terakhir dan ambang batas resmi <b>PLN EDIR 017.E/DIR/2014</b> (Tabel 7 — Matriks Online Assessment Tier-1).</div>
+    <div class="alert alert-info" style="margin-bottom:var(--sp-sm);"><span class="alert-icon">🔌</span><span class="alert-text">Rekomendasi jurusan &amp; fasa untuk penyambungan PB/PD, berbasis data pengukuran terakhir dan ambang batas resmi <b>PLN EDIR 017.E/DIR/2014</b> (Tabel 7 — Matriks Online Assessment Tier-1).</span></div>
 
     <!-- Pencarian Gardu -->
     <div class="card" style="margin-bottom:var(--sp-sm);">
@@ -5822,7 +5822,7 @@ function renderDetailGarduRingkas(g, riwayat) {
     html += '</div>';
   }
 
-  html += '<div class="alert alert-info" style="margin:0;">🔒 Riwayat inspeksi lengkap (multi-tanggal), grafik tren, dan fitur input/PB/PD tersedia setelah login — supaya setiap perubahan data tercatat siapa yang input.</div>';
+  html += '<div class="alert alert-info" style="margin:0;"><span class="alert-icon">🔒</span><span class="alert-text">Riwayat inspeksi lengkap (multi-tanggal), grafik tren, dan fitur input/PB/PD tersedia setelah login — supaya setiap perubahan data tercatat siapa yang input.</span></div>';
 
   document.getElementById('detail-content').innerHTML = html;
 }
@@ -12065,14 +12065,14 @@ function pbpdLoadGardu(noGardu) {
   document.getElementById('pbpd-hasil').innerHTML = '';
   apiGet({action:'getDetailLengkap', noGardu: noGardu}, function(res) {
     if (res.status !== 'ok' || !res.data) {
-      document.getElementById('pbpd-deteksi-card').innerHTML = '<div class="alert alert-err" style="margin:0;">❌ '+(res.message||'Gardu tidak ditemukan.')+'</div>';
+      document.getElementById('pbpd-deteksi-card').innerHTML = '<div class="alert alert-err" style="margin:0;"><span class="alert-icon">❌</span><span class="alert-text">'+(res.message||'Gardu tidak ditemukan.')+'</span></div>';
       window._pbpdState = null;
       return;
     }
     var g = res.data;
     var riwayat = res.riwayat || [];
     if (!riwayat.length) {
-      document.getElementById('pbpd-deteksi-card').innerHTML = '<div class="alert alert-warn" style="margin:0;">⚠️ Gardu ini belum punya data inspeksi/pengukuran sama sekali. Rekomendasi PB/PD butuh data arus per jurusan terbaru — lakukan pengukuran gardu dulu sebelum memakai fitur ini.</div>';
+      document.getElementById('pbpd-deteksi-card').innerHTML = '<div class="alert alert-warn" style="margin:0;"><span class="alert-icon">⚠️</span><span class="alert-text">Gardu ini belum punya data inspeksi/pengukuran sama sekali. Rekomendasi PB/PD butuh data arus per jurusan terbaru — lakukan pengukuran gardu dulu sebelum memakai fitur ini.</span></div>';
       window._pbpdState = null;
       return;
     }
@@ -12144,7 +12144,7 @@ function pbpdRenderDeteksi() {
   html += '</div>';
 
   if (!st.jurusan.length) {
-    html += '<div class="alert alert-warn" style="margin:0;">⚠️ Data pengukuran terakhir tidak punya rincian per jurusan (kemungkinan diisi sebelum fitur jurusan ada). Rekomendasi jurusan tidak bisa dibuat, tapi status beban &amp; keseimbangan trafo di atas tetap valid.</div>';
+    html += '<div class="alert alert-warn" style="margin:0;"><span class="alert-icon">⚠️</span><span class="alert-text">Data pengukuran terakhir tidak punya rincian per jurusan (kemungkinan diisi sebelum fitur jurusan ada). Rekomendasi jurusan tidak bisa dibuat, tapi status beban &amp; keseimbangan trafo di atas tetap valid.</span></div>';
   } else {
     html += '<div style="font-size:var(--fs-xs);font-weight:700;color:var(--pln-text3);margin-bottom:4px;">ARUS PER JURUSAN SAAT INI (A)</div>';
     html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:var(--fs-xs);">';
@@ -12174,7 +12174,7 @@ function pbpdRecalc() {
     return;
   }
   if (!st.kva) {
-    hasilEl.innerHTML = '<div class="alert alert-err" style="margin:0;">❌ Kapasitas trafo (kVA) gardu ini belum terisi di data master, rekomendasi tidak bisa dihitung.</div>';
+    hasilEl.innerHTML = '<div class="alert alert-err" style="margin:0;"><span class="alert-icon">❌</span><span class="alert-text">Kapasitas trafo (kVA) gardu ini belum terisi di data master, rekomendasi tidak bisa dihitung.</span></div>';
     return;
   }
 
@@ -12183,7 +12183,7 @@ function pbpdRecalc() {
 
   // Gerbang keras: gardu sudah "Buruk" (>=100%) → tidak direkomendasikan sama sekali
   if (bebanSaatIni >= 100) {
-    hasilEl.innerHTML = '<div class="alert alert-err" style="margin:0;">🚫 <b>PB/PD TIDAK DIREKOMENDASIKAN.</b> Trafo sudah pada kondisi Buruk (beban ≥100%, EDIR 017.E/DIR/2014). Penambahan beban apa pun akan memperparah overload. Perlu penguatan/uprating trafo terlebih dahulu sebelum PB/PD baru dapat diproses di gardu ini.</div>';
+    hasilEl.innerHTML = '<div class="alert alert-err" style="margin:0;"><span class="alert-icon">🚫</span><span class="alert-text"><b>PB/PD TIDAK DIREKOMENDASIKAN.</b> Trafo sudah pada kondisi Buruk (beban ≥100%, EDIR 017.E/DIR/2014). Penambahan beban apa pun akan memperparah overload. Perlu penguatan/uprating trafo terlebih dahulu sebelum PB/PD baru dapat diproses di gardu ini.</span></div>';
     return;
   }
 
@@ -12253,20 +12253,20 @@ function pbpdRecalc() {
   // Tabel perbandingan semua opsi
   html += '<div class="card" style="margin-bottom:var(--sp-sm);">';
   html += '<div class="sec" style="margin-top:0;">📊 Perbandingan Semua Opsi Fasa</div>';
-  html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:var(--fs-xs);">';
-  html += '<thead><tr style="background:var(--pln-bg);"><th style="text-align:left;padding:6px 8px;">Fasa</th><th style="padding:6px 8px;">Jurusan Disarankan</th><th style="padding:6px 8px;">Proyeksi Beban Trafo</th><th style="padding:6px 8px;">Proyeksi Ketidakseimbangan</th></tr></thead><tbody>';
+  html += '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><table style="width:100%;border-collapse:collapse;font-size:var(--fs-xs);min-width:460px;">';
+  html += '<thead><tr style="background:var(--pln-bg);"><th style="text-align:left;padding:6px 8px;white-space:nowrap;">Fasa</th><th style="padding:6px 8px;white-space:nowrap;">Jurusan</th><th style="padding:6px 8px;white-space:nowrap;">Beban Trafo</th><th style="padding:6px 8px;white-space:nowrap;">Ketidakseimbangan</th></tr></thead><tbody>';
   opsi.forEach(function(o, idx) {
     var jr = o.jurusan.length ? o.jurusan[0] : null;
     html += '<tr style="border-top:1px solid var(--pln-border);'+(idx===0?'background:#F6FFED;':'')+'">';
-    html += '<td style="padding:6px 8px;font-weight:700;">'+(idx===0?'⭐ ':'')+esc(o.fasa)+'</td>';
-    html += '<td style="padding:6px 8px;">'+(jr?esc(jr.nama):'—')+'</td>';
+    html += '<td style="padding:6px 8px;font-weight:700;white-space:nowrap;">'+(idx===0?'⭐ ':'')+esc(o.fasa)+'</td>';
+    html += '<td style="padding:6px 8px;white-space:nowrap;">'+(jr?esc(jr.nama):'—')+'</td>';
     html += '<td style="padding:6px 8px;"><span class="badge '+o.klasBeban.cls+'">'+o.pctBeban.toFixed(1)+'% '+o.klasBeban.label+'</span></td>';
     html += '<td style="padding:6px 8px;"><span class="badge '+o.klasImb.cls+'">'+o.pctImb.toFixed(1)+'% '+o.klasImb.label+'</span></td>';
     html += '</tr>';
   });
   html += '</tbody></table></div></div>';
 
-  html += '<div class="alert alert-info" style="margin:0;font-size:var(--fs-xs);">ℹ️ Pemilihan jurusan berdasarkan arus fasa TERENDAH saat ini di jurusan tersebut (indikasi sisa kapasitas). Fitur ini <b>belum</b> mengecek batas KHA fisik kabel jurusan (jenis/luas penampang penghantar) — tetap verifikasi kondisi fisik jaringan di lapangan sebelum eksekusi vendor. Referensi: PLN EDIR 017.E/DIR/2014 Tabel 7.</div>';
+  html += '<div class="alert alert-info" style="margin:0;font-size:var(--fs-xs);"><span class="alert-icon">ℹ️</span><span class="alert-text">Pemilihan jurusan berdasarkan arus fasa TERENDAH saat ini di jurusan tersebut (indikasi sisa kapasitas). Fitur ini <b>belum</b> mengecek batas KHA fisik kabel jurusan (jenis/luas penampang penghantar) — tetap verifikasi kondisi fisik jaringan di lapangan sebelum eksekusi vendor. Referensi: PLN EDIR 017.E/DIR/2014 Tabel 7.</span></div>';
 
   hasilEl.innerHTML = html;
 }

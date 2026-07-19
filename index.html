@@ -6391,6 +6391,12 @@ function renderDetailGardu(g, riwayat){
     
   }
 
+  // ── Riwayat Proses PB/PD (dimuat async setelah render) ──────
+  html += '<div class="sec">📋 Riwayat Proses PB/PD</div>';
+  html += '<div id="pbpd-riwayat-wrap">';
+  html += '<div class="loading" style="padding:var(--sp-md);"><div class="spinner"></div>Memuat riwayat PB/PD...</div>';
+  html += '</div>';
+
   // ── Tren Beban Section (will be populated asynchronously) ──
   html += '<div class="sec">📈 Tren Beban Historis</div>';
   html += '<div class="tren-filter-bar" id="tren-filter-bar">';
@@ -6442,6 +6448,8 @@ function renderDetailGardu(g, riwayat){
   _trenAllData = [];
   // Load tren beban async after DOM ready
   muatTrenBeban(g['NO_GARDU']);
+  // Load riwayat proses PB/PD async after DOM ready
+  pbpdRiwayatMuat(g['NO_GARDU']);
 }
 
 function ukurCell(label, val, unit) {
@@ -12250,11 +12258,19 @@ function pbpdRecalc() {
   }
   html += '</div>';
 
+  // Simpan referensi rekomendasi terpilih untuk fitur "Catat & Simpan"
+  window._pbpdTerbaik = terbaik;
+  window._pbpdJurRekomendasi = jurRekomendasi;
+  window._pbpdDayaSaatIni = daya;
+
+  html += '<button id="pbpd-btn-simpan" onclick="pbpdSimpanRekomendasi()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;margin-bottom:var(--sp-sm);background:linear-gradient(135deg,#059669,#10B981);color:#fff;border:none;border-radius:var(--radius-sm);font-size:var(--fs-sm);font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(5,150,105,.3);">💾 Catat &amp; Simpan Rekomendasi Ini</button>';
+  html += '<div id="pbpd-simpan-msg"></div>';
+
   // Tabel perbandingan semua opsi
   html += '<div class="card" style="margin-bottom:var(--sp-sm);">';
   html += '<div class="sec" style="margin-top:0;">📊 Perbandingan Semua Opsi Fasa</div>';
   html += '<div class="card" style="padding:0;overflow:hidden;margin-bottom:var(--sp-sm);">';
-  html += '<table style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px;">';
+  html += '<table style="width:100%;max-width:480px;border-collapse:collapse;table-layout:fixed;font-size:11px;">';
   html += '<colgroup><col style="width:16%;"><col style="width:34%;"><col style="width:25%;"><col style="width:25%;"></colgroup>';
   html += '<thead><tr style="background:var(--pln-bg);"><th style="text-align:left;padding:6px 4px 6px 8px;">Fasa</th><th style="text-align:left;padding:6px 4px;">Jurusan</th><th style="padding:6px 4px;">Beban</th><th style="padding:6px 8px 6px 4px;">Imbalance</th></tr></thead><tbody>';
   opsi.forEach(function(o, idx) {
@@ -12271,6 +12287,109 @@ function pbpdRecalc() {
   html += '<div class="alert alert-info" style="margin:0;font-size:var(--fs-xs);"><span class="alert-icon">ℹ️</span><span class="alert-text">Pemilihan jurusan berdasarkan arus fasa TERENDAH saat ini di jurusan tersebut (indikasi sisa kapasitas). Fitur ini <b>belum</b> mengecek batas KHA fisik kabel jurusan (jenis/luas penampang penghantar) — tetap verifikasi kondisi fisik jaringan di lapangan sebelum eksekusi vendor. Referensi: PLN EDIR 017.E/DIR/2014 Tabel 7.</span></div>';
 
   hasilEl.innerHTML = html;
+}
+
+// ── Simpan rekomendasi PB/PD terpilih sebagai catatan riwayat proses ──
+function pbpdSimpanRekomendasi() {
+  var s = getSession();
+  if (!s) { showAlert('Sesi berakhir, silakan login kembali.'); return; }
+  var st = window._pbpdState;
+  var terbaik = window._pbpdTerbaik;
+  if (!st || !terbaik) return;
+
+  var btn = document.getElementById('pbpd-btn-simpan');
+  var msgEl = document.getElementById('pbpd-simpan-msg');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Menyimpan...'; }
+
+  var jur = window._pbpdJurRekomendasi;
+  var params = {
+    action:                'tambahPbpdRiwayat',
+    token:                 s.token,
+    noGardu:                st.noGardu,
+    ulp:                    st.ulp,
+    petugas:                s.nama || s.username || '',
+    jenisSambungan:         window._pbpdJenis,
+    dayaVa:                 window._pbpdDayaSaatIni,
+    fasaRekomendasi:        terbaik.fasa,
+    jurusanRekomendasi:     jur ? jur.nama : null,
+    proyeksiBebanPct:       terbaik.pctBeban,
+    proyeksiImbalancePct:   terbaik.pctImb,
+    klasifikasiBeban:       terbaik.klasBeban.label,
+    klasifikasiImbalance:   terbaik.klasImb.label
+  };
+
+  apiGet(params, function(res) {
+    if (btn) { btn.disabled = false; btn.textContent = '💾 Catat & Simpan Rekomendasi Ini'; }
+    if (!msgEl) return;
+    if (res.status === 'ok') {
+      msgEl.innerHTML = '<div class="alert alert-ok" style="margin-top:8px;"><span class="alert-icon">✅</span><span class="alert-text">Rekomendasi tersimpan sebagai catatan proses PB/PD. Bisa dilihat di Detail Gardu, bagian "Riwayat Proses PB/PD".</span></div>';
+      if (typeof pbpdRiwayatMuat === 'function') { /* refresh kalau detail gardu kebetulan masih di memori */ }
+    } else {
+      msgEl.innerHTML = '<div class="alert alert-err" style="margin-top:8px;"><span class="alert-icon">❌</span><span class="alert-text">Gagal menyimpan: '+esc(res.message||'Terjadi kesalahan.')+'</span></div>';
+    }
+  });
+}
+
+// ── Riwayat Proses PB/PD di Detail Gardu ──────────────────────
+var PBPD_STATUS_BADGE = {
+  'Menunggu Eksekusi Vendor': 'badge-perlu',
+  'Selesai Terpasang':        'badge-normal',
+  'Dibatalkan':                'badge-nonaktif'
+};
+var PBPD_KLAS_BADGE = { 'Baik':'badge-normal', 'Cukup':'badge-perlu', 'Kurang':'badge-edir-kurang', 'Buruk':'badge-kritis' };
+
+function pbpdRiwayatMuat(noGardu) {
+  var s = getSession();
+  if (!s) return; // Riwayat Proses PB/PD hanya relevan setelah login (renderDetailGardu penuh)
+  apiGet({ action:'getPbpdRiwayat', token:s.token, noGardu:noGardu, limit:5 }, function(res) {
+    var wrap = document.getElementById('pbpd-riwayat-wrap');
+    if (!wrap) return; // user sudah pindah halaman sebelum respons datang
+    if (res.status !== 'ok') {
+      wrap.innerHTML = '<div class="alert alert-warn" style="margin:0;"><span class="alert-icon">⚠️</span><span class="alert-text">Gagal memuat riwayat PB/PD: '+esc(res.message||'')+'</span></div>';
+      return;
+    }
+    var rows = res.data || [];
+    if (!rows.length) {
+      wrap.innerHTML = '<div class="empty-state" style="padding:var(--sp-md);"><div class="empty-icon">📋</div>Belum ada proses PB/PD tercatat untuk gardu ini.<br><span style="font-size:var(--fs-xs);">Rekomendasi yang disimpan lewat fitur "🔌 Rekomendasi PB/PD" akan muncul di sini.</span></div>';
+      return;
+    }
+    var html = '';
+    rows.forEach(function(row) {
+      var statusCls = PBPD_STATUS_BADGE[row.status] || 'badge-perlu';
+      var bisaUbahStatus = row.status !== 'Selesai Terpasang' && row.status !== 'Dibatalkan';
+      html += '<div class="card" style="margin-bottom:var(--sp-sm);">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">';
+      html += '<div><div style="font-weight:700;font-size:var(--fs-sm);">'+(row.jenis_sambungan==='3fasa'?'3 Fasa':'1 Fasa')+' — '+Number(row.daya_va||0).toLocaleString('id-ID')+' VA</div>';
+      html += '<div style="font-size:var(--fs-xs);color:var(--pln-text3);">'+esc(formatTgl(row.tanggal)||row.tanggal||'—')+(row.petugas?' · oleh '+esc(row.petugas):'')+'</div></div>';
+      html += '<span class="badge '+statusCls+'" style="white-space:nowrap;">'+esc(row.status)+'</span>';
+      html += '</div>';
+      html += '<div style="font-size:var(--fs-xs);color:var(--pln-text2);margin-bottom:6px;">Rekomendasi: <b>Fasa '+esc(row.fasa_rekomendasi||'—')+'</b>'+(row.jurusan_rekomendasi?' — Jurusan "'+esc(row.jurusan_rekomendasi)+'"':'')+'</div>';
+      html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:'+(bisaUbahStatus?'8px':'0')+';">';
+      html += '<span class="badge '+(PBPD_KLAS_BADGE[row.klasifikasi_beban]||'badge-normal')+'">Beban '+parseFloat(row.proyeksi_beban_pct||0).toFixed(1)+'%</span>';
+      html += '<span class="badge '+(PBPD_KLAS_BADGE[row.klasifikasi_imbalance]||'badge-normal')+'">Imbalance '+parseFloat(row.proyeksi_imbalance_pct||0).toFixed(1)+'%</span>';
+      html += '</div>';
+      if (bisaUbahStatus) {
+        html += '<div style="display:flex;gap:6px;">';
+        html += '<button class="btn btn-outline" style="flex:1;font-size:11px;padding:6px;" onclick="pbpdRiwayatUpdateStatus('+row.id+',\'Selesai Terpasang\',\''+esc(noGardu)+'\')">✅ Tandai Selesai</button>';
+        html += '<button class="btn btn-outline" style="flex:1;font-size:11px;padding:6px;" onclick="pbpdRiwayatUpdateStatus('+row.id+',\'Dibatalkan\',\''+esc(noGardu)+'\')">✕ Batalkan</button>';
+        html += '</div>';
+      }
+      html += '</div>';
+    });
+    wrap.innerHTML = html;
+  });
+}
+
+function pbpdRiwayatUpdateStatus(id, statusBaru, noGardu) {
+  var s = getSession();
+  if (!s) { showAlert('Sesi berakhir, silakan login kembali.'); return; }
+  apiGet({ action:'updateStatusPbpd', token:s.token, id:id, status:statusBaru }, function(res) {
+    if (res.status === 'ok') {
+      pbpdRiwayatMuat(noGardu);
+    } else {
+      showAlert('❌ Gagal update status: '+(res.message||'Terjadi kesalahan.'));
+    }
+  });
 }
 
 

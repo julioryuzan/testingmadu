@@ -84,7 +84,17 @@ function sbFetch(path, opts) {
     method:  opts.method  || 'GET',
     headers: headers,
     body:    opts.body    || undefined,
-    signal:  opts.signal  || undefined
+    signal:  opts.signal  || undefined,
+    // PENTING: paksa selalu ambil dari network, jangan pernah dari HTTP
+    // cache browser. Tanpa ini, request GET dengan URL yang identik
+    // (mis. buka Detail Gardu → edit inspeksi → auto-refresh Detail Gardu
+    // dengan URL yang sama persis) berisiko disajikan dari cache lama oleh
+    // browser meski datanya di server sudah berubah — menyebabkan field
+    // yang baru saja disimpan (spt phase_sequence) terlihat kosong/hilang
+    // padahal sudah benar tersimpan di database. Sama seperti strategi
+    // 'no-store' yang sudah dipakai di sw.js untuk app-shell, di sini
+    // diterapkan untuk semua request REST/RPC ke Supabase.
+    cache:   'no-store'
   });
 }
 
@@ -194,6 +204,9 @@ async function _dispatch(action, p, signal) {
     case 'maintenanceCleanup': return _maintenanceCleanup(p, signal);
     case 'tambahPemeliharaan':    return _tambahPemeliharaan(p, signal);
     case 'getDaftarPemeliharaan': return _getDaftarPemeliharaan(p, signal);
+    case 'tambahPbpdRiwayat':     return _tambahPbpdRiwayat(p, signal);
+    case 'getPbpdRiwayat':        return _getPbpdRiwayat(p, signal);
+    case 'updateStatusPbpd':      return _updateStatusPbpd(p, signal);
     case 'hapusPemeliharaan':     return _hapusPemeliharaan(p, signal);
     case 'editPemeliharaan':      return _editPemeliharaan(p, signal);
     default: return { status: 'error', message: 'Action tidak dikenali: ' + action };
@@ -354,7 +367,7 @@ async function _getDetailLengkap(p, signal) {
   try {
     var resI = await sbFetch(
       '/rest/v1/inspeksi?no_gardu=eq.' + encodeURIComponent(noGardu) +
-      '&select=*&order=tgl_ukur.desc,jam_ukur.desc&limit=5',
+      '&select=*&order=tgl_ukur.desc,jam_ukur.desc,id.desc&limit=5',
       { signal: signal }
     );
     if (resI.ok) {
@@ -521,7 +534,7 @@ async function _getExportRekap(p, signal) {
   // Diurutkan desc sehingga baris pertama per no_gardu adalah yang terbaru.
   var inspMap = {}; // no_gardu → row inspeksi terakhir (dengan semua kolom detail)
   try {
-    var inspUrl = '/rest/v1/inspeksi?select=*&order=tgl_ukur.desc,jam_ukur.desc';
+    var inspUrl = '/rest/v1/inspeksi?select=*&order=tgl_ukur.desc,jam_ukur.desc,id.desc';
     if (ulpFilter) inspUrl += '&ulp=eq.' + encodeURIComponent(ulpFilter);
 
     var iOff2  = 0;
@@ -1457,6 +1470,56 @@ async function _getDaftarPemeliharaan(p, signal) {
     return { status: 'error', message: (data && data.message) || 'Gagal memuat data pemeliharaan.' };
 
   return { status: 'ok', data: data.data || [], total: data.total || 0 };
+}
+
+// ── RIWAYAT PROSES PB/PD ───────────────────────────────────────
+async function _tambahPbpdRiwayat(p, signal) {
+  var data = await rpcCall('fn_tambah_pbpd_riwayat', {
+    p_token:                 p.token,
+    p_no_gardu:               (p.noGardu || '').trim().toUpperCase(),
+    p_ulp:                    p.ulp                   || null,
+    p_petugas:                p.petugas               || null,
+    p_jenis_sambungan:        p.jenisSambungan        || null,
+    p_daya_va:                p.dayaVa                || null,
+    p_fasa_rekomendasi:       p.fasaRekomendasi       || null,
+    p_jurusan_rekomendasi:    p.jurusanRekomendasi    || null,
+    p_proyeksi_beban_pct:     p.proyeksiBebanPct      || null,
+    p_proyeksi_imbalance_pct: p.proyeksiImbalancePct  || null,
+    p_klasifikasi_beban:      p.klasifikasiBeban      || null,
+    p_klasifikasi_imbalance:  p.klasifikasiImbalance  || null,
+    p_catatan:                p.catatan               || null
+  }, signal);
+
+  if (!data || data.status !== 'ok')
+    return { status: 'error', message: (data && data.message) || 'Gagal menyimpan riwayat PB/PD.' };
+
+  return { status: 'ok', message: data.message, id: data.id };
+}
+
+async function _getPbpdRiwayat(p, signal) {
+  var data = await rpcCall('fn_get_pbpd_riwayat', {
+    p_token:    p.token    || null,
+    p_no_gardu: (p.noGardu || '').trim().toUpperCase(),
+    p_limit:    p.limit    ? parseInt(p.limit) : 5
+  }, signal);
+
+  if (!data || data.status !== 'ok')
+    return { status: 'error', message: (data && data.message) || 'Gagal memuat riwayat PB/PD.' };
+
+  return { status: 'ok', data: data.data || [] };
+}
+
+async function _updateStatusPbpd(p, signal) {
+  var data = await rpcCall('fn_update_status_pbpd', {
+    p_token:  p.token,
+    p_id:     parseInt(p.id),
+    p_status: p.status
+  }, signal);
+
+  if (!data || data.status !== 'ok')
+    return { status: 'error', message: (data && data.message) || 'Gagal memperbarui status PB/PD.' };
+
+  return { status: 'ok', message: data.message };
 }
 
 // ── HAPUS PEMELIHARAAN via RPC ────────────────────────────────

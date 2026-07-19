@@ -12228,11 +12228,21 @@ function pbpdRecalc() {
     var pctImbN3 = pbpdPctImbalance(rN3, sN3, tN3);
     var klasBeban3 = pbpdKlasifikasi(pctBebanN3, 'beban');
     var klasImb3 = pbpdKlasifikasi(pctImbN3, 'imbalance');
-    // Rekomendasi jurusan: jurusan dengan total arus (R+S+T) paling rendah
+    // 3 fasa menambah beban merata ke R/S/T sekaligus, jadi proyeksi Beban &
+    // Imbalance-nya SAMA di semua jurusan (cuma dipengaruhi besar daya, bukan
+    // pilihan jurusan — tidak ada "pilihan fasa" seperti mode 1 fasa). Yang
+    // membedakan cuma jurusan mana yang paling punya sisa kapasitas. Tetap
+    // ditampilkan sampai 3 baris (bukan digabung jadi 1 baris) supaya
+    // rangking jurusannya kelihatan jelas, konsisten dengan tampilan mode 1 fasa.
     var jurSorted3 = st.jurusan.slice().sort(function(a,b){ return (a.r+a.s+a.t) - (b.r+b.s+b.t); });
-    opsi.push({
-      fasa: 'R-S-T', jurusan: jurSorted3, skor: klasBeban3.level*10+klasImb3.level,
-      pctBeban: pctBebanN3, pctImb: pctImbN3, klasBeban: klasBeban3, klasImb: klasImb3
+    var kandidat3 = jurSorted3.length ? jurSorted3.slice(0, 3) : [null];
+    kandidat3.forEach(function(satuJurusan, jIdx) {
+      opsi.push({
+        fasa: 'R-S-T',
+        jurusan: satuJurusan ? [satuJurusan] : [],
+        skor: klasBeban3.level*10 + klasImb3.level + jIdx*0.0001, // tie-break: urutan sisa kapasitas jurusan
+        pctBeban: pctBebanN3, pctImb: pctImbN3, klasBeban: klasBeban3, klasImb: klasImb3
+      });
     });
   }
 

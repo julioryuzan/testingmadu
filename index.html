@@ -12259,7 +12259,7 @@ function pbpdRecalc() {
   html += '<span style="font-size:22px;line-height:1;">⭐</span>';
   html += '<div style="flex:1;min-width:0;">';
   html += '<div style="font-size:var(--fs-xs);font-weight:700;color:var(--pln-text3);letter-spacing:.3px;margin-bottom:2px;">DIREKOMENDASIKAN</div>';
-  html += '<div style="font-size:var(--fs-lg);font-weight:800;line-height:1.25;">'+(window._pbpdJenis==='3fasa'?'3 Fasa (R-S-T)':'Fasa '+esc(terbaik.fasa))+(jurRekomendasi?' — Jurusan "'+esc(jurRekomendasi.nama)+'"':'')+'</div>';
+  html += '<div style="font-size:var(--fs-lg);font-weight:800;line-height:1.25;">'+(window._pbpdJenis==='3fasa'?'3 Fasa (R-S-T)':'Fasa '+esc(terbaik.fasa))+(jurRekomendasi?' — '+esc(jurRekomendasi.nama)+'':'')+'</div>';
   html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">';
   html += '<span class="badge '+terbaik.klasBeban.cls+'">Beban '+terbaik.pctBeban.toFixed(1)+'%</span>';
   html += '<span class="badge '+terbaik.klasImb.cls+'">Imbalance '+terbaik.pctImb.toFixed(1)+'%</span>';
@@ -12404,7 +12404,7 @@ function pbpdRiwayatMuat(noGardu) {
       html += '<div style="font-size:var(--fs-xs);color:var(--pln-text3);">'+esc(formatTgl(row.tanggal)||row.tanggal||'—')+(row.petugas?' · oleh '+esc(row.petugas):'')+'</div></div>';
       html += '<span class="badge '+statusCls+'" style="white-space:nowrap;">'+esc(row.status)+'</span>';
       html += '</div>';
-      html += '<div style="font-size:var(--fs-xs);color:var(--pln-text2);margin-bottom:6px;">Rekomendasi: <b>Fasa '+esc(row.fasa_rekomendasi||'—')+'</b>'+(row.jurusan_rekomendasi?' — Jurusan "'+esc(row.jurusan_rekomendasi)+'"':'')+'</div>';
+      html += '<div style="font-size:var(--fs-xs);color:var(--pln-text2);margin-bottom:6px;">Rekomendasi: <b>Fasa '+esc(row.fasa_rekomendasi||'—')+'</b>'+(row.jurusan_rekomendasi?' — '+esc(row.jurusan_rekomendasi)+'':'')+'</div>';
       html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:'+(bisaUbahStatus?'8px':'0')+';">';
       html += '<span class="badge '+(PBPD_KLAS_BADGE[row.klasifikasi_beban]||'badge-normal')+'">Beban '+parseFloat(row.proyeksi_beban_pct||0).toFixed(1)+'%</span>';
       html += '<span class="badge '+(PBPD_KLAS_BADGE[row.klasifikasi_imbalance]||'badge-normal')+'">Imbalance '+parseFloat(row.proyeksi_imbalance_pct||0).toFixed(1)+'%</span>';

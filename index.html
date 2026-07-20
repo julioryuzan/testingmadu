@@ -12255,15 +12255,15 @@ function pbpdRecalc() {
   // Kartu rekomendasi utama — ringkas, satu baris tegas (bukan paragraf)
   var adaPeringatan = terbaik.klasBeban.level >= 2 || terbaik.klasImb.level >= 2;
   html += '<div class="card" style="border:2px solid '+(adaPeringatan?'#FED7AA':'#B7EB8F')+';background:'+(adaPeringatan?'#FFF3E8':'#F6FFED')+';margin-bottom:var(--sp-sm);">';
-  html += '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">';
+  html += '<div style="display:flex;align-items:flex-start;gap:10px;">';
   html += '<span style="font-size:22px;line-height:1;">⭐</span>';
   html += '<div style="flex:1;min-width:0;">';
   html += '<div style="font-size:var(--fs-xs);font-weight:700;color:var(--pln-text3);letter-spacing:.3px;margin-bottom:2px;">DIREKOMENDASIKAN</div>';
-  html += '<div style="font-size:var(--fs-lg);font-weight:800;">'+(window._pbpdJenis==='3fasa'?'3 Fasa (R-S-T)':'Fasa '+esc(terbaik.fasa))+(jurRekomendasi?' — Jurusan "'+esc(jurRekomendasi.nama)+'"':'')+'</div>';
-  html += '</div>';
-  html += '<div style="display:flex;gap:6px;flex-wrap:wrap;">';
+  html += '<div style="font-size:var(--fs-lg);font-weight:800;line-height:1.25;">'+(window._pbpdJenis==='3fasa'?'3 Fasa (R-S-T)':'Fasa '+esc(terbaik.fasa))+(jurRekomendasi?' — Jurusan "'+esc(jurRekomendasi.nama)+'"':'')+'</div>';
+  html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">';
   html += '<span class="badge '+terbaik.klasBeban.cls+'">Beban '+terbaik.pctBeban.toFixed(1)+'%</span>';
   html += '<span class="badge '+terbaik.klasImb.cls+'">Imbalance '+terbaik.pctImb.toFixed(1)+'%</span>';
+  html += '</div>';
   html += '</div>';
   html += '</div>';
   if (adaPeringatan) {

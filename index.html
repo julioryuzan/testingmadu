@@ -12259,7 +12259,7 @@ function pbpdRecalc() {
   html += '<span style="font-size:22px;line-height:1;">⭐</span>';
   html += '<div style="flex:1;min-width:0;">';
   html += '<div style="font-size:var(--fs-xs);font-weight:700;color:var(--pln-text3);letter-spacing:.3px;margin-bottom:2px;">DIREKOMENDASIKAN</div>';
-  html += '<div style="font-size:var(--fs-lg);font-weight:800;">Fasa '+esc(terbaik.fasa)+(jurRekomendasi?' — Jurusan "'+esc(jurRekomendasi.nama)+'"':'')+'</div>';
+  html += '<div style="font-size:var(--fs-lg);font-weight:800;">'+(window._pbpdJenis==='3fasa'?'3 Fasa (R-S-T)':'Fasa '+esc(terbaik.fasa))+(jurRekomendasi?' — Jurusan "'+esc(jurRekomendasi.nama)+'"':'')+'</div>';
   html += '</div>';
   html += '<div style="display:flex;gap:6px;flex-wrap:wrap;">';
   html += '<span class="badge '+terbaik.klasBeban.cls+'">Beban '+terbaik.pctBeban.toFixed(1)+'%</span>';
@@ -12310,14 +12310,13 @@ function pbpdRecalc() {
     html += '<div style="font-size:var(--fs-xs);color:var(--pln-text3);margin-bottom:8px;">Untuk 3 fasa, beban &amp; ketidakseimbangan proyeksi sama di jurusan manapun (<b>Beban '+terbaik.pctBeban.toFixed(1)+'% · Imbalance '+terbaik.pctImb.toFixed(1)+'%</b>, sudah tampil di kartu atas) — tidak dipengaruhi pilihan jurusan. Yang membedakan cuma jurusan mana yang saat ini paling punya sisa kapasitas:</div>';
     html += '<div class="card" style="padding:0;overflow:hidden;">';
     html += '<table style="width:100%;max-width:480px;border-collapse:collapse;table-layout:fixed;font-size:11px;">';
-    html += '<colgroup><col style="width:16px;"><col style="width:60%;"><col></colgroup>';
-    html += '<thead><tr style="background:var(--pln-bg);"><th></th><th style="text-align:left;padding:6px 4px;">DIREKOMENDASIKAN</th><th style="text-align:right;padding:6px 8px 6px 4px;">Arus Saat Ini</th></tr></thead><tbody>';
+    html += '<colgroup><col style="width:60%;"><col></colgroup>';
+    html += '<thead><tr style="background:var(--pln-bg);"><th style="text-align:left;padding:6px 4px 6px 8px;">DIREKOMENDASIKAN</th><th style="text-align:right;padding:6px 8px 6px 4px;">Arus Saat Ini</th></tr></thead><tbody>';
     opsi.forEach(function(o, idx) {
       var jr = o.jurusan.length ? o.jurusan[0] : null;
       var arusTotal = jr ? (jr.r + jr.s + jr.t) : null;
       html += '<tr style="border-top:1px solid var(--pln-border);'+(idx===0?'background:#F6FFED;':'')+'">';
-      html += '<td style="padding:6px 0 6px 8px;">'+(idx===0?'⭐':'')+'</td>';
-      html += '<td style="padding:6px 4px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+(jr?esc(jr.nama):'')+'">'+(jr?esc(jr.nama):'—')+'</td>';
+      html += '<td style="padding:6px 4px 6px 8px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+(jr?esc(jr.nama):'')+'">'+(idx===0?'⭐ ':'')+(jr?esc(jr.nama):'—')+'</td>';
       html += '<td style="padding:6px 8px 6px 4px;text-align:right;color:var(--pln-text2);">'+(arusTotal!==null?arusTotal.toFixed(1)+' A':'—')+'</td>';
       html += '</tr>';
     });

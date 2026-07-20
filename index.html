@@ -12309,7 +12309,7 @@ function pbpdRecalc() {
   } else {
     html += '<div style="font-size:var(--fs-xs);color:var(--pln-text3);margin-bottom:8px;">Untuk 3 fasa, beban &amp; ketidakseimbangan proyeksi sama di jurusan manapun (<b>Beban '+terbaik.pctBeban.toFixed(1)+'% · Imbalance '+terbaik.pctImb.toFixed(1)+'%</b>, sudah tampil di kartu atas) — tidak dipengaruhi pilihan jurusan. Yang membedakan cuma jurusan mana yang saat ini paling punya sisa kapasitas:</div>';
     html += '<div class="card" style="padding:0;overflow:hidden;">';
-    html += '<table style="width:100%;max-width:480px;border-collapse:collapse;table-layout:fixed;font-size:11px;">';
+    html += '<table style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px;">';
     html += '<colgroup><col style="width:60%;"><col></colgroup>';
     html += '<thead><tr style="background:var(--pln-bg);"><th style="text-align:left;padding:6px 4px 6px 8px;">DIREKOMENDASIKAN</th><th style="text-align:right;padding:6px 8px 6px 4px;">Arus Saat Ini</th></tr></thead><tbody>';
     opsi.forEach(function(o, idx) {

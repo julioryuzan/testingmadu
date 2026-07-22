@@ -2811,7 +2811,7 @@ input[type=number]{-moz-appearance:textfield;}
   </div>
   <div class="page-body-nonav" style="padding:var(--sp-md);max-width:720px;margin:0 auto;">
 
-    <div class="alert alert-info" style="margin-bottom:var(--sp-sm);"><span class="alert-icon">🔌</span><span class="alert-text">Rekomendasi jurusan &amp; fasa untuk penyambungan PB/PD, berbasis data pengukuran terakhir dan ambang batas resmi <b>PLN EDIR 017.E/DIR/2014</b> (Tabel 7 — Matriks Online Assessment Tier-1).</span></div>
+    <div class="alert alert-info" style="margin-bottom:var(--sp-sm);"><span class="alert-icon">🔌</span><span class="alert-text">Rekomendasi jurusan &amp; fasa untuk penyambungan PB/PD, berbasis data pengukuran terakhir dan ambang batas resmi <b>PLN EDIR 017.E/DIR/2014</b> (Tabel 7 — Matriks Online Assessment Tier-1). Menampilkan beban per fasa setelah penambahan (termasuk deteksi overload SATU fasa walau rata-rata trafo masih aman) dan ketidakseimbangan keseluruhan. Ada mode "🧪 Eksperimen Manual" untuk mencoba kombinasi fasa/jurusan sendiri.</span></div>
 
     <!-- Pencarian Gardu -->
     <div class="card" style="margin-bottom:var(--sp-sm);">
@@ -2838,15 +2838,35 @@ input[type=number]{-moz-appearance:textfield;}
             <button type="button" id="pbpd-jenis-3fasa" onclick="pbpdSetJenis('3fasa')" class="btn btn-outline" style="flex:1;">3 Fasa</button>
           </div>
         </div>
-        <div class="form-group" style="margin-bottom:0;">
+        <div class="form-group">
           <label class="form-label">Daya Diminta (VA)</label>
           <input type="number" class="form-input" id="pbpd-daya" placeholder="Contoh: 2200" oninput="pbpdRecalc()">
           <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;" id="pbpd-daya-quick"></div>
         </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Mode</label>
+          <div style="display:flex;gap:8px;">
+            <button type="button" id="pbpd-mode-auto" onclick="pbpdSetMode('auto')" class="btn btn-outline" style="flex:1;">🎯 Rekomendasi Otomatis</button>
+            <button type="button" id="pbpd-mode-manual" onclick="pbpdSetMode('manual')" class="btn btn-outline" style="flex:1;">🧪 Eksperimen Manual</button>
+          </div>
+          <div style="font-size:10px;color:var(--pln-text3);margin-top:6px;">Mode Otomatis: sistem pilihkan fasa &amp; jurusan terbaik. Mode Eksperimen: kamu atur sendiri fasa/jurusannya untuk lihat "bagaimana kalau".</div>
+        </div>
+        <div class="form-group" id="pbpd-manual-fasa-group" style="display:none;margin-top:10px;">
+          <label class="form-label">Pilih Fasa (eksperimen)</label>
+          <div style="display:flex;gap:8px;">
+            <button type="button" id="pbpd-fasa-manual-R" onclick="pbpdSetFasaManual('R')" class="btn btn-outline" style="flex:1;">Fasa R</button>
+            <button type="button" id="pbpd-fasa-manual-S" onclick="pbpdSetFasaManual('S')" class="btn btn-outline" style="flex:1;">Fasa S</button>
+            <button type="button" id="pbpd-fasa-manual-T" onclick="pbpdSetFasaManual('T')" class="btn btn-outline" style="flex:1;">Fasa T</button>
+          </div>
+        </div>
+        <div class="form-group" id="pbpd-manual-jurusan-group" style="display:none;margin-top:10px;margin-bottom:0;">
+          <label class="form-label">Pilih Jurusan (eksperimen, opsional)</label>
+          <select class="form-input" id="pbpd-manual-jurusan" onchange="pbpdOnJurusanManualChange(this.value)"></select>
+        </div>
       </div>
 
       <!-- Hasil Rekomendasi -->
-      <div class="sec">✅ Hasil Rekomendasi</div>
+      <div class="sec">✅ Hasil Rekomendasi / Simulasi</div>
       <div id="pbpd-hasil"></div>
 
     </div>
@@ -12002,6 +12022,10 @@ var PBPD_DAYA_STANDAR = [450,900,1300,2200,3500,4400,5500,7700,10600,13200,16500
 
 window._pbpdState = null;
 window._pbpdJenis = '1fasa';
+window._pbpdMode = 'auto';          // 'auto' (rekomendasi otomatis) | 'manual' (eksperimen)
+window._pbpdFasaManual = 'R';       // dipakai hanya saat mode==='manual' & jenis==='1fasa'
+window._pbpdJurusanManualIdx = -1;  // -1 = tidak spesifik
+window._pbpdActiveResult = null;    // hasil terakhir yang sedang ditampilkan (dipakai saat "Simpan")
 
 function pbpdOpen(noGardu) {
   document.getElementById('pbpd-view').style.display = 'block';
@@ -12011,6 +12035,7 @@ function pbpdOpen(noGardu) {
   quick.innerHTML = PBPD_DAYA_STANDAR.map(function(d) {
     return '<button type="button" onclick="pbpdPilihDaya('+d+')" style="padding:5px 10px;border:1px solid var(--pln-border);background:#fff;border-radius:16px;font-size:11px;font-weight:600;cursor:pointer;color:var(--pln-text2);">'+d.toLocaleString('id-ID')+' VA</button>';
   }).join('');
+  pbpdResetModeUI();
   pbpdSetJenis('1fasa');
   if (noGardu) {
     input.value = noGardu.toUpperCase();
@@ -12040,7 +12065,82 @@ function pbpdSetJenis(jenis) {
   [b1,b3].forEach(function(b){ b.style.background='#fff'; b.style.color='var(--pln-biru2)'; b.style.borderColor='var(--pln-border)'; });
   var active = jenis === '1fasa' ? b1 : b3;
   active.style.background = 'var(--pln-biru2)'; active.style.color = '#fff'; active.style.borderColor = 'var(--pln-biru2)';
+
+  // Pilihan fasa manual cuma relevan untuk 1 fasa (3 fasa selalu R-S-T merata)
+  var fasaGroup = document.getElementById('pbpd-manual-fasa-group');
+  if (fasaGroup) fasaGroup.style.display = (window._pbpdMode === 'manual' && jenis === '1fasa') ? 'block' : 'none';
+
   pbpdRecalc();
+}
+
+// ── Mode: Rekomendasi Otomatis vs Eksperimen Manual ─────────────────
+function pbpdSetMode(mode) {
+  window._pbpdMode = mode;
+  var bAuto = document.getElementById('pbpd-mode-auto');
+  var bManual = document.getElementById('pbpd-mode-manual');
+  [bAuto,bManual].forEach(function(b){ if (b) { b.style.background='#fff'; b.style.color='var(--pln-biru2)'; b.style.borderColor='var(--pln-border)'; } });
+  var active = mode === 'manual' ? bManual : bAuto;
+  if (active) { active.style.background='var(--pln-biru2)'; active.style.color='#fff'; active.style.borderColor='var(--pln-biru2)'; }
+
+  var manualOn = mode === 'manual';
+  var fasaGroup = document.getElementById('pbpd-manual-fasa-group');
+  var jurGroup = document.getElementById('pbpd-manual-jurusan-group');
+  if (fasaGroup) fasaGroup.style.display = (manualOn && window._pbpdJenis === '1fasa') ? 'block' : 'none';
+  if (jurGroup) jurGroup.style.display = manualOn ? 'block' : 'none';
+
+  pbpdRecalc();
+}
+
+function pbpdSetFasaManual(f) {
+  window._pbpdFasaManual = f;
+  ['R','S','T'].forEach(function(fasa) {
+    var btn = document.getElementById('pbpd-fasa-manual-'+fasa);
+    if (!btn) return;
+    if (fasa === f) { btn.style.background='var(--pln-biru2)'; btn.style.color='#fff'; btn.style.borderColor='var(--pln-biru2)'; }
+    else { btn.style.background='#fff'; btn.style.color='var(--pln-biru2)'; btn.style.borderColor='var(--pln-border)'; }
+  });
+  pbpdRecalc();
+}
+
+function pbpdOnJurusanManualChange(val) {
+  window._pbpdJurusanManualIdx = parseInt(val, 10);
+  pbpdRecalc();
+}
+
+// Reset seluruh state mode/eksperimen ke default ("Otomatis", Fasa R, jurusan
+// tidak spesifik). Dipanggil tiap kali buka fitur ini atau ganti gardu, supaya
+// pilihan manual dari gardu sebelumnya tidak "kebawa" ke gardu yang baru
+// dibuka (jurusan gardu A jelas tidak nyambung dengan gardu B).
+function pbpdResetModeUI() {
+  window._pbpdMode = 'auto';
+  window._pbpdFasaManual = 'R';
+  window._pbpdJurusanManualIdx = -1;
+  var bAuto = document.getElementById('pbpd-mode-auto');
+  var bManual = document.getElementById('pbpd-mode-manual');
+  [bAuto,bManual].forEach(function(b){ if (b) { b.style.background='#fff'; b.style.color='var(--pln-biru2)'; b.style.borderColor='var(--pln-border)'; } });
+  if (bAuto) { bAuto.style.background='var(--pln-biru2)'; bAuto.style.color='#fff'; bAuto.style.borderColor='var(--pln-biru2)'; }
+  ['R','S','T'].forEach(function(fasa) {
+    var btn = document.getElementById('pbpd-fasa-manual-'+fasa);
+    if (!btn) return;
+    if (fasa === 'R') { btn.style.background='var(--pln-biru2)'; btn.style.color='#fff'; btn.style.borderColor='var(--pln-biru2)'; }
+    else { btn.style.background='#fff'; btn.style.color='var(--pln-biru2)'; btn.style.borderColor='var(--pln-border)'; }
+  });
+  var fasaGroup = document.getElementById('pbpd-manual-fasa-group');
+  var jurGroup = document.getElementById('pbpd-manual-jurusan-group');
+  if (fasaGroup) fasaGroup.style.display = 'none';
+  if (jurGroup) jurGroup.style.display = 'none';
+}
+
+function pbpdPopulateJurusanSelect() {
+  var sel = document.getElementById('pbpd-manual-jurusan');
+  if (!sel) return;
+  var st = window._pbpdState;
+  var jur = (st && st.jurusan) || [];
+  var opts = '<option value="-1">— Tidak spesifik / catatan bebas —</option>';
+  jur.forEach(function(j, idx) {
+    opts += '<option value="'+idx+'">'+esc(j.nama)+' (R '+j.r.toFixed(1)+'A · S '+j.s.toFixed(1)+'A · T '+j.t.toFixed(1)+'A)</option>';
+  });
+  sel.innerHTML = opts;
 }
 
 // Cari gardu — pola sama dengan pmOnGarduInput, pakai garduIndex yang sudah ada di memori
@@ -12103,6 +12203,8 @@ function pbpdLoadGardu(noGardu) {
       tglUkur:  latest['TGLUKUR'] || '',
       jamUkur:  latest['JAM UKUR'] || ''
     };
+    pbpdPopulateJurusanSelect();
+    pbpdResetModeUI();
     pbpdRenderDeteksi();
     pbpdRecalc();
   });
@@ -12117,7 +12219,11 @@ function pbpdKlasifikasi(pct, tipe) {
   return                      {level:3, label:'Buruk',  cls:'badge-kritis'};
 }
 
-// S(kVA) = √3 × V(380) × I / 1000 → % terhadap kapasitas trafo
+// S(kVA) = √3 × V(380) × I / 1000 → % terhadap kapasitas trafo (berbasis
+// ARUS RATA-RATA tiga fasa — ini yang menentukan status "kesehatan" trafo
+// secara keseluruhan sesuai EDIR 017.E/DIR/2014, tapi TIDAK menangkap kasus
+// satu fasa overload sendirian selagi dua fasa lain ringan. Untuk itu lihat
+// pbpdPctFasa() di bawah, yang mengecek tiap fasa secara individual.)
 function pbpdPctBeban(iAmp, kva) {
   if (!kva || kva <= 0 || isNaN(iAmp)) return null;
   return ((380 * iAmp * 1.732) / 1000 / kva) * 100;
@@ -12128,6 +12234,65 @@ function pbpdPctImbalance(r, s, t) {
   if (avg <= 0) return 0;
   var maxDev = Math.max(Math.abs(r-avg), Math.abs(s-avg), Math.abs(t-avg));
   return (maxDev / avg) * 100;
+}
+
+// Arus nominal (rating) trafo per fasa: In = kVA×1000 / (√3 × V).
+// Dipakai sebagai pembanding beban SATU fasa secara individual.
+function pbpdINominal(kva) {
+  if (!kva || kva <= 0) return 0;
+  return (kva * 1000) / (1.732 * 380);
+}
+
+// % beban SATU fasa terhadap arus nominal trafo (bukan rata-rata tiga fasa).
+// Diklasifikasikan pakai ambang yang sama seperti beban trafo (Tabel 7 EDIR
+// 017), karena secara fisik kumparan tiap fasa trafo dirating sama.
+function pbpdPctFasa(ampAfter, kva) {
+  var In = pbpdINominal(kva);
+  if (!In) return null;
+  return (ampAfter / In) * 100;
+}
+
+// ── Simulasi inti: proyeksi SATU kombinasi (fasa terpilih untuk 1 fasa, atau
+// merata R-S-T untuk 3 fasa) setelah daya baru ditambahkan. Mengembalikan:
+// - beban trafo keseluruhan (rata-rata tiga fasa, EDIR 017)
+// - ketidakseimbangan KESELURUHAN antar fasa setelah penambahan
+// - beban PER FASA individual (R/S/T) setelah penambahan + deteksi overload
+//   fasa yang tidak kelihatan kalau cuma lihat rata-rata
+function pbpdSimulasiKombinasi(st, daya, jenis, fasaManual) {
+  var rN, sN, tN;
+  if (jenis === '1fasa') {
+    var iBaru = daya / 220; // 1 fasa: P = V x I, V fasa-netral 220V
+    rN = st.rTot + (fasaManual === 'R' ? iBaru : 0);
+    sN = st.sTot + (fasaManual === 'S' ? iBaru : 0);
+    tN = st.tTot + (fasaManual === 'T' ? iBaru : 0);
+  } else {
+    var iBaru3 = daya / (1.732 * 380); // 3 fasa seimbang: S=√3×V×I
+    rN = st.rTot + iBaru3;
+    sN = st.sTot + iBaru3;
+    tN = st.tTot + iBaru3;
+  }
+
+  var pctBebanTrafo = pbpdPctBeban((rN+sN+tN)/3, st.kva);
+  var klasBebanTrafo = pbpdKlasifikasi(pctBebanTrafo, 'beban');
+  var pctImb = pbpdPctImbalance(rN, sN, tN);
+  var klasImb = pbpdKlasifikasi(pctImb, 'imbalance');
+
+  var perFasa = ['R','S','T'].map(function(f) {
+    var before = f==='R' ? st.rTot : (f==='S' ? st.sTot : st.tTot);
+    var after  = f==='R' ? rN      : (f==='S' ? sN      : tN);
+    var pct = pbpdPctFasa(after, st.kva);
+    var klas = pct !== null ? pbpdKlasifikasi(pct, 'beban') : null;
+    return { fasa:f, before:before, after:after, pct:pct, klas:klas };
+  });
+  var maxFasaLevel = perFasa.reduce(function(m, pf){ return pf.klas ? Math.max(m, pf.klas.level) : m; }, 0);
+  var overloadFasa = perFasa.filter(function(pf){ return pf.klas && pf.klas.level >= 3; });
+
+  return {
+    rN: rN, sN: sN, tN: tN,
+    pctBebanTrafo: pctBebanTrafo, klasBebanTrafo: klasBebanTrafo,
+    pctImb: pctImb, klasImb: klasImb,
+    perFasa: perFasa, maxFasaLevel: maxFasaLevel, overloadFasa: overloadFasa
+  };
 }
 
 function pbpdRenderDeteksi() {
@@ -12151,6 +12316,8 @@ function pbpdRenderDeteksi() {
   html += '<div style="background:var(--pln-bg);border-radius:8px;padding:8px;text-align:center;"><div class="lbl">Ketidakseimbangan Fasa</div><span class="badge '+bImb.cls+'">'+imbTotal.toFixed(1)+'% — '+bImb.label+'</span></div>';
   html += '</div>';
 
+  html += pbpdRenderPerFasaSaatIni(st);
+
   if (!st.jurusan.length) {
     html += '<div class="alert alert-warn" style="margin:0;"><span class="alert-icon">⚠️</span><span class="alert-text">Data pengukuran terakhir tidak punya rincian per jurusan (kemungkinan diisi sebelum fitur jurusan ada). Rekomendasi jurusan tidak bisa dibuat, tapi status beban &amp; keseimbangan trafo di atas tetap valid.</span></div>';
   } else {
@@ -12168,9 +12335,89 @@ function pbpdRenderDeteksi() {
   el.innerHTML = html;
 }
 
+// Tabel beban per fasa untuk kondisi SAAT INI (sebelum ada penambahan apapun)
+// — supaya petugas juga langsung lihat kalau ada fasa yang SUDAH berat
+// sendirian sebelum PB/PD baru diproses sama sekali.
+function pbpdRenderPerFasaSaatIni(st) {
+  if (!st.kva) return '';
+  var rows = ['R','S','T'].map(function(f) {
+    var amp = f==='R' ? st.rTot : (f==='S' ? st.sTot : st.tTot);
+    var pct = pbpdPctFasa(amp, st.kva);
+    var klas = pct !== null ? pbpdKlasifikasi(pct, 'beban') : null;
+    return { fasa:f, amp:amp, pct:pct, klas:klas };
+  });
+  var html = '<div style="font-size:var(--fs-xs);font-weight:700;color:var(--pln-text3);margin-bottom:4px;">BEBAN PER FASA SAAT INI (thd rating trafo)</div>';
+  html += '<div style="overflow-x:auto;margin-bottom:10px;"><table style="width:100%;border-collapse:collapse;font-size:11px;">';
+  html += '<thead><tr style="background:var(--pln-bg);"><th style="text-align:left;padding:5px 8px;">Fasa</th><th style="padding:5px 4px;">Arus (A)</th><th style="padding:5px 8px;">Beban Fasa</th></tr></thead><tbody>';
+  rows.forEach(function(r) {
+    var overload = r.klas && r.klas.level >= 3;
+    html += '<tr style="border-top:1px solid var(--pln-border);'+(overload?'background:#FDECEA;':'')+'">';
+    html += '<td style="padding:5px 8px;font-weight:700;">'+r.fasa+(overload?' 🚨':'')+'</td>';
+    html += '<td style="padding:5px 4px;text-align:center;">'+r.amp.toFixed(1)+'</td>';
+    html += '<td style="padding:5px 8px;text-align:center;">'+(r.klas ? '<span class="badge '+r.klas.cls+'" style="padding:2px 6px;">'+r.pct.toFixed(1)+'%</span>' : '—')+'</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+// Tabel beban per fasa SETELAH penambahan (dipakai di hasil rekomendasi/simulasi)
+function pbpdRenderPerFasaTable(detail) {
+  var html = '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:11px;">';
+  html += '<thead><tr style="background:var(--pln-bg);"><th style="text-align:left;padding:5px 8px;">Fasa</th><th style="padding:5px 4px;">Sebelum (A)</th><th style="padding:5px 4px;">Sesudah (A)</th><th style="padding:5px 8px;">Beban Fasa*</th></tr></thead><tbody>';
+  detail.perFasa.forEach(function(pf) {
+    var overload = pf.klas && pf.klas.level >= 3;
+    html += '<tr style="border-top:1px solid var(--pln-border);'+(overload?'background:#FDECEA;':'')+'">';
+    html += '<td style="padding:5px 8px;font-weight:700;">'+pf.fasa+(overload?' 🚨':'')+'</td>';
+    html += '<td style="padding:5px 4px;text-align:center;color:var(--pln-text2);">'+pf.before.toFixed(1)+'</td>';
+    html += '<td style="padding:5px 4px;text-align:center;font-weight:700;">'+pf.after.toFixed(1)+'</td>';
+    html += '<td style="padding:5px 8px;text-align:center;">'+(pf.klas ? '<span class="badge '+pf.klas.cls+'" style="padding:2px 6px;">'+pf.pct.toFixed(1)+'%</span>' : '—')+'</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  html += '<div style="font-size:10px;color:var(--pln-text3);margin-top:4px;">*Beban Fasa = arus fasa ÷ arus nominal trafo (I<sub>n</sub>=kVA×1000/(√3×380)), pakai ambang yang sama seperti beban trafo (EDIR 017.E/DIR/2014). Ini menangkap kasus SATU fasa overload walau rata-rata tiga fasa masih terlihat aman.</div>';
+  return html;
+}
+
+// Kartu ringkasan hasil (dipakai baik untuk hasil "Direkomendasikan" mode
+// otomatis, maupun "Hasil Simulasi" mode eksperimen manual) — supaya
+// tampilannya konsisten di kedua mode.
+function pbpdRenderRingkasanCard(detail, meta) {
+  var adaPeringatan = detail.klasBebanTrafo.level >= 2 || detail.klasImb.level >= 2 || detail.overloadFasa.length > 0;
+  var html = '<div class="card" style="border:2px solid '+(adaPeringatan?'#FED7AA':'#B7EB8F')+';background:'+(adaPeringatan?'#FFF3E8':'#F6FFED')+';margin-bottom:var(--sp-sm);">';
+  html += '<div style="display:flex;align-items:flex-start;gap:10px;">';
+  html += '<span style="font-size:22px;line-height:1;">'+(meta.icon||'⭐')+'</span>';
+  html += '<div style="flex:1;min-width:0;">';
+  html += '<div style="font-size:var(--fs-xs);font-weight:700;color:var(--pln-text3);letter-spacing:.3px;margin-bottom:2px;">'+esc(meta.judul)+'</div>';
+  html += '<div style="font-size:var(--fs-lg);font-weight:800;line-height:1.25;">'+esc(meta.subjudul)+'</div>';
+  html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">';
+  html += '<span class="badge '+detail.klasBebanTrafo.cls+'">Beban Trafo '+detail.pctBebanTrafo.toFixed(1)+'%</span>';
+  html += '<span class="badge '+detail.klasImb.cls+'">Imbalance Keseluruhan '+detail.pctImb.toFixed(1)+'%</span>';
+  if (detail.overloadFasa.length) {
+    html += '<span class="badge badge-kritis">🚨 Overload Fasa '+detail.overloadFasa.map(function(o){ return o.fasa; }).join('/')+'</span>';
+  }
+  html += '</div></div></div>';
+
+  html += '<div style="margin-top:10px;padding-top:10px;border-top:1px solid '+(adaPeringatan?'#FED7AA':'#D9F7BE')+';">';
+  html += '<div style="font-size:var(--fs-xs);font-weight:700;color:var(--pln-text3);margin-bottom:4px;">BEBAN PER FASA SETELAH PENAMBAHAN</div>';
+  html += pbpdRenderPerFasaTable(detail);
+  html += '</div>';
+
+  if (adaPeringatan) {
+    var alasan = [];
+    if (detail.overloadFasa.length) alasan.push('fasa '+detail.overloadFasa.map(function(o){ return o.fasa; }).join('/')+' overload individual');
+    if (detail.klasBebanTrafo.level >= 2) alasan.push('beban trafo rata-rata "'+detail.klasBebanTrafo.label+'"');
+    if (detail.klasImb.level >= 2) alasan.push('ketidakseimbangan "'+detail.klasImb.label+'"');
+    html += '<div style="font-size:var(--fs-xs);color:#C2410C;margin-top:8px;padding-top:8px;border-top:1px solid #FED7AA;">⚠️ Setelah penambahan ini: '+esc(alasan.join(', '))+' (EDIR 017.E/DIR/2014). Tetap jadikan catatan untuk rencana penguatan jaringan berikutnya.</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
 // Simulasi: kalau beban baru (VA) ditambahkan, bagaimana proyeksi beban &
-// ketidakseimbangan trafo, untuk tiap kombinasi jurusan × fasa (1 fasa)
-// atau tiap jurusan (3 fasa, dibagi rata ke R/S/T).
+// ketidakseimbangan trafo — mode "auto" membandingkan semua kombinasi
+// jurusan × fasa dan memilih yang terbaik; mode "manual" cuma menghitung
+// SATU kombinasi yang dipilih sendiri oleh pengguna (eksperimen).
 function pbpdRecalc() {
   var st = window._pbpdState;
   var hasilEl = document.getElementById('pbpd-hasil');
@@ -12195,54 +12442,43 @@ function pbpdRecalc() {
     return;
   }
 
+  if (window._pbpdMode === 'manual') {
+    pbpdRecalcManual(st, daya, jenis, hasilEl);
+  } else {
+    pbpdRecalcAuto(st, daya, jenis, hasilEl);
+  }
+}
+
+// ── Mode Otomatis: bandingkan semua kombinasi & pilih terbaik ──────
+function pbpdRecalcAuto(st, daya, jenis, hasilEl) {
   var opsi = [];
 
   if (jenis === '1fasa') {
-    var iBaru = daya / 220; // 1 fasa: P = V x I, V fasa-netral 220V
     ['R','S','T'].forEach(function(fasaKey) {
-      // Simulasi di level TOTAL TRAFO (yang menentukan status kesehatan trafo)
-      var rN = st.rTot + (fasaKey==='R'?iBaru:0);
-      var sN = st.sTot + (fasaKey==='S'?iBaru:0);
-      var tN = st.tTot + (fasaKey==='T'?iBaru:0);
-      var pctBebanN = pbpdPctBeban((rN+sN+tN)/3, st.kva);
-      var pctImbN = pbpdPctImbalance(rN, sN, tN);
-      var klasBeban = pbpdKlasifikasi(pctBebanN, 'beban');
-      var klasImb = pbpdKlasifikasi(pctImbN, 'imbalance');
-      var skor = klasBeban.level*10 + klasImb.level + pctImbN/1000; // makin kecil makin baik, imbalance jadi tie-breaker halus
-
+      var detail = pbpdSimulasiKombinasi(st, daya, jenis, fasaKey);
       // Rekomendasi jurusan: jurusan dengan arus PALING RENDAH di fasa ini saat ini
       // (heuristik "paling ada slack" — belum mengecek KHA fisik kabel jurusan)
       var jurSorted = st.jurusan.slice().sort(function(a,b) {
         return (a[fasaKey.toLowerCase()]) - (b[fasaKey.toLowerCase()]);
       });
-
-      opsi.push({
-        fasa: fasaKey, jurusan: jurSorted, skor: skor,
-        pctBeban: pctBebanN, pctImb: pctImbN, klasBeban: klasBeban, klasImb: klasImb
-      });
+      // Skor: makin kecil makin baik. Level tertinggi antara beban rata-rata
+      // trafo DAN beban fasa individual dipakai sebagai basis utama — supaya
+      // opsi yang bikin satu fasa overload sendirian tetap kena penalti,
+      // walau rata-rata tiga fasanya masih kelihatan aman.
+      var skor = Math.max(detail.klasBebanTrafo.level, detail.maxFasaLevel) * 10 + detail.klasImb.level + detail.pctImb / 1000;
+      opsi.push({ fasa: fasaKey, jurusan: jurSorted, skor: skor, detail: detail });
     });
   } else {
-    var iBaru3 = daya / (1.732 * 380); // 3 fasa seimbang
-    var rN3 = st.rTot + iBaru3, sN3 = st.sTot + iBaru3, tN3 = st.tTot + iBaru3;
-    var pctBebanN3 = pbpdPctBeban((rN3+sN3+tN3)/3, st.kva);
-    var pctImbN3 = pbpdPctImbalance(rN3, sN3, tN3);
-    var klasBeban3 = pbpdKlasifikasi(pctBebanN3, 'beban');
-    var klasImb3 = pbpdKlasifikasi(pctImbN3, 'imbalance');
+    var detail3 = pbpdSimulasiKombinasi(st, daya, jenis, null);
     // 3 fasa menambah beban merata ke R/S/T sekaligus, jadi proyeksi Beban &
     // Imbalance-nya SAMA di semua jurusan (cuma dipengaruhi besar daya, bukan
-    // pilihan jurusan — tidak ada "pilihan fasa" seperti mode 1 fasa). Yang
-    // membedakan cuma jurusan mana yang paling punya sisa kapasitas. Tetap
-    // ditampilkan sampai 3 baris (bukan digabung jadi 1 baris) supaya
-    // rangking jurusannya kelihatan jelas, konsisten dengan tampilan mode 1 fasa.
+    // pilihan jurusan). Yang membedakan cuma jurusan mana yang paling punya
+    // sisa kapasitas.
     var jurSorted3 = st.jurusan.slice().sort(function(a,b){ return (a.r+a.s+a.t) - (b.r+b.s+b.t); });
     var kandidat3 = jurSorted3.length ? jurSorted3.slice(0, 3) : [null];
     kandidat3.forEach(function(satuJurusan, jIdx) {
-      opsi.push({
-        fasa: 'R-S-T',
-        jurusan: satuJurusan ? [satuJurusan] : [],
-        skor: klasBeban3.level*10 + klasImb3.level + jIdx*0.0001, // tie-break: urutan sisa kapasitas jurusan
-        pctBeban: pctBebanN3, pctImb: pctImbN3, klasBeban: klasBeban3, klasImb: klasImb3
-      });
+      var skor = Math.max(detail3.klasBebanTrafo.level, detail3.maxFasaLevel) * 10 + detail3.klasImb.level + jIdx * 0.0001;
+      opsi.push({ fasa: 'R-S-T', jurusan: satuJurusan ? [satuJurusan] : [], skor: skor, detail: detail3 });
     });
   }
 
@@ -12250,64 +12486,43 @@ function pbpdRecalc() {
   var terbaik = opsi[0];
   var jurRekomendasi = terbaik.jurusan.length ? terbaik.jurusan[0] : null;
 
-  var html = '';
+  window._pbpdActiveResult = {
+    mode: 'auto', jenis: jenis, daya: daya,
+    fasa: terbaik.fasa,
+    jurusanNama: jurRekomendasi ? jurRekomendasi.nama : null,
+    detail: terbaik.detail
+  };
 
-  // Kartu rekomendasi utama — ringkas, satu baris tegas (bukan paragraf)
-  var adaPeringatan = terbaik.klasBeban.level >= 2 || terbaik.klasImb.level >= 2;
-  html += '<div class="card" style="border:2px solid '+(adaPeringatan?'#FED7AA':'#B7EB8F')+';background:'+(adaPeringatan?'#FFF3E8':'#F6FFED')+';margin-bottom:var(--sp-sm);">';
-  html += '<div style="display:flex;align-items:flex-start;gap:10px;">';
-  html += '<span style="font-size:22px;line-height:1;">⭐</span>';
-  html += '<div style="flex:1;min-width:0;">';
-  html += '<div style="font-size:var(--fs-xs);font-weight:700;color:var(--pln-text3);letter-spacing:.3px;margin-bottom:2px;">DIREKOMENDASIKAN</div>';
-  html += '<div style="font-size:var(--fs-lg);font-weight:800;line-height:1.25;">'+(window._pbpdJenis==='3fasa'?'3 Fasa (R-S-T)':'Fasa '+esc(terbaik.fasa))+(jurRekomendasi?' — '+esc(jurRekomendasi.nama)+'':'')+'</div>';
-  html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">';
-  html += '<span class="badge '+terbaik.klasBeban.cls+'">Beban '+terbaik.pctBeban.toFixed(1)+'%</span>';
-  html += '<span class="badge '+terbaik.klasImb.cls+'">Imbalance '+terbaik.pctImb.toFixed(1)+'%</span>';
-  html += '</div>';
-  html += '</div>';
-  html += '</div>';
-  if (adaPeringatan) {
-    html += '<div style="font-size:var(--fs-xs);color:#C2410C;margin-top:8px;padding-top:8px;border-top:1px solid #FED7AA;">⚠️ Opsi terbaik yang tersedia pun sudah masuk zona "'+(terbaik.klasBeban.level>=2?terbaik.klasBeban.label:terbaik.klasImb.label)+'" (EDIR 017.E/DIR/2014). PB/PD tetap bisa diproses, tapi jadikan catatan untuk rencana penguatan jaringan berikutnya.</div>';
-  }
-  html += '</div>';
+  var subjudul = (jenis === '3fasa' ? '3 Fasa (R-S-T)' : 'Fasa ' + terbaik.fasa) + (jurRekomendasi ? ' — ' + jurRekomendasi.nama : '');
 
-  // Simpan referensi rekomendasi terpilih untuk fitur "Catat & Simpan"
-  window._pbpdTerbaik = terbaik;
-  window._pbpdJurRekomendasi = jurRekomendasi;
-  window._pbpdDayaSaatIni = daya;
+  var html = pbpdRenderRingkasanCard(terbaik.detail, { judul:'DIREKOMENDASIKAN', subjudul: subjudul, icon:'⭐' });
 
   html += '<button id="pbpd-btn-simpan" onclick="pbpdSimpanRekomendasi()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;margin-bottom:var(--sp-sm);background:linear-gradient(135deg,#059669,#10B981);color:#fff;border:none;border-radius:var(--radius-sm);font-size:var(--fs-sm);font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(5,150,105,.3);">💾 Catat &amp; Simpan Rekomendasi Ini</button>';
   html += '<div id="pbpd-simpan-msg"></div>';
 
   // ── Detail/perbandingan — SEKUNDER, tersembunyi secara default ──
-  // Jawaban utama sudah tegas & tunggal di kartu atas ("Fasa X — Jurusan Y"),
-  // sesuai alur yang diminta ("ke jurusan berapa & fasa apa?"). Bagian ini
-  // cuma untuk yang mau lihat kenapa/perbandingannya — dan sengaja TIDAK
-  // menampilkan ulang angka yang secara fisik SELALU sama di semua opsi
-  // (Beban selalu sama di semua opsi 1 fasa; Beban & Imbalance selalu sama
-  // di semua kandidat jurusan untuk 3 fasa) — supaya tidak ada angka
-  // "kembar" yang bikin bingung. Cukup tampilkan yang beneran beda.
   html += '<details style="margin-bottom:var(--sp-sm);">';
   html += '<summary style="cursor:pointer;font-weight:700;font-size:var(--fs-sm);color:var(--pln-biru2);padding:4px;">📊 Lihat detail &amp; opsi lain</summary>';
   html += '<div style="margin-top:8px;">';
 
-  if (window._pbpdJenis === '1fasa') {
-    html += '<div style="font-size:var(--fs-xs);color:var(--pln-text3);margin-bottom:8px;">Beban trafo proyeksi sama di ketiga fasa (<b>'+terbaik.pctBeban.toFixed(1)+'%</b>, sudah tampil di kartu atas) — total daya yang ditambah tetap sama ke trafo, apapun fasanya. Yang beneran membedakan cuma ketidakseimbangan hasilnya:</div>';
+  if (jenis === '1fasa') {
+    html += '<div style="font-size:var(--fs-xs);color:var(--pln-text3);margin-bottom:8px;">Perbandingan tiap pilihan fasa — termasuk ketidakseimbangan hasil &amp; apakah ada fasa yang overload individual:</div>';
     html += '<div class="card" style="padding:0;overflow:hidden;">';
     html += '<table style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px;">';
-    html += '<colgroup><col style="width:34%;"><col style="width:36%;"><col style="width:30%;"></colgroup>';
-    html += '<thead><tr style="background:var(--pln-bg);"><th style="text-align:left;padding:6px 4px 6px 8px;">DIREKOMENDASIKAN</th><th style="text-align:left;padding:6px 4px;">Jurusan</th><th style="padding:6px 8px 6px 4px;">Imbalance</th></tr></thead><tbody>';
+    html += '<colgroup><col style="width:24%;"><col style="width:30%;"><col style="width:22%;"><col style="width:24%;"></colgroup>';
+    html += '<thead><tr style="background:var(--pln-bg);"><th style="text-align:left;padding:6px 4px 6px 8px;">Fasa</th><th style="text-align:left;padding:6px 4px;">Jurusan</th><th style="padding:6px 4px;">Imbalance</th><th style="padding:6px 8px 6px 4px;">Overload?</th></tr></thead><tbody>';
     opsi.forEach(function(o, idx) {
       var jr = o.jurusan.length ? o.jurusan[0] : null;
       html += '<tr style="border-top:1px solid var(--pln-border);'+(idx===0?'background:#F6FFED;':'')+'">';
       html += '<td style="padding:6px 4px 6px 8px;font-weight:700;white-space:nowrap;">'+(idx===0?'⭐ ':'')+'Fasa '+esc(o.fasa)+'</td>';
       html += '<td style="padding:6px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+(jr?esc(jr.nama):'')+'">'+(jr?esc(jr.nama):'—')+'</td>';
-      html += '<td style="padding:6px 8px 6px 4px;text-align:center;"><span class="badge '+o.klasImb.cls+'" style="padding:2px 6px;">'+o.pctImb.toFixed(1)+'%</span></td>';
+      html += '<td style="padding:6px 4px;text-align:center;"><span class="badge '+o.detail.klasImb.cls+'" style="padding:2px 6px;">'+o.detail.pctImb.toFixed(1)+'%</span></td>';
+      html += '<td style="padding:6px 8px 6px 4px;text-align:center;">'+(o.detail.overloadFasa.length ? '<span class="badge badge-kritis" style="padding:2px 6px;">Ya ('+o.detail.overloadFasa.map(function(x){return x.fasa;}).join('/')+')</span>' : '<span class="badge badge-normal" style="padding:2px 6px;">Tidak</span>')+'</td>';
       html += '</tr>';
     });
     html += '</tbody></table></div>';
   } else {
-    html += '<div style="font-size:var(--fs-xs);color:var(--pln-text3);margin-bottom:8px;">Untuk 3 fasa, beban &amp; ketidakseimbangan proyeksi sama di jurusan manapun (<b>Beban '+terbaik.pctBeban.toFixed(1)+'% · Imbalance '+terbaik.pctImb.toFixed(1)+'%</b>, sudah tampil di kartu atas) — tidak dipengaruhi pilihan jurusan. Yang membedakan cuma jurusan mana yang saat ini paling punya sisa kapasitas:</div>';
+    html += '<div style="font-size:var(--fs-xs);color:var(--pln-text3);margin-bottom:8px;">Untuk 3 fasa, beban &amp; ketidakseimbangan proyeksi sama di jurusan manapun (<b>Beban '+terbaik.detail.pctBebanTrafo.toFixed(1)+'% · Imbalance '+terbaik.detail.pctImb.toFixed(1)+'%</b>, sudah tampil di kartu atas) — tidak dipengaruhi pilihan jurusan. Yang membedakan cuma jurusan mana yang saat ini paling punya sisa kapasitas:</div>';
     html += '<div class="card" style="padding:0;overflow:hidden;">';
     html += '<table style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px;">';
     html += '<colgroup><col style="width:60%;"><col></colgroup>';
@@ -12323,52 +12538,142 @@ function pbpdRecalc() {
     html += '</tbody></table></div>';
   }
 
-  html += '<div class="alert alert-info" style="margin-top:8px;font-size:var(--fs-xs);"><span class="alert-icon">ℹ️</span><span class="alert-text">Pemilihan jurusan berdasarkan arus fasa TERENDAH saat ini di jurusan tersebut (indikasi sisa kapasitas). Fitur ini <b>belum</b> mengecek batas KHA fisik kabel jurusan (jenis/luas penampang penghantar) — tetap verifikasi kondisi fisik jaringan di lapangan sebelum eksekusi vendor. Referensi: PLN EDIR 017.E/DIR/2014 Tabel 7.</span></div>';
+  html += '<div class="alert alert-info" style="margin-top:8px;font-size:var(--fs-xs);"><span class="alert-icon">ℹ️</span><span class="alert-text">Pemilihan jurusan berdasarkan arus fasa TERENDAH saat ini di jurusan tersebut (indikasi sisa kapasitas). Fitur ini <b>belum</b> mengecek batas KHA fisik kabel jurusan (jenis/luas penampang penghantar) — tetap verifikasi kondisi fisik jaringan di lapangan sebelum eksekusi vendor. Ingin coba kombinasi lain sendiri? Pakai mode "🧪 Eksperimen Manual" di atas. Referensi: PLN EDIR 017.E/DIR/2014 Tabel 7.</span></div>';
   html += '</div>';
   html += '</details>';
 
   hasilEl.innerHTML = html;
 }
 
-// ── Simpan rekomendasi PB/PD terpilih sebagai catatan riwayat proses ──
+// ── Mode Eksperimen: hitung SATU kombinasi yang dipilih pengguna sendiri ──
+function pbpdRecalcManual(st, daya, jenis, hasilEl) {
+  var fasaManual = window._pbpdFasaManual;
+  var jurIdx = window._pbpdJurusanManualIdx;
+  var jurManual = (jurIdx >= 0 && st.jurusan[jurIdx]) ? st.jurusan[jurIdx] : null;
+
+  var detail = pbpdSimulasiKombinasi(st, daya, jenis, fasaManual);
+
+  window._pbpdActiveResult = {
+    mode: 'manual', jenis: jenis, daya: daya,
+    fasa: jenis === '3fasa' ? 'R-S-T' : fasaManual,
+    jurusanNama: jurManual ? jurManual.nama : null,
+    detail: detail
+  };
+
+  var subjudul = (jenis === '3fasa' ? '3 Fasa (R-S-T)' : 'Fasa ' + fasaManual) + (jurManual ? ' — ' + jurManual.nama : ' — (jurusan tidak dipilih)');
+
+  var html = '<div class="alert alert-info" style="margin-bottom:8px;font-size:var(--fs-xs);"><span class="alert-icon">🧪</span><span class="alert-text">Mode eksperimen — angka di bawah dihitung dari kombinasi fasa/jurusan yang KAMU pilih sendiri, bukan otomatis dipilihkan sistem. Cocok untuk cek "bagaimana kalau" sebelum memutuskan mau pasang di fasa/jurusan mana.</span></div>';
+  html += pbpdRenderRingkasanCard(detail, { judul:'HASIL SIMULASI PILIHAN ANDA', subjudul: subjudul, icon:'🧪' });
+
+  html += '<button id="pbpd-btn-simpan" onclick="pbpdSimpanRekomendasi()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;margin-bottom:var(--sp-sm);background:linear-gradient(135deg,#059669,#10B981);color:#fff;border:none;border-radius:var(--radius-sm);font-size:var(--fs-sm);font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(5,150,105,.3);">💾 Catat &amp; Simpan Hasil Simulasi Ini</button>';
+  html += '<div id="pbpd-simpan-msg"></div>';
+
+  hasilEl.innerHTML = html;
+}
+
+// ── Simpan rekomendasi/hasil-simulasi PB/PD terpilih sebagai catatan riwayat proses ──
 function pbpdSimpanRekomendasi() {
   var s = getSession();
   if (!s) { showAlert('Sesi berakhir, silakan login kembali.'); return; }
   var st = window._pbpdState;
-  var terbaik = window._pbpdTerbaik;
-  if (!st || !terbaik) return;
+  var hasil = window._pbpdActiveResult;
+  if (!st || !hasil) return;
 
   var btn = document.getElementById('pbpd-btn-simpan');
   var msgEl = document.getElementById('pbpd-simpan-msg');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Menyimpan...'; }
 
-  var jur = window._pbpdJurRekomendasi;
+  var d = hasil.detail;
   var params = {
     action:                'tambahPbpdRiwayat',
     token:                 s.token,
     noGardu:                st.noGardu,
     ulp:                    st.ulp,
     petugas:                s.nama || s.username || '',
-    jenisSambungan:         window._pbpdJenis,
-    dayaVa:                 window._pbpdDayaSaatIni,
-    fasaRekomendasi:        terbaik.fasa,
-    jurusanRekomendasi:     jur ? jur.nama : null,
-    proyeksiBebanPct:       terbaik.pctBeban,
-    proyeksiImbalancePct:   terbaik.pctImb,
-    klasifikasiBeban:       terbaik.klasBeban.label,
-    klasifikasiImbalance:   terbaik.klasImb.label
+    jenisSambungan:         hasil.jenis,
+    dayaVa:                 hasil.daya,
+    fasaRekomendasi:        hasil.fasa,
+    jurusanRekomendasi:     hasil.jurusanNama,
+    proyeksiBebanPct:       d.pctBebanTrafo,
+    proyeksiImbalancePct:   d.pctImb,
+    klasifikasiBeban:       d.klasBebanTrafo.label,
+    klasifikasiImbalance:   d.klasImb.label,
+    catatan:                hasil.mode === 'manual' ? 'Disimpan dari mode eksperimen manual.' : null
   };
 
   apiGet(params, function(res) {
-    if (btn) { btn.disabled = false; btn.textContent = '💾 Catat & Simpan Rekomendasi Ini'; }
+    if (btn) { btn.disabled = false; btn.textContent = hasil.mode === 'manual' ? '💾 Catat & Simpan Hasil Simulasi Ini' : '💾 Catat & Simpan Rekomendasi Ini'; }
     if (!msgEl) return;
     if (res.status === 'ok') {
-      msgEl.innerHTML = '<div class="alert alert-ok" style="margin-top:8px;"><span class="alert-icon">✅</span><span class="alert-text">Rekomendasi tersimpan sebagai catatan proses PB/PD. Bisa dilihat di Detail Gardu, bagian "Riwayat Proses PB/PD".</span></div>';
-      if (typeof pbpdRiwayatMuat === 'function') { /* refresh kalau detail gardu kebetulan masih di memori */ }
+      msgEl.innerHTML = '<div class="alert alert-ok" style="margin-top:8px;"><span class="alert-icon">✅</span><span class="alert-text">Tersimpan sebagai catatan proses PB/PD. Bisa dilihat di Detail Gardu, bagian "Riwayat Proses PB/PD".</span></div>';
     } else {
       msgEl.innerHTML = '<div class="alert alert-err" style="margin-top:8px;"><span class="alert-icon">❌</span><span class="alert-text">Gagal menyimpan: '+esc(res.message||'Terjadi kesalahan.')+'</span></div>';
     }
   });
+}
+
+// ── Self-test ringan untuk fungsi murni (rumus) PB/PD ───────────────
+// Tidak ada test runner di app statis ini, jadi ini dipanggil MANUAL dari
+// browser console: pbpdRunSelfTest() — berguna untuk memastikan rumus tidak
+// rusak kalau ada yang mengubah kode ini di kemudian hari.
+function pbpdRunSelfTest() {
+  var ok = true;
+  function assertClose(actual, expected, label, tol) {
+    tol = tol === undefined ? 0.01 : tol;
+    var pass = actual !== null && !isNaN(actual) && Math.abs(actual - expected) < tol;
+    console.assert(pass, '[PBPD self-test] GAGAL: '+label+' — dapat '+actual+', harap ≈'+expected);
+    if (!pass) ok = false;
+    return pass;
+  }
+  function assertTrue(cond, label) {
+    console.assert(cond, '[PBPD self-test] GAGAL: '+label);
+    if (!cond) ok = false;
+  }
+
+  // Arus nominal trafo 100 kVA: In = 100000/(1.732*380)
+  assertClose(pbpdINominal(100), 100000/(1.732*380), 'INominal 100kVA');
+  assertTrue(pbpdINominal(0) === 0, 'INominal(0) harus 0 (bukan error)');
+
+  // Beban trafo: 60A rata-rata di trafo 100kVA
+  assertClose(pbpdPctBeban(60, 100), ((380*60*1.732)/1000/100)*100, 'pctBeban 60A/100kVA');
+  assertTrue(pbpdPctBeban(60, 0) === null, 'pctBeban dengan kva=0 harus null (bukan Infinity/NaN)');
+
+  // Ketidakseimbangan: R=100,S=90,T=80 → avg=90, maxDev=10 → 11.11%
+  assertClose(pbpdPctImbalance(100,90,80), 11.1111, 'pctImbalance R100 S90 T80');
+  assertTrue(pbpdPctImbalance(0,0,0) === 0, 'pctImbalance saat semua fasa 0A harus 0 (bukan NaN)');
+
+  // Ambang batas EDIR 017 Tabel 7 — batas beban trafo tepat di 60%/80%/100%
+  assertTrue(pbpdKlasifikasi(59.999,'beban').label === 'Baik',   'klasifikasi beban 59.999% harus Baik');
+  assertTrue(pbpdKlasifikasi(60,'beban').label      === 'Cukup', 'klasifikasi beban 60% harus Cukup');
+  assertTrue(pbpdKlasifikasi(79.999,'beban').label  === 'Cukup', 'klasifikasi beban 79.999% harus Cukup');
+  assertTrue(pbpdKlasifikasi(80,'beban').label      === 'Kurang','klasifikasi beban 80% harus Kurang');
+  assertTrue(pbpdKlasifikasi(100,'beban').label     === 'Buruk', 'klasifikasi beban 100% harus Buruk');
+  // Ambang batas ketidakseimbangan: 10%/20%/25%
+  assertTrue(pbpdKlasifikasi(9.999,'imbalance').label  === 'Baik',   'klasifikasi imbalance 9.999% harus Baik');
+  assertTrue(pbpdKlasifikasi(25,'imbalance').label      === 'Buruk', 'klasifikasi imbalance 25% harus Buruk');
+
+  // KASUS KUNCI perbaikan ini: rata-rata trafo AMAN tapi SATU fasa overload
+  // individual — trafo 25kVA, R sudah berat (35A), S&T ringan (5A). Setelah
+  // ditambah pelanggan 2200VA 1 fasa ke R (I=2200/220=10A): R jadi 45A.
+  var stUji = { kva: 25, rTot: 35, sTot: 5, tTot: 5, jurusan: [] };
+  var hasil = pbpdSimulasiKombinasi(stUji, 2200, '1fasa', 'R');
+  var rDetail = hasil.perFasa[0]; // urutan perFasa selalu R,S,T
+  assertTrue(rDetail.fasa === 'R', 'perFasa[0] harus fasa R');
+  assertTrue(rDetail.klas.label === 'Buruk', 'fasa R harus overload (Buruk) walau rata-rata trafo aman — dapat: '+(rDetail.klas&&rDetail.klas.label));
+  assertTrue(hasil.klasBebanTrafo.label === 'Baik', 'rata-rata trafo di kasus ini semestinya masih Baik — dapat: '+hasil.klasBebanTrafo.label);
+  assertTrue(hasil.overloadFasa.length === 1 && hasil.overloadFasa[0].fasa === 'R', 'overloadFasa harus mendeteksi TEPAT fasa R');
+
+  // 3 fasa harus menambah beban merata (rN,sN,tN semuanya berubah sama)
+  var stUji3 = { kva: 100, rTot: 50, sTot: 50, tTot: 50, jurusan: [] };
+  var hasil3 = pbpdSimulasiKombinasi(stUji3, 22000, '3fasa', null);
+  var iBaru3Expected = 22000 / (1.732*380);
+  assertClose(hasil3.rN - 50, iBaru3Expected, '3 fasa: kenaikan arus R harus sama untuk ketiga fasa');
+  assertClose(hasil3.sN - 50, iBaru3Expected, '3 fasa: kenaikan arus S harus sama untuk ketiga fasa');
+  assertClose(hasil3.tN - 50, iBaru3Expected, '3 fasa: kenaikan arus T harus sama untuk ketiga fasa');
+  assertClose(hasil3.pctImb, 0, '3 fasa dari kondisi seimbang harus tetap 0% imbalance');
+
+  console.log(ok ? '✅ PBPD self-test: semua rumus lolos.' : '❌ PBPD self-test: ADA YANG GAGAL — cek console.assert di atas.');
+  return ok;
 }
 
 // ── Riwayat Proses PB/PD di Detail Gardu ──────────────────────

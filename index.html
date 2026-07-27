@@ -15899,7 +15899,7 @@ function renderErrorList() {
       return `<div class="err-row" id="err-row-${idx}">
         <span class="row-num">Baris ${e.csvRow}</span>
         <div class="err-row-body">
-          <span class="err-row-main">${e.no_gardu} ${e.tgl}</span>
+          <span class="err-row-main">${esc(e.no_gardu)} ${esc(e.tgl)}</span>
           <span class="err-badge ${bCls}">${info.label}</span>
           ${info.hint ? `<span style="font-size:11px;color:var(--text3);margin-top:2px">${info.hint}</span>` : ''}
           ${editBtn}
@@ -15935,7 +15935,7 @@ function openEditModal(idx) {
     const curVal = row.jam_ukur || '';
     fieldsHtml = `
       <label class="edit-field-label">JAM UKUR</label>
-      <input type="text" id="em-input-jam_ukur" value="${curVal}" placeholder="HH:MM (contoh: 14:30)"
+      <input type="text" id="em-input-jam_ukur" value="${esc(curVal)}" placeholder="HH:MM (contoh: 14:30)"
         style="background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:14px;padding:9px 12px;outline:none;width:100%;transition:border-color 0.2s"
         onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
       <div class="edit-field-hint">Format: HH:MM — contoh: 14:30, 08:00, 23:59</div>`;
@@ -15943,7 +15943,7 @@ function openEditModal(idx) {
     const curVal = row.tgl_ukur || '';
     fieldsHtml = `
       <label class="edit-field-label">TGL UKUR</label>
-      <input type="text" id="em-input-tgl_ukur" value="${curVal}" placeholder="YYYY-MM-DD (contoh: 2026-06-03)"
+      <input type="text" id="em-input-tgl_ukur" value="${esc(curVal)}" placeholder="YYYY-MM-DD (contoh: 2026-06-03)"
         style="background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:14px;padding:9px 12px;outline:none;width:100%;transition:border-color 0.2s"
         onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
       <div class="edit-field-hint">Format: YYYY-MM-DD — contoh: 2026-06-03</div>`;
@@ -15953,7 +15953,7 @@ function openEditModal(idx) {
       const curVal = row[f] !== undefined ? row[f] : '';
       return `
         <label class="edit-field-label">${f.toUpperCase()}</label>
-        <input type="text" id="em-input-${f}" value="${curVal}" placeholder="Isi nilai untuk ${f}"
+        <input type="text" id="em-input-${f}" value="${esc(curVal)}" placeholder="Isi nilai untuk ${f}"
           style="background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:14px;padding:9px 12px;outline:none;width:100%;transition:border-color 0.2s;margin-bottom:12px"
           onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">`;
     }).join('');
@@ -15963,11 +15963,11 @@ function openEditModal(idx) {
     const tglVal = row.tgl_ukur || '';
     fieldsHtml = `
       <label class="edit-field-label">TGL UKUR</label>
-      <input type="text" id="em-input-tgl_ukur" value="${tglVal}" placeholder="YYYY-MM-DD"
+      <input type="text" id="em-input-tgl_ukur" value="${esc(tglVal)}" placeholder="YYYY-MM-DD"
         style="background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:14px;padding:9px 12px;outline:none;width:100%;margin-bottom:12px;transition:border-color 0.2s"
         onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
       <label class="edit-field-label" style="margin-top:4px">JAM UKUR</label>
-      <input type="text" id="em-input-jam_ukur" value="${jamVal}" placeholder="HH:MM"
+      <input type="text" id="em-input-jam_ukur" value="${esc(jamVal)}" placeholder="HH:MM"
         style="background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:14px;padding:9px 12px;outline:none;width:100%;transition:border-color 0.2s"
         onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">`;
   }

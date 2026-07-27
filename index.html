@@ -2595,7 +2595,8 @@ input[type=number]{-moz-appearance:textfield;}
           <label class="form-label">Status Beban</label>
           <select class="form-select" id="ukur-filter-status">
             <option value="">Semua</option>
-            <option value="normal">Normal (&lt;60%)</option>
+            <option value="underload">🔵 Underload (&lt;40%)</option>
+            <option value="normal">Normal (40–60%)</option>
             <option value="perlu">Perlu Perhatian (60–80%)</option>
             <option value="kritis">Kritis (&gt;80%)</option>
           </select>
@@ -2616,7 +2617,21 @@ input[type=number]{-moz-appearance:textfield;}
             <option value="NON PLN">Non PLN</option>
           </select>
         </div>
-        <!-- Baris 3: tombol -->
+        <!-- Baris 3: filter ketidakseimbangan (checkbox multi-pilih) + tombol -->
+        <div class="form-group" style="margin:0;grid-column:1/3;">
+          <label class="form-label">Ketidakseimbangan Fasa</label>
+          <div style="display:flex;gap:14px;align-items:center;height:42px;flex-wrap:wrap;">
+            <label style="display:flex;align-items:center;gap:5px;font-size:var(--fs-xs);color:var(--pln-text2);cursor:pointer;">
+              <input type="checkbox" id="ukur-filter-tdk-under10" onchange="muatUlangFilterPengukuran()"> &lt;10%
+            </label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:var(--fs-xs);color:var(--pln-text2);cursor:pointer;">
+              <input type="checkbox" id="ukur-filter-tdk-under20" onchange="muatUlangFilterPengukuran()"> &lt;20%
+            </label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:var(--fs-xs);color:var(--pln-text2);cursor:pointer;">
+              <input type="checkbox" id="ukur-filter-tdk-over20" onchange="muatUlangFilterPengukuran()"> &gt;20%
+            </label>
+          </div>
+        </div>
         <div style="display:flex;gap:var(--sp-sm);grid-column:3/5;align-items:flex-end;">
           <button class="btn btn-outline" style="flex:1;margin:0;height:42px;" onclick="resetFilterPengukuran()">↺ Reset</button>
           <button class="btn btn-blue" style="flex:2;margin:0;height:42px;" onclick="muatDataPengukuran(true)">🔍 Tampilkan</button>
@@ -2625,8 +2640,9 @@ input[type=number]{-moz-appearance:textfield;}
     </div>
 
     <!-- Rekap Singkat -->
-    <div id="ukur-rekap-bar" style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-xs);margin-bottom:var(--sp-sm);">
-      <div class="card" style="padding:10px;text-align:center;margin:0;"><div style="font-size:var(--fs-lg);font-weight:800;color:var(--pln-biru2);" id="ukur-count-total">—</div><div class="lbl">Total Data</div></div>
+    <div id="ukur-rekap-bar" style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-xs);margin-bottom:var(--sp-sm);">
+      <div class="card" style="padding:10px;text-align:center;margin:0;"><div style="font-size:var(--fs-lg);font-weight:800;color:var(--pln-biru2);" id="ukur-count-total">—</div><div class="lbl">Total Gardu</div></div>
+      <div class="card" style="padding:10px;text-align:center;margin:0;"><div style="font-size:var(--fs-lg);font-weight:800;color:#2563EB;" id="ukur-count-underload">—</div><div class="lbl">Underload</div></div>
       <div class="card" style="padding:10px;text-align:center;margin:0;"><div style="font-size:var(--fs-lg);font-weight:800;color:var(--pln-green);" id="ukur-count-normal">—</div><div class="lbl">Normal</div></div>
       <div class="card" style="padding:10px;text-align:center;margin:0;"><div style="font-size:var(--fs-lg);font-weight:800;color:var(--pln-red);" id="ukur-count-kritis">—</div><div class="lbl">Kritis</div></div>
     </div>
@@ -11662,6 +11678,40 @@ function hapusPemeliharaanById(id, noGardu) {
 var _ukurAllData = [];
 var _ukurSudahMuat = false;
 
+// ── Ambil 1 baris per gardu: baris dengan PROSEN (persen beban) TERBESAR ──
+// Kalau 1 gardu punya beberapa pengukuran (siang/malam, atau beberapa
+// kunjungan dalam rentang tanggal), yang ditampilkan HANYA baris utuh
+// (bukan gabungan field) dari pengukuran dengan beban tertinggi. Ini
+// memastikan skenario terburuk (beban puncak) yang dilaporkan per gardu.
+function _ukurDedupTerbesar(data) {
+  var bestRow = {}, bestVal = {};
+  (data || []).forEach(function(r) {
+    var key = (r['NO_GARDU'] || r['NOGARDU'] || '').trim().toUpperCase();
+    if (!key) return;
+    var raw = r['PROSEN'];
+    var prosen = (raw !== '' && raw !== null && raw !== undefined && !isNaN(parseFloat(raw))) ? parseFloat(raw) : -Infinity;
+    if (!(key in bestVal) || prosen > bestVal[key]) {
+      bestVal[key] = prosen;
+      bestRow[key] = r;
+    }
+  });
+  return Object.keys(bestRow).map(function(k) { return bestRow[k]; });
+}
+
+// ── Klasifikasi status beban gardu, dipakai untuk badge & rekap ──
+// Ambang batas: <40% Underload, 40–60% Normal, 60–80% Perlu Perhatian,
+// >80% Kritis. (Kategori Underload = tambahan di luar EDIR 017, untuk
+// menandai gardu dengan sisa kapasitas besar / kurang efisien.)
+function ukurStatusInfo(prosen) {
+  if (prosen === null || prosen === undefined || isNaN(prosen)) {
+    return {cls: 'badge-nonaktif', color: '#94A3B8', label: '—'};
+  }
+  if (prosen > 80) return {cls: 'badge-kritis', color: 'var(--pln-red)', label: 'Kritis'};
+  if (prosen > 60) return {cls: 'badge-perlu', color: 'var(--pln-orange)', label: 'Perlu Perhatian'};
+  if (prosen < 40) return {cls: 'badge-underload', color: '#2563EB', label: 'Underload'};
+  return {cls: 'badge-normal', color: 'var(--pln-green)', label: 'Normal'};
+}
+
 function muatDataPengukuran(force) {
   if (_ukurSudahMuat && !force) return;
   _ukurSudahMuat = true;
@@ -11709,7 +11759,9 @@ function muatDataPengukuran(force) {
         if (!r['ALAMAT']    && gInfo['ALAMAT'])    r['ALAMAT']    = gInfo['ALAMAT'];
         if (!r['ULP']       && gInfo['ULP'])       r['ULP']       = gInfo['ULP'];
       });
-      _ukurAllData = rawData;
+      // Ringkas ke 1 baris per gardu: ambil pengukuran dengan beban (PROSEN)
+      // TERBESAR saja (baris utuh, bukan campuran siang/malam).
+      _ukurAllData = _ukurDedupTerbesar(rawData);
       renderDataPengukuran(statusBeban, waktuFilter, kepemilikanFilter);
     }
     // Jika garduIndex belum ada (user langsung buka tab Pengukuran tanpa muat Daftar),
@@ -11743,25 +11795,50 @@ function resetFilterPengukuran() {
     var sel = document.getElementById(id);
     if (sel) sel.selectedIndex = 0;
   });
+  ['ukur-filter-tdk-under10','ukur-filter-tdk-under20','ukur-filter-tdk-over20'].forEach(function(id){
+    var cb = document.getElementById(id);
+    if (cb) cb.checked = false;
+  });
   _ukurSudahMuat = false;
   var wrap = document.getElementById('ukur-list-wrap');
   if (wrap) wrap.innerHTML = '<div class="alert alert-info"><span class="alert-icon">📏</span><span class="alert-text">Atur filter di atas lalu tekan <b>Tampilkan</b> untuk melihat riwayat pengukuran gardu.</span></div>';
   var elT = document.getElementById('ukur-count-total');
+  var elU = document.getElementById('ukur-count-underload');
   var elN = document.getElementById('ukur-count-normal');
   var elK = document.getElementById('ukur-count-kritis');
   if (elT) elT.textContent = '—';
+  if (elU) elU.textContent = '—';
   if (elN) elN.textContent = '—';
   if (elK) elK.textContent = '—';
+}
+
+// ── Terapkan ulang filter checkbox Ketidakseimbangan tanpa reload server ──
+// Dipanggil saat checkbox ketidakseimbangan dicentang/dilepas. Filter lain
+// (status beban, waktu, kepemilikan) tetap dibaca dari kondisi terkini.
+function muatUlangFilterPengukuran() {
+  if (!_ukurSudahMuat) return;
+  var statusBeban = (document.getElementById('ukur-filter-status') || {}).value || '';
+  var waktuFilter = (document.getElementById('ukur-filter-waktu') || {}).value || '';
+  var kepemilikanFilter = (document.getElementById('ukur-filter-kepemilikan') || {}).value || '';
+  renderDataPengukuran(statusBeban, waktuFilter, kepemilikanFilter);
 }
 
 function renderDataPengukuran(statusFilter, waktuFilter, kepemilikanFilter) {
   var wrap = document.getElementById('ukur-list-wrap');
   if (!wrap) return;
 
+  // Filter ketidakseimbangan (checkbox, bisa lebih dari satu — logika OR:
+  // baris lolos kalau memenuhi SALAH SATU kondisi yang dicentang)
+  var tdkUnder10 = !!(document.getElementById('ukur-filter-tdk-under10') || {}).checked;
+  var tdkUnder20 = !!(document.getElementById('ukur-filter-tdk-under20') || {}).checked;
+  var tdkOver20  = !!(document.getElementById('ukur-filter-tdk-over20') || {}).checked;
+  var adaFilterTdk = tdkUnder10 || tdkUnder20 || tdkOver20;
+
   var data = _ukurAllData.filter(function(r) {
     var prosen = r['PROSEN'] !== '' && r['PROSEN'] !== null && r['PROSEN'] !== undefined ? parseFloat(r['PROSEN']) : null;
-    // Status beban
-    if (statusFilter === 'normal' && !(prosen !== null && prosen < 60)) return false;
+    // Status beban (4 tingkat: Underload <40%, Normal 40–60%, Perlu Perhatian 60–80%, Kritis >80%)
+    if (statusFilter === 'underload' && !(prosen !== null && prosen < 40)) return false;
+    if (statusFilter === 'normal' && !(prosen !== null && prosen >= 40 && prosen < 60)) return false;
     if (statusFilter === 'perlu' && !(prosen !== null && prosen >= 60 && prosen <= 80)) return false;
     if (statusFilter === 'kritis' && !(prosen !== null && prosen > 80)) return false;
     // Waktu: siang 06:00-18:00, malam sisanya
@@ -11778,17 +11855,33 @@ function renderDataPengukuran(statusFilter, waktuFilter, kepemilikanFilter) {
       if (kepemilikanFilter === 'PLN' && kep !== 'PLN') return false;
       if (kepemilikanFilter === 'NON PLN' && kep === 'PLN') return false;
     }
+    // Ketidakseimbangan fasa (<10% / <20% / >20%)
+    if (adaFilterTdk) {
+      var tdkRaw = r['TDKSEIMBANG'] !== '' && r['TDKSEIMBANG'] !== null && r['TDKSEIMBANG'] !== undefined
+        ? r['TDKSEIMBANG'] : r['TDK SEIMBANG'];
+      var tdkVal = (tdkRaw !== '' && tdkRaw !== null && tdkRaw !== undefined && !isNaN(parseFloat(tdkRaw))) ? parseFloat(tdkRaw) : null;
+      if (tdkVal === null) return false;
+      var cocokTdk = false;
+      if (tdkUnder10 && tdkVal < 10) cocokTdk = true;
+      if (tdkUnder20 && tdkVal < 20) cocokTdk = true;
+      if (tdkOver20 && tdkVal > 20) cocokTdk = true;
+      if (!cocokTdk) return false;
+    }
     return true;
   });
 
-  // Update rekap
+  // Update rekap (dihitung dari total gardu yang lolos filter tanggal/ULP/no
+  // gardu awal, sebelum filter status/waktu/kepemilikan/ketidakseimbangan)
   var total = _ukurAllData.length;
-  var normal = _ukurAllData.filter(function(r) { var p = parseFloat(r['PROSEN']); return !isNaN(p) && p < 60; }).length;
+  var underload = _ukurAllData.filter(function(r) { var p = parseFloat(r['PROSEN']); return !isNaN(p) && p < 40; }).length;
+  var normal = _ukurAllData.filter(function(r) { var p = parseFloat(r['PROSEN']); return !isNaN(p) && p >= 40 && p < 60; }).length;
   var kritis = _ukurAllData.filter(function(r) { var p = parseFloat(r['PROSEN']); return !isNaN(p) && p > 80; }).length;
   var elT = document.getElementById('ukur-count-total');
+  var elU = document.getElementById('ukur-count-underload');
   var elN = document.getElementById('ukur-count-normal');
   var elK = document.getElementById('ukur-count-kritis');
   if (elT) elT.textContent = total;
+  if (elU) elU.textContent = underload;
   if (elN) elN.textContent = normal;
   if (elK) elK.textContent = kritis;
 
@@ -11841,9 +11934,10 @@ function renderTabelPengukuran() {
     // Mobile: card view
     pageData.forEach(function(r, i) {
       var prosen = r['PROSEN'] !== '' && r['PROSEN'] !== null ? parseFloat(r['PROSEN']) : null;
-      var bc = prosen === null ? 'badge-nonaktif' : prosen > 80 ? 'badge-kritis' : prosen > 60 ? 'badge-perlu' : 'badge-normal';
+      var _statInfoM = ukurStatusInfo(prosen);
+      var bc = _statInfoM.cls;
       var prosenLabel = prosen !== null ? prosen.toFixed(1) + '%' : '—';
-      var bebanColor = prosen === null ? '#94A3B8' : prosen > 80 ? 'var(--pln-red)' : prosen > 60 ? 'var(--pln-orange)' : 'var(--pln-green)';
+      var bebanColor = _statInfoM.color;
       var bebanPct = prosen !== null ? Math.min(100, prosen) : 0;
       var noGardu = r['NO_GARDU'] || r['NOGARDU'] || '—';
       var _rid = r['_id'];
@@ -11907,8 +12001,9 @@ function renderTabelPengukuran() {
     pageData.forEach(function(r, i) {
       var prosen = r['PROSEN'] !== '' && r['PROSEN'] !== null ? parseFloat(r['PROSEN']) : null;
       var prosenLabel = prosen !== null ? prosen.toFixed(2) : '—';
-      var statusColor = prosen === null ? '#94A3B8' : prosen > 80 ? 'var(--pln-red)' : prosen > 60 ? 'var(--pln-orange)' : 'var(--pln-green)';
-      var statusLabel = prosen === null ? '—' : prosen > 80 ? 'Kritis' : prosen > 60 ? 'Perlu Perhatian' : 'Normal';
+      var _statInfoD = ukurStatusInfo(prosen);
+      var statusColor = _statInfoD.color;
+      var statusLabel = _statInfoD.label;
       var noGardu = r['NO_GARDU'] || r['NOGARDU'] || '—';
       var rowBg = i % 2 === 0 ? '#fff' : '#F8FAFD';
       var _rid = r['_id'];

@@ -2617,18 +2617,21 @@ input[type=number]{-moz-appearance:textfield;}
             <option value="NON PLN">Non PLN</option>
           </select>
         </div>
-        <!-- Baris 3: filter ketidakseimbangan (checkbox multi-pilih) + tombol -->
+        <!-- Baris 3: filter ketidakseimbangan (checkbox multi-pilih, 4 tingkat EDIR 017.E/DIR/2014 Tabel 7 — sinkron dgn pbpdKlasifikasi()) + tombol -->
         <div class="form-group" style="margin:0;grid-column:1/3;">
-          <label class="form-label">Ketidakseimbangan Fasa</label>
-          <div style="display:flex;gap:14px;align-items:center;height:42px;flex-wrap:wrap;">
-            <label style="display:flex;align-items:center;gap:5px;font-size:var(--fs-xs);color:var(--pln-text2);cursor:pointer;">
-              <input type="checkbox" id="ukur-filter-tdk-under10" onchange="muatUlangFilterPengukuran()"> &lt;10%
+          <label class="form-label">Ketidakseimbangan Fasa <span style="font-weight:400;text-transform:none;color:var(--pln-text3);">(EDIR 017.E/DIR/2014)</span></label>
+          <div class="ukur-tdk-filter-row" style="display:flex;gap:12px;align-items:center;min-height:42px;flex-wrap:wrap;">
+            <label class="ukur-tdk-chip" style="display:flex;align-items:center;gap:5px;font-size:var(--fs-xs);color:var(--pln-text2);cursor:pointer;white-space:nowrap;">
+              <input type="checkbox" id="ukur-filter-tdk-baik" onchange="muatUlangFilterPengukuran()"><span class="tdk-dot" style="width:7px;height:7px;border-radius:50%;background:var(--pln-green);flex-shrink:0;"></span>Baik (&lt;10%)
             </label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:var(--fs-xs);color:var(--pln-text2);cursor:pointer;">
-              <input type="checkbox" id="ukur-filter-tdk-under20" onchange="muatUlangFilterPengukuran()"> &lt;20%
+            <label class="ukur-tdk-chip" style="display:flex;align-items:center;gap:5px;font-size:var(--fs-xs);color:var(--pln-text2);cursor:pointer;white-space:nowrap;">
+              <input type="checkbox" id="ukur-filter-tdk-cukup" onchange="muatUlangFilterPengukuran()"><span class="tdk-dot" style="width:7px;height:7px;border-radius:50%;background:var(--pln-orange);flex-shrink:0;"></span>Cukup (10–20%)
             </label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:var(--fs-xs);color:var(--pln-text2);cursor:pointer;">
-              <input type="checkbox" id="ukur-filter-tdk-over20" onchange="muatUlangFilterPengukuran()"> &gt;20%
+            <label class="ukur-tdk-chip" style="display:flex;align-items:center;gap:5px;font-size:var(--fs-xs);color:var(--pln-text2);cursor:pointer;white-space:nowrap;">
+              <input type="checkbox" id="ukur-filter-tdk-kurang" onchange="muatUlangFilterPengukuran()"><span class="tdk-dot" style="width:7px;height:7px;border-radius:50%;background:#C2410C;flex-shrink:0;"></span>Kurang (20–25%)
+            </label>
+            <label class="ukur-tdk-chip" style="display:flex;align-items:center;gap:5px;font-size:var(--fs-xs);color:var(--pln-text2);cursor:pointer;white-space:nowrap;">
+              <input type="checkbox" id="ukur-filter-tdk-buruk" onchange="muatUlangFilterPengukuran()"><span class="tdk-dot" style="width:7px;height:7px;border-radius:50%;background:var(--pln-red);flex-shrink:0;"></span>Buruk (&ge;25%)
             </label>
           </div>
         </div>
@@ -5354,9 +5357,6 @@ window.onload = function(){
       content.appendChild(banner);
     });
 
-    var elManual1 = document.getElementById('scanner-manual');
-    if (elManual1) elManual1.addEventListener('keydown', function(e){ if(e.key==='Enter') cariGarduDariScanner(); });
-
     return; // stop — tidak perlu cek session
   }
 
@@ -5374,10 +5374,6 @@ window.onload = function(){
   // Tidak perlu init di sini — container masih display:none
   // API_URL sudah kosong — digantikan supabase-api.js (tidak perlu validasi)
   // if (!API_URL || ...) { ... }
-  var elManual = document.getElementById('scanner-manual');
-  if (elManual) elManual.addEventListener('keydown', function(e){ if(e.key==='Enter') cariGarduDariScanner(); });
-  var elModal = document.getElementById('scanner-modal');
-  if (elModal) elModal.addEventListener('click', function(e){ if(e.target===this) tutupScanner(); });
 };
 
 // ── [GPS FIX] Normalisasi koordinat dari Spreadsheet ──────────
@@ -7345,20 +7341,29 @@ function fiUpdateCalc() {
   }
 
   if (seimbang !== null) {
-    var sbColor = seimbang > 10 ? 'var(--pln-red)' : seimbang > 5 ? 'var(--pln-orange)' : 'var(--pln-green)';
-    sbEl.innerHTML = '<span style="color:'+sbColor+';font-weight:700;">'+seimbang.toFixed(2)+'%</span>';
+    // Klasifikasi 4-tingkat EDIR 017.E/DIR/2014 Tabel 7 — SAMA PERSIS dengan
+    // pbpdKlasifikasi() yang dipakai di Detail Gardu, PB/PD, dan filter
+    // Pengukuran, agar nilai yang sama tidak tampil sbg tingkat berbeda di
+    // layar entry vs layar riwayat/detail. (Baik<10 / Cukup 10–<20 / Kurang 20–<25 / Buruk ≥25)
+    var kSeimbang = pbpdKlasifikasi(seimbang, 'imbalance');
+    var sbColorMap = { 0:'var(--pln-green)', 1:'var(--pln-orange)', 2:'#C2410C', 3:'var(--pln-red)' };
+    var sbColor = sbColorMap[kSeimbang.level];
+    sbEl.innerHTML = '<span style="color:'+sbColor+';font-weight:700;">'+seimbang.toFixed(2)+'% — '+kSeimbang.label+'</span>';
 
     // Warning banner
     warnEl.style.display = 'block';
-    if (seimbang > 10) {
+    if (kSeimbang.level === 3) {
       warnEl.className = 'fi-warn-kritis';
-      warnEl.innerHTML = '🔴 Ketidakseimbangan KRITIS ('+seimbang.toFixed(1)+'%) &gt;10% — Melebihi batas IEC 50160. Segera lakukan pemerataan beban!';
-    } else if (seimbang > 5) {
+      warnEl.innerHTML = '🔴 Ketidakseimbangan BURUK ('+seimbang.toFixed(1)+'%) ≥25% — EDIR 017.E/DIR/2014. Segera lakukan pemerataan beban!';
+    } else if (kSeimbang.level === 2) {
+      warnEl.className = 'fi-warn-kritis';
+      warnEl.innerHTML = '🟠 Ketidakseimbangan KURANG ('+seimbang.toFixed(1)+'%) 20–25% — EDIR 017.E/DIR/2014. Rencanakan pemerataan beban segera.';
+    } else if (kSeimbang.level === 1) {
       warnEl.className = 'fi-warn-perlu';
-      warnEl.innerHTML = '🟡 Ketidakseimbangan PERINGATAN ('+seimbang.toFixed(1)+'%) — Zona waspada 5–10%. Rencanakan pemerataan beban.';
+      warnEl.innerHTML = '🟡 Ketidakseimbangan CUKUP ('+seimbang.toFixed(1)+'%) 10–20% — Zona waspada EDIR 017.E/DIR/2014. Pantau tren pada pengukuran berikutnya.';
     } else {
       warnEl.className = 'fi-warn-ok';
-      warnEl.innerHTML = '🟢 Fasa Seimbang ('+seimbang.toFixed(1)+'%) — Dalam batas normal IEC 50160 &lt;5%.';
+      warnEl.innerHTML = '🟢 Ketidakseimbangan BAIK ('+seimbang.toFixed(1)+'%) &lt;10% — Dalam batas normal EDIR 017.E/DIR/2014.';
     }
   } else {
     sbEl.textContent = '—';
@@ -10484,92 +10489,6 @@ function keluarAdmin() {
   doLogout();
 }
 
-// [v32+] Buka detail gardu langsung dari hasil scan (tanpa konfirmasi)
-function cariGarduDariScannerAuto(val) {
-  if (!val) return;
-  var s = getSession();
-  document.getElementById('list-scan').innerHTML = '<div class="loading"><div class="spinner"></div>Membuka gardu <b>'+esc(val)+'</b>...</div>';
-
-  apiGet({action:'getDetailLengkap', noGardu:val}, function(res) {
-    if (res.status === 'ok') {
-      var g = res.data;
-      // Cek ULP — petugas & adminUlp hanya boleh lihat ULP sendiri
-      // Fix: bandingkan "ULP JAYAPURA" vs "ULP JAYAPURA" langsung, plus fallback sheet-name
-      var _garduUlp = normalizeULP(g['ULP']||'');
-      var _userUlp  = normalizeULP(s ? s.ulp||'' : '');
-      var _userSheet= normalizeULP(ulpAkunToSheet(s ? s.ulp||'' : ''));
-      if (s && !isFullAccessRole(s.role) && _garduUlp !== _userUlp && _garduUlp !== _userSheet && ('ULP '+_userSheet) !== _garduUlp) {
-        document.getElementById('list-scan').innerHTML = '<div class="empty-state">🔍 Arahkan kamera ke barcode gardu Anda</div>';
-        // Double rAF: tunggu tab selesai render BARU tampilkan popup
-        requestAnimationFrame(function(){
-          requestAnimationFrame(function(){
-            tampilPopupUlpSalah(g['NO_GARDU'] || val, g['ULP'] || '');
-          });
-        });
-        return;
-      }
-      var _gKey=g['NO_GARDU']?g['NO_GARDU'].trim().toUpperCase():''; if(_gKey&&!garduIndex[_gKey]){ allGardu.push(g); garduIndex[_gKey]=g; } // O2: O(1)
-      bukaDetailGardu(g['NO_GARDU']);
-    } else {
-      // Coba fallback ke cariGardu
-      apiGet({action:'cariGardu', keyword:val}, function(res2) {
-        if (res2.status !== 'ok' || !res2.data.length) {
-          document.getElementById('list-scan').innerHTML = '<div class="alert alert-warn"><span class="alert-icon">🔍</span><span class="alert-text">Gardu tidak ditemukan: <b>'+esc(val)+'</b></span></div>';
-          return;
-        }
-        var garduList = res2.data;
-        if (s && !isFullAccessRole(s.role)) {
-          garduList = garduList.filter(function(g){
-            var _gu = normalizeULP(g['ULP']||'');
-            var _uu = normalizeULP(s.ulp||'');
-            var _us = normalizeULP(ulpAkunToSheet(s.ulp||''));
-            return _gu === _uu || _gu === _us || ('ULP '+_us) === _gu;
-          });
-        }
-        if (!garduList.length) {
-          document.getElementById('list-scan').innerHTML = '<div class="empty-state">🔍 Arahkan kamera ke barcode gardu Anda</div>';
-          requestAnimationFrame(function(){
-            requestAnimationFrame(function(){
-              tampilPopupUlpSalah(val, '');
-            });
-          });
-          return;
-        }
-        garduList.forEach(function(g){ var _k=g['NO_GARDU']?g['NO_GARDU'].trim().toUpperCase():''; if(_k&&!garduIndex[_k]){ allGardu.push(g); garduIndex[_k]=g; } }); // O2: O(1)
-        if (garduList.length === 1) {
-          bukaDetailGardu(garduList[0]['NO_GARDU']);
-        } else {
-          document.getElementById('list-scan').innerHTML = '<div class="sec">Pilih Gardu yang Sesuai</div>' +
-            garduList.map(function(g){
-              return '<div class="gardu-item" onclick="bukaDetailGardu(\''+esc(g['NO_GARDU'])+'\')">'+
-                '<div class="gardu-icon">🏭</div>'+
-                '<div class="gardu-info"><div class="gardu-id">'+esc(g['NO_GARDU']||'')+'</div>'+
-                '<div class="gardu-name">'+esc(g['ULP']||'')+' — '+esc(g['PENYULANG']||'')+'</div>'+
-                '<div class="gardu-sub">'+esc(g['ALAMAT']||'')+'</div></div>'+
-                '<div class="gardu-right"><span style="font-size:var(--fs-xs);color:var(--pln-kuning);font-weight:700;">▶ Buka</span></div></div>';
-            }).join('');
-        }
-      });
-    }
-  });
-}
-
-function tampilPopupUlpSalah(noGardu, namaUlp) {
-  var pop = document.getElementById('popup-ulp-salah');
-  document.getElementById('popup-ulp-nogardu').textContent = noGardu || '';
-  document.getElementById('popup-ulp-nama').textContent = 'ULP: ' + (namaUlp || '-');
-  if (pop) { pop.classList.add('show'); }
-  // Hentikan kelap-kelip flash
-  var flash = document.getElementById('scan-flash-overlay');
-  if (flash) { flash.classList.remove('flash'); }
-}
-
-function tutupPopupUlpSalah() {
-  var pop = document.getElementById('popup-ulp-salah');
-  if (pop) { pop.classList.remove('show'); }
-}
-
-
 // ══ PIN GARDU (v36) — PIN per user, dikirim ke server ══════════
 // Tidak ada PIN hardcoded. PIN diverifikasi server via hash SHA-256.
 
@@ -11795,7 +11714,7 @@ function resetFilterPengukuran() {
     var sel = document.getElementById(id);
     if (sel) sel.selectedIndex = 0;
   });
-  ['ukur-filter-tdk-under10','ukur-filter-tdk-under20','ukur-filter-tdk-over20'].forEach(function(id){
+  ['ukur-filter-tdk-baik','ukur-filter-tdk-cukup','ukur-filter-tdk-kurang','ukur-filter-tdk-buruk'].forEach(function(id){
     var cb = document.getElementById(id);
     if (cb) cb.checked = false;
   });
@@ -11828,11 +11747,15 @@ function renderDataPengukuran(statusFilter, waktuFilter, kepemilikanFilter) {
   if (!wrap) return;
 
   // Filter ketidakseimbangan (checkbox, bisa lebih dari satu — logika OR:
-  // baris lolos kalau memenuhi SALAH SATU kondisi yang dicentang)
-  var tdkUnder10 = !!(document.getElementById('ukur-filter-tdk-under10') || {}).checked;
-  var tdkUnder20 = !!(document.getElementById('ukur-filter-tdk-under20') || {}).checked;
-  var tdkOver20  = !!(document.getElementById('ukur-filter-tdk-over20') || {}).checked;
-  var adaFilterTdk = tdkUnder10 || tdkUnder20 || tdkOver20;
+  // baris lolos kalau memenuhi SALAH SATU kondisi yang dicentang).
+  // 4 tingkat EDIR 017.E/DIR/2014 Tabel 7, MUTUALLY EXCLUSIVE (band, bukan
+  // ambang kumulatif) — identik dgn ambang di pbpdKlasifikasi(pct,'imbalance'):
+  // Baik <10% | Cukup 10–<20% | Kurang 20–<25% | Buruk ≥25%
+  var tdkBaik   = !!(document.getElementById('ukur-filter-tdk-baik')   || {}).checked;
+  var tdkCukup  = !!(document.getElementById('ukur-filter-tdk-cukup')  || {}).checked;
+  var tdkKurang = !!(document.getElementById('ukur-filter-tdk-kurang') || {}).checked;
+  var tdkBuruk  = !!(document.getElementById('ukur-filter-tdk-buruk')  || {}).checked;
+  var adaFilterTdk = tdkBaik || tdkCukup || tdkKurang || tdkBuruk;
 
   var data = _ukurAllData.filter(function(r) {
     var prosen = r['PROSEN'] !== '' && r['PROSEN'] !== null && r['PROSEN'] !== undefined ? parseFloat(r['PROSEN']) : null;
@@ -11855,16 +11778,17 @@ function renderDataPengukuran(statusFilter, waktuFilter, kepemilikanFilter) {
       if (kepemilikanFilter === 'PLN' && kep !== 'PLN') return false;
       if (kepemilikanFilter === 'NON PLN' && kep === 'PLN') return false;
     }
-    // Ketidakseimbangan fasa (<10% / <20% / >20%)
+    // Ketidakseimbangan fasa — band eksklusif EDIR: Baik<10 / Cukup 10–<20 / Kurang 20–<25 / Buruk ≥25
     if (adaFilterTdk) {
       var tdkRaw = r['TDKSEIMBANG'] !== '' && r['TDKSEIMBANG'] !== null && r['TDKSEIMBANG'] !== undefined
         ? r['TDKSEIMBANG'] : r['TDK SEIMBANG'];
       var tdkVal = (tdkRaw !== '' && tdkRaw !== null && tdkRaw !== undefined && !isNaN(parseFloat(tdkRaw))) ? parseFloat(tdkRaw) : null;
       if (tdkVal === null) return false;
       var cocokTdk = false;
-      if (tdkUnder10 && tdkVal < 10) cocokTdk = true;
-      if (tdkUnder20 && tdkVal < 20) cocokTdk = true;
-      if (tdkOver20 && tdkVal > 20) cocokTdk = true;
+      if (tdkBaik   && tdkVal < 10) cocokTdk = true;
+      if (tdkCukup  && tdkVal >= 10 && tdkVal < 20) cocokTdk = true;
+      if (tdkKurang && tdkVal >= 20 && tdkVal < 25) cocokTdk = true;
+      if (tdkBuruk  && tdkVal >= 25) cocokTdk = true;
       if (!cocokTdk) return false;
     }
     return true;

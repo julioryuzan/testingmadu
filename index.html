@@ -10342,6 +10342,19 @@ function _aiInputKeydown(ev) {
   }
 }
 
+// Render markdown TERBATAS & aman: escape HTML dulu (cegah XSS), baru proses
+// **bold**, baris baru, dan list bernomor/bullet sederhana dari balasan AI.
+function _aiFormatBotText(text) {
+  var esc = String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  esc = esc.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'); // **bold**
+  esc = esc.replace(/^[•\-]\s+(.+)$/gm, '<br>• $1');          // bullet - / •
+  esc = esc.replace(/\n/g, '<br>');                            // baris baru
+  return esc;
+}
+
 function _aiRenderMessage(role, text, isError) {
   var log = document.getElementById('ai-chat-log');
   if (!log) return null;
@@ -10349,7 +10362,11 @@ function _aiRenderMessage(role, text, isError) {
   wrap.className = 'ai-msg ' + (role === 'user' ? 'ai-msg-user' : 'ai-msg-bot');
   var bubble = document.createElement('div');
   bubble.className = 'ai-bubble' + (isError ? ' ai-bubble-err' : '');
-  bubble.textContent = text; // pakai textContent (bukan innerHTML) supaya aman dari XSS
+  if (role === 'user') {
+    bubble.textContent = text; // input user: textContent murni, paling aman
+  } else {
+    bubble.innerHTML = _aiFormatBotText(text); // balasan AI: HTML di-escape dulu di dalam _aiFormatBotText, baru markdown terbatas dirender
+  }
   var avatar = document.createElement('div');
   avatar.className = 'ai-avatar';
   avatar.textContent = role === 'user' ? '🙂' : '🤖';

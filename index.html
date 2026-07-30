@@ -4287,6 +4287,13 @@ input[type=number]{-moz-appearance:textfield;}
   </div>
 </div>
 
+<!-- Supabase API Layer — dipindah ke SINI (sebelum script besar di bawah)
+     supaya SUPABASE_URL sudah terdefinisi sebelum dipakai oleh AI_PROXY_URL
+     dkk di dalam script utama. Sebelumnya file ini dimuat di akhir dokumen,
+     menyebabkan "ReferenceError: SUPABASE_URL is not defined" saat script
+     utama mencoba memakainya lebih dulu. -->
+<script src="supabase-api.js"></script>
+
 <script>
 // ══════════════════════════════════════════════════════════════
 //  [AUTH v2] SISTEM LOGIN SERVER-SIDE
@@ -14444,9 +14451,6 @@ function konfirmasiAksi(pesan, judul, labelAksi, callback) {
 <script src="vendor/exceljs/exceljs.min.js"></script>
 
 
-
-<!-- Supabase API Layer — tanpa defer agar segera tersedia untuk login -->
-<script src="supabase-api.js"></script>
 
 <!-- ============================================================
      Registrasi Service Worker — OFFLINE-FIRST + Background Sync

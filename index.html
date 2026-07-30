@@ -184,7 +184,8 @@ body{
 #tab-pemeliharaan,
 #tab-daftar,
 #tab-rekap,
-#tab-sop {
+#tab-sop,
+#tab-ai-asisten {
   scroll-margin-top: 0;
 }
 .page-body{
@@ -510,6 +511,66 @@ input[type=number]{-moz-appearance:textfield;}
 .sop-sub{font-size:var(--fs-xs);color:var(--pln-text3);}
 .sop-arrow{font-size:22px;color:var(--pln-text3);flex-shrink:0;}
 
+/* ══ AI ASISTEN CHAT ═════════════════════════════════════════ */
+#tab-ai-asisten .page-body{
+  padding:var(--sp-md) !important;
+  padding-bottom:calc(var(--nav-h) + 84px + env(safe-area-inset-bottom)) !important;
+}
+.ai-chip-row{display:flex;flex-wrap:wrap;gap:6px;margin:var(--sp-sm) 0 var(--sp-md);}
+.ai-chip{
+  background:var(--pln-biru-pale);color:var(--pln-biru2);border:1px solid var(--pln-border2);
+  border-radius:20px;padding:6px 12px;font-size:var(--fs-xs);font-weight:600;cursor:pointer;
+  white-space:nowrap;
+}
+.ai-chip:active{transform:scale(.96);background:#dfeaff;}
+#ai-chat-log{display:flex;flex-direction:column;gap:var(--sp-sm);}
+.ai-msg{display:flex;gap:8px;max-width:92%;}
+.ai-msg-bot{align-self:flex-start;}
+.ai-msg-user{align-self:flex-end;flex-direction:row-reverse;}
+.ai-avatar{
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+  background:var(--pln-biru);color:#fff;
+}
+.ai-msg-user .ai-avatar{background:var(--pln-kuning);color:var(--pln-biru);}
+.ai-bubble{
+  background:#fff;border:1px solid var(--pln-border);border-radius:var(--radius-sm);
+  padding:10px 13px;font-size:var(--fs-sm);color:var(--pln-text);line-height:1.5;
+  white-space:pre-wrap;overflow-wrap:break-word;box-shadow:var(--shadow);
+}
+.ai-msg-user .ai-bubble{background:var(--pln-biru2);color:#fff;border-color:var(--pln-biru2);}
+.ai-msg-bot .ai-bubble{border-top-left-radius:2px;}
+.ai-msg-user .ai-bubble{border-top-right-radius:2px;}
+.ai-bubble-err{background:var(--pln-red-pale)!important;color:var(--pln-red)!important;border-color:#FECACA!important;}
+.ai-typing{display:inline-flex;gap:3px;padding:2px 0;}
+.ai-typing span{width:6px;height:6px;border-radius:50%;background:var(--pln-text3);animation:aiTypingBlink 1.1s infinite ease-in-out;}
+.ai-typing span:nth-child(2){animation-delay:.15s;}
+.ai-typing span:nth-child(3){animation-delay:.3s;}
+@keyframes aiTypingBlink{0%,80%,100%{opacity:.25;transform:translateY(0);}40%{opacity:1;transform:translateY(-2px);}}
+.ai-input-bar{
+  position:fixed;left:0;right:0;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));
+  max-width:600px;margin:0 auto;background:var(--pln-card);
+  border-top:1px solid var(--pln-border);padding:var(--sp-sm) var(--sp-md);
+  display:flex;gap:8px;align-items:flex-end;z-index:40;
+  box-shadow:0 -2px 10px rgba(10,45,107,.06);
+}
+.ai-input-bar textarea{
+  flex:1;resize:none;border:1px solid var(--pln-border2);border-radius:var(--radius-sm);
+  padding:9px 12px;font-size:var(--fs-sm);font-family:inherit;color:var(--pln-text);
+  max-height:96px;line-height:1.4;background:var(--pln-bg);
+}
+.ai-input-bar textarea:focus{outline:none;border-color:var(--pln-biru-muda);background:#fff;}
+.ai-send-btn{
+  flex-shrink:0;width:40px;height:40px;border-radius:50%;border:none;
+  background:var(--pln-biru2);color:#fff;font-size:17px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.ai-send-btn:active{transform:scale(.94);}
+.ai-send-btn:disabled{opacity:.5;cursor:not-allowed;}
+@media (min-width:768px){
+  .ai-input-bar{ bottom:0; left:260px; }
+  #tab-ai-asisten .page-body{ padding-bottom:96px !important; }
+}
 
 /* ══ PAGINATION ══════════════════════════════════════════════ */
 .pagination-wrap{
@@ -2510,6 +2571,36 @@ input[type=number]{-moz-appearance:textfield;}
 </div>
 
 
+<!-- ============================================================
+     TAB: ASISTEN AI — chat khusus status gardu (overload/underload)
+     & pengetahuan seputar kelistrikan PLN (transmisi/distribusi/dll).
+     Dibatasi hanya menjawab topik gardu/PLN — lihat AI_SYSTEM_PROMPT.
+     ============================================================ -->
+<div id="tab-ai-asisten" class="page">
+  <div class="topbar">
+    <div class="topbar-logo"><img src="icon-baru-192.png" alt="PLN" onerror="this.parentNode.innerHTML='PLN'"></div>
+    <div class="topbar-info"><div class="topbar-sub">UP3 Jayapura</div><div class="topbar-title">Asisten AI</div></div>
+  </div>
+  <div class="page-body">
+    <div class="alert alert-info">🤖 Tanya status gardu (overload/underload/kritis) atau hal seputar kelistrikan PLN (transmisi, distribusi, trafo, K3, dll). Pertanyaan di luar topik ini tidak akan dijawab.</div>
+
+    <div class="ai-chip-row">
+      <div class="ai-chip" onclick="kirimPesanAI('Gardu mana saja yang sedang overload?')">⚡ Gardu overload?</div>
+      <div class="ai-chip" onclick="kirimPesanAI('Gardu mana saja yang underload?')">🔋 Gardu underload?</div>
+      <div class="ai-chip" onclick="kirimPesanAI('Berapa jumlah gardu kritis saat ini?')">🚨 Jumlah gardu kritis</div>
+      <div class="ai-chip" onclick="kirimPesanAI('Apa bedanya jaringan transmisi dan distribusi?')">📚 Transmisi vs distribusi</div>
+    </div>
+
+    <div id="ai-chat-log"></div>
+  </div>
+
+  <div class="ai-input-bar">
+    <textarea id="ai-input-box" rows="1" placeholder="Tanya soal gardu atau PLN…" onkeydown="_aiInputKeydown(event)" oninput="_aiAutoGrow(this)"></textarea>
+    <button class="ai-send-btn" id="ai-send-btn" onclick="kirimPesanAI()">➤</button>
+  </div>
+</div>
+
+
 <div id="tab-peta" class="page">
   <div class="topbar">
     <div class="topbar-logo"><img src="icon-baru-192.png" alt="PLN" onerror="this.parentNode.innerHTML='PLN'"></div>
@@ -3242,6 +3333,7 @@ input[type=number]{-moz-appearance:textfield;}
   <button class="nav-btn" onclick="bukaTab('tab-pengukuran',3)"><span class="nav-icon">📏</span><span class="nav-label">Pengukuran</span></button>
   <button class="nav-btn" onclick="bukaTab('tab-pemeliharaan',4)"><span class="nav-icon">🔧</span><span class="nav-label">Pemeliharaan</span></button>
   <button class="nav-btn" onclick="bukaTab('tab-sop',5)"><span class="nav-icon">📋</span><span class="nav-label">SOP &amp; Panduan</span></button>
+  <button class="nav-btn" onclick="bukaTab('tab-ai-asisten',6)"><span class="nav-icon">🤖</span><span class="nav-label">Asisten AI</span></button>
   <!-- Info user — hanya tampil di desktop sidebar -->
   <div class="sidebar-user" id="sidebar-user-footer" style="display:none;"></div>
 </nav>
@@ -3452,7 +3544,64 @@ input[type=number]{-moz-appearance:textfield;}
       <button class="btn btn-outline" id="apbtn-usulp"    onclick="tutupPanelAdmin();bukaModalUserULP()" style="display:none;">👥 Kelola User ULP Saya</button>
       <button class="btn btn-outline" id="apbtn-pin"      onclick="tutupPanelAdmin();bukaModalSetPin()">🔑 Set / Ganti PIN User</button>
       <button class="btn btn-outline" id="apbtn-import"   onclick="tutupPanelAdmin();bukaModalCsvImport()">📥 Import Inspeksi</button>
+      <button class="btn btn-outline" id="apbtn-audit"    onclick="tutupPanelAdmin();bukaModalAuditProsen()">🔍 Audit &amp; Perbaiki Prosen Massal</button>
       <button class="btn btn-red"     id="apbtn-logout"   onclick="doLogout()">🚪 Logout</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AUDIT & PERBAIKI PROSEN MASSAL (SUPER ADMIN ONLY) -->
+<div id="modal-audit-prosen" style="display:none;position:fixed;inset:0;z-index:9200;background:rgba(0,0,0,.55);align-items:flex-start;justify-content:center;padding:var(--sp-md);overflow-y:auto;">
+  <div style="background:var(--pln-card);border-radius:var(--radius);padding:var(--sp-lg);width:100%;max-width:900px;margin:auto;box-shadow:var(--shadow-lg);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-sm);">
+      <div style="font-size:var(--fs-md);font-weight:700;">🔍 Audit &amp; Perbaiki Prosen Massal</div>
+      <button onclick="document.getElementById('modal-audit-prosen').style.display='none'" style="background:var(--pln-bg);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;">✕</button>
+    </div>
+    <div style="font-size:var(--fs-xs);color:var(--pln-text3);margin-bottom:var(--sp-md);line-height:1.5;">
+      Mencari semua data inspeksi yang <strong>Daya (kVA)</strong>-nya tidak sinkron dengan kapasitas trafo terbaru,
+      dan/atau <strong>Prosen Beban</strong>-nya tidak sesuai hasil hitung ulang (Daya Pakai ÷ Daya × 100).
+      Ini biasanya terjadi setelah kapasitas gardu di-upgrade tapi riwayat inspeksi lama belum ikut disesuaikan.
+    </div>
+
+    <div id="audit-prosen-idle">
+      <button class="btn btn-blue" id="btn-audit-mulai" onclick="auditMulaiScan()">▶️ Mulai Audit</button>
+    </div>
+
+    <div id="audit-prosen-loading" style="display:none;padding:var(--sp-md) 0;font-size:var(--fs-sm);color:var(--pln-text2);">
+      ⏳ <span id="audit-prosen-loading-text">Memindai data…</span>
+    </div>
+
+    <div id="audit-prosen-hasil" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:var(--sp-md) 0 var(--sp-sm);flex-wrap:wrap;gap:8px;">
+        <div style="font-size:var(--fs-sm);font-weight:700;" id="audit-prosen-ringkasan">—</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-outline" style="padding:6px 12px;font-size:var(--fs-xs);" onclick="auditToggleSemua(true)">Pilih Semua</button>
+          <button class="btn btn-outline" style="padding:6px 12px;font-size:var(--fs-xs);" onclick="auditToggleSemua(false)">Batal Semua</button>
+        </div>
+      </div>
+      <div style="max-height:360px;overflow:auto;border:1px solid var(--pln-border);border-radius:var(--radius-xs);">
+        <table style="width:100%;border-collapse:collapse;font-size:var(--fs-xs);">
+          <thead style="position:sticky;top:0;background:var(--pln-bg);">
+            <tr>
+              <th style="padding:8px;text-align:left;"></th>
+              <th style="padding:8px;text-align:left;">Gardu</th>
+              <th style="padding:8px;text-align:left;">Tgl Inspeksi</th>
+              <th style="padding:8px;text-align:right;">Daya Lama→Baru</th>
+              <th style="padding:8px;text-align:right;">Prosen Lama→Baru</th>
+            </tr>
+          </thead>
+          <tbody id="audit-prosen-tbody"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:var(--sp-md);display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <button class="btn btn-blue" id="btn-audit-perbaiki" onclick="auditPerbaikiTerpilih()">✅ Perbaiki Data Terpilih</button>
+        <span id="audit-prosen-progress" style="font-size:var(--fs-xs);color:var(--pln-text3);"></span>
+      </div>
+      <div id="audit-prosen-log" style="margin-top:var(--sp-sm);max-height:140px;overflow:auto;font-size:11px;color:var(--pln-text3);font-family:monospace;white-space:pre-wrap;"></div>
+    </div>
+
+    <div id="audit-prosen-kosong" style="display:none;padding:var(--sp-md) 0;font-size:var(--fs-sm);color:var(--pln-green);font-weight:600;">
+      ✅ Semua data sudah sinkron. Tidak ada yang perlu diperbaiki.
     </div>
   </div>
 </div>
@@ -4720,6 +4869,7 @@ function _tampilkanPanelAdmin(s) {
   // Tombol KHUSUS superadmin
   showBtn('apbtn-user',    isSuperadmin);
   showBtn('apbtn-usulp',   !isSuperadmin);
+  showBtn('apbtn-audit',   isSuperadmin);
 
   // ── Pastikan tombol Import ada di DOM, baru atur visibility ──
   var actionsEl = document.getElementById('admin-panel-actions');
@@ -5437,7 +5587,7 @@ function apiGet(params, cb) {
   cb({status:'error', message:'Gagal terhubung ke server. Coba refresh halaman.'});
 }
 
-var TAB_IDS = ['tab-daftar','tab-peta','tab-rekap','tab-pengukuran','tab-pemeliharaan','tab-sop'];
+var TAB_IDS = ['tab-daftar','tab-peta','tab-rekap','tab-pengukuran','tab-pemeliharaan','tab-sop','tab-ai-asisten'];
 // O1: Pagination — client-side 50/halaman sudah aktif.
 //   Untuk server-side pagination: tambahkan param ?action=daftarGardu&page=N&limit=50&ulp=X di Apps Script.
 function bukaTab(id, idx){
@@ -5483,7 +5633,8 @@ function bukaTab(id, idx){
     'tab-rekap':        'Rekap & Statistik',
     'tab-pengukuran':   'Riwayat Pengukuran Gardu',
     'tab-pemeliharaan': 'Pemeliharaan Gardu',
-    'tab-sop':          'SOP & Panduan'
+    'tab-sop':          'SOP & Panduan',
+    'tab-ai-asisten':   'Asisten AI'
   };
   var dtbTitle = document.getElementById('desktop-topbar-title');
   if (dtbTitle) dtbTitle.textContent = TAB_TITLES[id] || 'Manajemen Gardu';
@@ -5495,6 +5646,7 @@ function bukaTab(id, idx){
 
   if(id==='tab-rekap' && !rekapSudahMuat) muatRekap();
   if(id==='tab-pemeliharaan') { /* data dimuat on-demand saat user tekan Tampilkan */ }
+  if(id==='tab-ai-asisten') initAIAsisten();
   if(id==='tab-pengukuran') { /* data dimuat on-demand saat user tekan Tampilkan */ }
   if(id==='tab-peta') {
     requestAnimationFrame(function() {
@@ -7994,7 +8146,46 @@ function tutupModalEditInspeksi() {
   if (pagesEl) delete pagesEl.dataset.built;
 }
 
+// ── FIX: Auto-recalculate Prosen Beban di form Edit Inspeksi ──────────────
+// Sebelumnya field Prosen di form Edit hanya diisi dari nilai lama tersimpan
+// (r['PROSEN']) dan TIDAK pernah dihitung ulang, meski field Daya sudah
+// diubah/dikoreksi (misal setelah upgrade KVA trafo). Akibatnya Daya bisa
+// sudah benar (250) tapi Prosen masih pakai KVA lama (100) → beban tampil
+// 136.3% padahal harusnya 54.5%. Fungsi ini menyamakan perilaku form Edit
+// dengan form Tambah Inspeksi (fiUpdateCalc), yaitu Prosen = Daya Pakai / Daya * 100.
+function eiRecalcProsen() {
+  var dayaEl     = document.getElementById('ei-daya');
+  var dayaPakaiEl = document.getElementById('ei-dayapakai');
+  var prosenEl   = document.getElementById('ei-prosen');
+  if (!dayaEl || !dayaPakaiEl || !prosenEl) return;
+
+  var daya      = parseFloat(dayaEl.value);
+  var dayaPakai = parseFloat(dayaPakaiEl.value);
+
+  if (!isNaN(daya) && daya > 0 && !isNaN(dayaPakai)) {
+    var prosen = parseFloat((dayaPakai / daya * 100).toFixed(2));
+    prosenEl.value = prosen;
+  }
+  // Jika Daya atau Daya Pakai kosong/tidak valid, Prosen tidak diubah paksa —
+  // biarkan admin mengisi manual (mendukung kasus input dari alat ukur langsung).
+}
+
+// Pasang listener input pada Daya & Daya Pakai supaya Prosen otomatis
+// ter-update tiap kali salah satu diubah. Dipasang sekali saja (guard via
+// dataset flag) karena bukaEditInspeksi() bisa dipanggil berulang kali.
+function eiBindAutoRecalcProsen() {
+  var dayaEl      = document.getElementById('ei-daya');
+  var dayaPakaiEl = document.getElementById('ei-dayapakai');
+  if (!dayaEl || !dayaPakaiEl) return;
+  if (dayaEl.dataset.autoProsenBound) return;
+
+  dayaEl.addEventListener('input', eiRecalcProsen);
+  dayaPakaiEl.addEventListener('input', eiRecalcProsen);
+  dayaEl.dataset.autoProsenBound = '1';
+}
+
 function bukaEditInspeksi(id, r) {
+
   var s = getSession();
   if (!s || !s.token) { alert('Sesi tidak valid. Silakan login ulang.'); return; }
   document.getElementById('edit-inspeksi-id').value = id;
@@ -8032,6 +8223,13 @@ function bukaEditInspeksi(id, r) {
   document.getElementById('ei-dayapakai').value    = r['DAYA PAKAI'] || '';
   document.getElementById('ei-prosen').value       = r['PROSEN'] || '';
   document.getElementById('ei-tdkseimbang').value  = r['TDKSEIMBANG'] || r['TDK SEIMBANG'] || '';
+
+  // FIX: Prosen Beban tersimpan bisa basi (mis. dihitung dari KVA lama sebelum
+  // upgrade trafo), sedangkan field Daya di atas sudah nilai terbaru.
+  // Hitung ulang Prosen dari Daya & Daya Pakai yang baru saja di-load supaya
+  // admin langsung melihat angka yang benar, bukan angka basi dari database.
+  eiRecalcProsen();
+  eiBindAutoRecalcProsen();
 
   // Arus
   document.getElementById('ei-r').value = r['R TOTAL'] || '';
@@ -8446,6 +8644,266 @@ function simpanEditInspeksi() {
       }
     }, 1200);
   });
+}
+
+// ══════════════════════════════════════════════════════════════
+// AUDIT & PERBAIKI PROSEN MASSAL (Super Admin)
+// Menemukan & memperbaiki record inspeksi lama yang field Daya/Prosen-nya
+// basi — tidak sinkron dengan kapasitas KVA gardu terbaru (mis. setelah
+// upgrade trafo, riwayat inspeksi sebelumnya tidak ikut ter-update).
+// ══════════════════════════════════════════════════════════════
+var _auditProsenHasil = []; // {id, noGardu, tgl, oldDaya, newDaya, oldProsen, newProsen, selected}
+
+function bukaModalAuditProsen() {
+  var s = getSession();
+  if (!s || !s.token || !isFullAccessRole(s.role)) { alert('Fitur ini khusus Super Admin.'); return; }
+  document.getElementById('audit-prosen-idle').style.display    = '';
+  document.getElementById('audit-prosen-loading').style.display = 'none';
+  document.getElementById('audit-prosen-hasil').style.display   = 'none';
+  document.getElementById('audit-prosen-kosong').style.display  = 'none';
+  document.getElementById('audit-prosen-log').textContent = '';
+  document.getElementById('audit-prosen-progress').textContent = '';
+  _auditProsenHasil = [];
+  document.getElementById('modal-audit-prosen').style.display = 'flex';
+}
+
+function _auditSetLoading(text) {
+  document.getElementById('audit-prosen-idle').style.display    = 'none';
+  document.getElementById('audit-prosen-loading').style.display = '';
+  document.getElementById('audit-prosen-loading-text').textContent = text;
+}
+
+// Ambil SEMUA gardu (lintas ULP) → map no_gardu -> kapasitas kVA TERBARU
+function _auditFetchSemuaGardu() {
+  return new Promise(function(resolve, reject) {
+    var s = getSession();
+    apiGet({ action: 'getDaftarGardu', token: s.token }, function(res) {
+      if (!res || res.status !== 'ok') { reject(new Error((res && res.message) || 'Gagal memuat daftar gardu.')); return; }
+      var map = {};
+      (res.data || []).forEach(function(g) {
+        var kva = parseFloat(g.KAPASITAS_KVA);
+        if (g.NO_GARDU && !isNaN(kva) && kva > 0) map[g.NO_GARDU] = kva;
+      });
+      resolve(map);
+    });
+  });
+}
+
+// Ambil SEMUA record inspeksi (paginated, lintas ULP)
+function _auditFetchSemuaInspeksi() {
+  return new Promise(function(resolve, reject) {
+    var s = getSession();
+    var PAGE = 500;
+    var offset = 0;
+    var all = [];
+
+    function nextPage() {
+      apiGet({
+        action:  'getInspeksi',
+        token:   s.token,
+        noGardu: null,
+        ulp:     null,
+        limit:   PAGE,
+        offset:  offset
+      }, function(res) {
+        if (!res || res.status !== 'ok') { reject(new Error((res && res.message) || 'Gagal memuat data inspeksi.')); return; }
+        var rows = res.data || [];
+        all = all.concat(rows);
+        _auditSetLoading('Memindai data inspeksi… (' + all.length + (res.total ? ' / ' + res.total : '') + ')');
+        if (rows.length < PAGE) { resolve(all); return; }
+        offset += PAGE;
+        nextPage();
+      });
+    }
+    nextPage();
+  });
+}
+
+async function auditMulaiScan() {
+  var s = getSession();
+  if (!s || !s.token) { alert('Sesi tidak valid.'); return; }
+  _auditSetLoading('Memuat daftar gardu…');
+  try {
+    var kvaMap = await _auditFetchSemuaGardu();
+    var rows   = await _auditFetchSemuaInspeksi();
+
+    var hasil = [];
+    rows.forEach(function(r) {
+      var noGardu = r['NO_GARDU'] || r['NOGARDU'] || '';
+      var kvaNow  = kvaMap[noGardu];
+      if (kvaNow == null) return; // gardu tidak ditemukan / kva tidak valid → lewati
+
+      var oldDaya   = (r['DAYA'] !== '' && r['DAYA'] != null) ? parseFloat(r['DAYA']) : null;
+      var dayaPakai = (r['DAYA PAKAI'] !== '' && r['DAYA PAKAI'] != null) ? parseFloat(r['DAYA PAKAI']) : null;
+      var oldProsen = (r['PROSEN'] !== '' && r['PROSEN'] != null) ? parseFloat(r['PROSEN']) : null;
+
+      var dayaMismatch = (oldDaya == null) || Math.abs(oldDaya - kvaNow) > 0.01;
+      var newDaya   = kvaNow;
+      var newProsen = (dayaPakai != null && newDaya > 0) ? parseFloat((dayaPakai / newDaya * 100).toFixed(2)) : oldProsen;
+      var prosenMismatch = (dayaPakai != null) && (oldProsen == null || Math.abs(oldProsen - newProsen) > 0.5);
+
+      if (dayaMismatch || prosenMismatch) {
+        hasil.push({
+          id:        r['_id'],
+          noGardu:   noGardu,
+          tgl:       r['TGLUKUR'] || '',
+          oldDaya:   oldDaya,
+          newDaya:   newDaya,
+          oldProsen: oldProsen,
+          newProsen: newProsen,
+          selected:  true,
+          _rawRow:   r // simpan row lengkap dari hasil scan (sudah termasuk arus/tegangan/jurusan dst.)
+                       // agar tidak perlu fetch ulang per-record saat perbaiki (lihat catatan di auditPerbaikiTerpilih)
+        });
+      }
+    });
+
+    _auditProsenHasil = hasil;
+    auditRenderHasil();
+  } catch (e) {
+    document.getElementById('audit-prosen-idle').style.display    = '';
+    document.getElementById('audit-prosen-loading').style.display = 'none';
+    alert('❌ Audit gagal: ' + e.message);
+  }
+}
+
+function auditRenderHasil() {
+  document.getElementById('audit-prosen-loading').style.display = 'none';
+  if (!_auditProsenHasil.length) {
+    document.getElementById('audit-prosen-kosong').style.display = '';
+    return;
+  }
+  document.getElementById('audit-prosen-hasil').style.display = '';
+  document.getElementById('audit-prosen-ringkasan').textContent =
+    'Ditemukan ' + _auditProsenHasil.length + ' data yang tidak sinkron.';
+
+  var fmt = function(n) { return (n == null || isNaN(n)) ? '—' : n.toFixed(1); };
+  var tbody = document.getElementById('audit-prosen-tbody');
+  tbody.innerHTML = _auditProsenHasil.map(function(h, i) {
+    return '<tr style="border-top:1px solid var(--pln-border);">' +
+      '<td style="padding:6px 8px;"><input type="checkbox" checked onchange="_auditProsenHasil[' + i + '].selected=this.checked"></td>' +
+      '<td style="padding:6px 8px;font-weight:700;">' + h.noGardu + '</td>' +
+      '<td style="padding:6px 8px;">' + (h.tgl || '—') + '</td>' +
+      '<td style="padding:6px 8px;text-align:right;">' + fmt(h.oldDaya) + ' → <strong>' + fmt(h.newDaya) + '</strong> kVA</td>' +
+      '<td style="padding:6px 8px;text-align:right;">' + fmt(h.oldProsen) + '% → <strong style="color:var(--pln-biru2);">' + fmt(h.newProsen) + '%</strong></td>' +
+      '</tr>';
+  }).join('');
+}
+
+function auditToggleSemua(val) {
+  _auditProsenHasil.forEach(function(h) { h.selected = val; });
+  auditRenderHasil();
+}
+
+// Bangun payload editInspeksi LENGKAP dari record penuh (getInspeksiById),
+// hanya menimpa daya & prosen — field lain dipertahankan PERSIS sama seperti
+// saat admin edit manual satu-satu lewat simpanEditInspeksi(). Ini penting
+// agar data lain (arus, tegangan, THD, jurusan, dst) tidak ikut terhapus.
+function _auditBuildEditPayload(id, row, newDaya, newProsen) {
+  return {
+    action:        'editInspeksi',
+    id:            id,
+    tglUkur:       row['TGLUKUR']     || null,
+    jamUkur:       row['JAM UKUR']    || null,
+    petugas:       row['PETUGAS']     || null,
+    fasa:          row['FASA']        || null,
+    daya:          newDaya,
+    dayaPakai:     row['DAYA PAKAI']  || null,
+    prosen:        newProsen,
+    tdkSeimbang:   row['TDKSEIMBANG'] || null,
+    rTotal:        row['R TOTAL']     || null,
+    sTotal:        row['S TOTAL']     || null,
+    tTotal:        row['T TOTAL']     || null,
+    nTotal:        row['N TOTAL']     || null,
+    vRN:           row['R - N']       || null,
+    vSN:           row['S - N']       || null,
+    vTN:           row['T - N']       || null,
+    vRS:           row['R - S']       || null,
+    vST:           row['S - T']       || null,
+    vRT:           row['R - T']       || null,
+    thdR:          row['THD-R']       || null,
+    thdS:          row['THD-S']       || null,
+    thdT:          row['THD-T']       || null,
+    ipeakR:        row['IPEAK-R']     || null,
+    ipeakS:        row['IPEAK-S']     || null,
+    ipeakT:        row['IPEAK-T']     || null,
+    tpfR:          row['TPF-R']       || null,
+    tpfS:          row['TPF-S']       || null,
+    tpfT:          row['TPF-T']       || null,
+    phaseSequence: row['PHASE_SEQUENCE'] || null,
+    jurusan:       row._jurusanRaw    || null
+  };
+}
+
+function _auditLog(msg) {
+  var el = document.getElementById('audit-prosen-log');
+  el.textContent += msg + '\n';
+  el.scrollTop = el.scrollHeight;
+}
+
+function auditPerbaikiTerpilih() {
+  var s = getSession();
+  if (!s || !s.token) { window.showAlert('❌ Sesi tidak valid.'); return; }
+  var terpilih = _auditProsenHasil.filter(function(h) { return h.selected; });
+  if (!terpilih.length) { window.showAlert('⚠️ Tidak ada data yang dipilih.'); return; }
+
+  // FIX: pakai modal konfirmasi in-app (showConfirm), bukan confirm() bawaan
+  // browser yang tampil sebagai popup terpisah di luar tampilan aplikasi.
+  window.showConfirm(
+    'Perbaiki ' + terpilih.length + ' data inspeksi sekarang? Tindakan ini akan menimpa nilai Daya & Prosen Beban yang tersimpan dengan nilai yang sudah dihitung ulang.',
+    'Perbaiki Data Terpilih?',
+    '✅',
+    function() { _auditJalankanPerbaikan(terpilih); }
+  );
+}
+
+async function _auditJalankanPerbaikan(terpilih) {
+  var s = getSession();
+  var btn = document.getElementById('btn-audit-perbaiki');
+  btn.disabled = true;
+  var progEl = document.getElementById('audit-prosen-progress');
+  var ok = 0, fail = 0;
+
+  for (var i = 0; i < terpilih.length; i++) {
+    var h = terpilih[i];
+    progEl.textContent = 'Memproses ' + (i + 1) + ' / ' + terpilih.length + '…';
+    try {
+      // FIX (401): sebelumnya di sini ada panggilan tambahan ke action
+      // 'getInspeksiById' (baca langsung tabel `inspeksi` via REST) untuk
+      // mengambil data lengkap per-record. Endpoint itu ditolak Supabase
+      // dengan 401 (RLS pada tabel `inspeksi` tidak mengizinkan SELECT
+      // langsung pakai anon key di luar RPC). Padahal data lengkap yang
+      // sama SUDAH didapat sekali di awal saat proses scan (h._rawRow,
+      // hasil dari action 'getInspeksi' yang lewat RPC fn_get_riwayat_inspeksi
+      // dan sudah diizinkan RLS) — jadi panggilan kedua ini dihapus, cukup
+      // pakai data yang sudah ada.
+      var full = h._rawRow;
+      if (!full) throw new Error('Data baris tidak lengkap (silakan Mulai Audit ulang).');
+
+      var payload = _auditBuildEditPayload(h.id, full, h.newDaya, h.newProsen);
+      payload.token = s.token;
+
+      var saveRes = await new Promise(function(resolve) {
+        apiGet(payload, function(res) { resolve(res); });
+      });
+
+      if (saveRes && saveRes.status === 'ok') {
+        ok++;
+        _auditLog('✅ ' + h.noGardu + ' (' + h.tgl + '): Daya ' + h.oldDaya + '→' + h.newDaya + ' kVA, Prosen ' + h.oldProsen + '%→' + h.newProsen + '%');
+      } else {
+        fail++;
+        _auditLog('❌ ' + h.noGardu + ' (' + h.tgl + '): ' + ((saveRes && saveRes.message) || 'gagal disimpan'));
+      }
+    } catch (e) {
+      fail++;
+      _auditLog('❌ ' + h.noGardu + ' (' + h.tgl + '): ' + e.message);
+    }
+  }
+
+  btn.disabled = false;
+  progEl.textContent = 'Selesai: ' + ok + ' berhasil, ' + fail + ' gagal.';
+  rekapSudahMuat = false; // data beban berubah → rekap harus dimuat ulang
+  muatDaftarGardu(true);  // refresh daftar gardu agar badge beban ikut ter-update
 }
 
 // ── Konteks pemanggil edit inspeksi (detail gardu / pengukuran) ──
@@ -9844,6 +10302,183 @@ function renderGarduKritisContent() {
 
   html += '<div style="height:var(--sp-lg);"></div>';
   el.innerHTML = html;
+}
+
+// ============================================================
+// ASISTEN AI — chat status gardu (overload/underload/kritis)
+// & pengetahuan umum kelistrikan PLN (transmisi/distribusi/dll).
+// ============================================================
+// KONFIGURASI: AI_PROXY_URL menunjuk ke Supabase Edge Function yang
+// menyimpan API key Claude di server (BUKAN di file ini). Lihat
+// file terpisah "ai-chat-edge-function.ts" + panduan setup yang
+// dikirim bersama file ini untuk cara deploy & mengisi API key-nya.
+var AI_PROXY_URL = SUPABASE_URL + '/functions/v1/ai-chat';
+
+var AI_OVERLOAD_THRESHOLD  = 80; // % — mengikuti ambang batas fn_get_gardu_kritis yang sudah ada
+var AI_UNDERLOAD_THRESHOLD = 40; // % — asumsi kerja: beban < 40% dianggap underload (silakan sesuaikan)
+
+var aiChatInited  = false;
+var aiChatHistory = []; // {role:'user'|'assistant', content:'...'}
+var aiChatBusy    = false;
+
+function initAIAsisten() {
+  if (aiChatInited) return;
+  aiChatInited = true;
+  _aiRenderMessage('bot', 'Halo! Saya bisa bantu cek gardu mana yang overload/underload/kritis, atau jawab pertanyaan seputar transmisi, distribusi, trafo, dan kelistrikan PLN lainnya. Ada yang mau ditanyakan?');
+}
+
+function _aiAutoGrow(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 96) + 'px';
+}
+
+function _aiInputKeydown(ev) {
+  if (ev.key === 'Enter' && !ev.shiftKey) {
+    ev.preventDefault();
+    kirimPesanAI();
+  }
+}
+
+function _aiRenderMessage(role, text, isError) {
+  var log = document.getElementById('ai-chat-log');
+  if (!log) return null;
+  var wrap = document.createElement('div');
+  wrap.className = 'ai-msg ' + (role === 'user' ? 'ai-msg-user' : 'ai-msg-bot');
+  var bubble = document.createElement('div');
+  bubble.className = 'ai-bubble' + (isError ? ' ai-bubble-err' : '');
+  bubble.textContent = text; // pakai textContent (bukan innerHTML) supaya aman dari XSS
+  var avatar = document.createElement('div');
+  avatar.className = 'ai-avatar';
+  avatar.textContent = role === 'user' ? '🙂' : '🤖';
+  wrap.appendChild(avatar);
+  wrap.appendChild(bubble);
+  log.appendChild(wrap);
+  var body = log.closest('.page-body');
+  if (body) body.scrollTop = body.scrollHeight;
+  return wrap;
+}
+
+function _aiRenderTyping() {
+  var log = document.getElementById('ai-chat-log');
+  if (!log) return null;
+  var wrap = document.createElement('div');
+  wrap.className = 'ai-msg ai-msg-bot';
+  wrap.innerHTML = '<div class="ai-avatar">🤖</div><div class="ai-bubble"><span class="ai-typing"><span></span><span></span><span></span></span></div>';
+  log.appendChild(wrap);
+  var body = log.closest('.page-body');
+  if (body) body.scrollTop = body.scrollHeight;
+  return wrap;
+}
+
+// ── Kumpulkan ringkasan data gardu (overload/underload) untuk konteks AI ──
+function _aiBuildDataContext(cb) {
+  var s = getSession();
+  var ulpParam = (s && !isFullAccessRole(s.role) && s.ulp) ? s.ulp : null;
+
+  apiGet({ action: 'getGarduKritis', ulp: ulpParam }, function(res) {
+    var overload = (res.status === 'ok' && res.data && res.data.bebanLebih) ? res.data.bebanLebih : [];
+
+    function fromList(list) {
+      var underload = [];
+      var totalDenganData = 0;
+      list.forEach(function(g) {
+        var p = parseFloat(g['_lastBeban']);
+        if (!isNaN(p)) {
+          totalDenganData++;
+          if (p < AI_UNDERLOAD_THRESHOLD) {
+            underload.push({ noGardu: g['NO_GARDU'], ulp: g['ULP'], penyulang: g['PENYULANG'], prosen: p });
+          }
+        }
+      });
+      cb({ overload: overload, underload: underload, totalGardu: list.length, totalDenganData: totalDenganData });
+    }
+
+    if (allGardu && allGardu.length) {
+      fromList(allGardu);
+    } else {
+      // allGardu belum dimuat (user belum pernah buka tab Daftar) — muat sekali agar bisa hitung underload
+      apiGet({ action: 'getDaftarGardu', ulp: ulpParam }, function(res2) {
+        fromList((res2.status === 'ok' && res2.data) ? res2.data : []);
+      });
+    }
+  });
+}
+
+function _aiFormatDataContext(d) {
+  var CAP = 60; // batasi jumlah baris per kategori agar konteks tetap ringkas
+  var lines = [];
+  lines.push('Total gardu terdaftar: ' + d.totalGardu + ' (yang punya data beban terakhir: ' + d.totalDenganData + ')');
+  lines.push('');
+  lines.push('=== GARDU OVERLOAD / BEBAN LEBIH (>' + AI_OVERLOAD_THRESHOLD + '%) — total ' + d.overload.length + ' ===');
+  d.overload.slice(0, CAP).forEach(function(g) {
+    lines.push(g.noGardu + ' | ' + g.ulp + ' | ' + g.penyulang + ' | ' + parseFloat(g.prosen).toFixed(1) + '%');
+  });
+  if (d.overload.length > CAP) lines.push('...dan ' + (d.overload.length - CAP) + ' gardu overload lainnya (tidak semua ditampilkan).');
+  lines.push('');
+  lines.push('=== GARDU UNDERLOAD / BEBAN RENDAH (<' + AI_UNDERLOAD_THRESHOLD + '%) — total ' + d.underload.length + ' ===');
+  d.underload.slice(0, CAP).forEach(function(g) {
+    lines.push(g.noGardu + ' | ' + g.ulp + ' | ' + g.penyulang + ' | ' + g.prosen.toFixed(1) + '%');
+  });
+  if (d.underload.length > CAP) lines.push('...dan ' + (d.underload.length - CAP) + ' gardu underload lainnya (tidak semua ditampilkan).');
+  return lines.join('\n');
+}
+
+var AI_SYSTEM_PROMPT =
+'Kamu adalah Asisten AI internal aplikasi Manajemen Gardu PLN UP3 Jayapura.\n' +
+'Kamu HANYA boleh menjawab dua jenis pertanyaan:\n' +
+'1) Status gardu (overload/beban lebih, underload/beban rendah, gardu kritis) — jawab berdasarkan DATA RINGKASAN yang disertakan di bawah, jangan mengarang nomor gardu yang tidak ada di data.\n' +
+'2) Pengetahuan umum kelistrikan PLN: transmisi, distribusi, gardu, trafo, proteksi, SAIDI/SAIFI/ENS, K3 kelistrikan, dan istilah teknis kelistrikan lainnya.\n' +
+'Jika pertanyaan di luar dua topik itu (pertanyaan umum/random yang tidak berkaitan kelistrikan atau PLN), TOLAK dengan sopan dan arahkan user kembali ke topik gardu/PLN. Jangan menjawab topik di luar itu walau terlihat tidak berbahaya.\n' +
+'Jawab singkat, jelas, dan gunakan Bahasa Indonesia.';
+
+function kirimPesanAI(overrideText) {
+  if (aiChatBusy) return;
+  var box = document.getElementById('ai-input-box');
+  var text = (overrideText != null ? overrideText : (box ? box.value : '')).trim();
+  if (!text) return;
+
+  _aiRenderMessage('user', text);
+  aiChatHistory.push({ role: 'user', content: text });
+  if (box) { box.value = ''; _aiAutoGrow(box); }
+
+  aiChatBusy = true;
+  var sendBtn = document.getElementById('ai-send-btn');
+  if (sendBtn) sendBtn.disabled = true;
+  var typingRow = _aiRenderTyping();
+
+  _aiBuildDataContext(function(ctx) {
+    var dataContext = _aiFormatDataContext(ctx);
+    fetch(AI_PROXY_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + SUPABASE_ANON,
+        'apikey': SUPABASE_ANON
+      },
+      body: JSON.stringify({
+        system: AI_SYSTEM_PROMPT + '\n\n--- DATA RINGKASAN GARDU SAAT INI ---\n' + dataContext,
+        messages: aiChatHistory.slice(-12) // batasi histori yang dikirim ke AI
+      })
+    })
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(data) {
+      var reply = (data && data.reply) ? data.reply : 'Maaf, tidak ada balasan dari server AI.';
+      if (typingRow) typingRow.remove();
+      _aiRenderMessage('bot', reply);
+      aiChatHistory.push({ role: 'assistant', content: reply });
+    })
+    .catch(function(err) {
+      if (typingRow) typingRow.remove();
+      _aiRenderMessage('bot', 'Gagal menghubungi Asisten AI. Pastikan AI_PROXY_URL sudah diatur & Edge Function aktif. (' + err.message + ')', true);
+    })
+    .finally(function() {
+      aiChatBusy = false;
+      if (sendBtn) sendBtn.disabled = false;
+    });
+  });
 }
 
 function _buildKritisPagination(type, cur, total) {

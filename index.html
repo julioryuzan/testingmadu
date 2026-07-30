@@ -4287,13 +4287,6 @@ input[type=number]{-moz-appearance:textfield;}
   </div>
 </div>
 
-<!-- Supabase API Layer — dipindah ke SINI (sebelum script besar di bawah)
-     supaya SUPABASE_URL sudah terdefinisi sebelum dipakai oleh AI_PROXY_URL
-     dkk di dalam script utama. Sebelumnya file ini dimuat di akhir dokumen,
-     menyebabkan "ReferenceError: SUPABASE_URL is not defined" saat script
-     utama mencoba memakainya lebih dulu. -->
-<script src="supabase-api.js"></script>
-
 <script>
 // ══════════════════════════════════════════════════════════════
 //  [AUTH v2] SISTEM LOGIN SERVER-SIDE
@@ -10319,7 +10312,10 @@ function renderGarduKritisContent() {
 // menyimpan API key Claude di server (BUKAN di file ini). Lihat
 // file terpisah "ai-chat-edge-function.ts" + panduan setup yang
 // dikirim bersama file ini untuk cara deploy & mengisi API key-nya.
-var AI_PROXY_URL = SUPABASE_URL + '/functions/v1/ai-chat';
+// CATATAN: TIDAK dihitung di sini (top-level) karena SUPABASE_URL baru
+// didefinisikan belakangan oleh supabase-api.js (dimuat di akhir dokumen).
+// Dihitung lazy di dalam kirimPesanAI() saat benar-benar dipakai.
+var AI_PROXY_URL = '';
 
 var AI_OVERLOAD_THRESHOLD  = 80; // % — mengikuti ambang batas fn_get_gardu_kritis yang sudah ada
 var AI_UNDERLOAD_THRESHOLD = 40; // % — asumsi kerja: beban < 40% dianggap underload (silakan sesuaikan)
@@ -10455,6 +10451,7 @@ function kirimPesanAI(overrideText) {
 
   _aiBuildDataContext(function(ctx) {
     var dataContext = _aiFormatDataContext(ctx);
+    if (!AI_PROXY_URL) { AI_PROXY_URL = SUPABASE_URL + '/functions/v1/ai-chat'; }
     fetch(AI_PROXY_URL, {
       method: 'POST',
       headers: {
@@ -14451,6 +14448,9 @@ function konfirmasiAksi(pesan, judul, labelAksi, callback) {
 <script src="vendor/exceljs/exceljs.min.js"></script>
 
 
+
+<!-- Supabase API Layer — tanpa defer agar segera tersedia untuk login -->
+<script src="supabase-api.js"></script>
 
 <!-- ============================================================
      Registrasi Service Worker — OFFLINE-FIRST + Background Sync
